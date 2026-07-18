@@ -1,0 +1,407 @@
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import {
+  alpha,
+  CircularProgress,
+  IconButton,
+  Modal,
+  Stack,
+  useMediaQuery,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import pickMarker from "./assets/pick_marker.png";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { darkStyles, grayMapStyle } from "../mapColor.js";
+import ModalExtendShrink from "./ModalExtendShrink";
+
+const GoogleMapComponent = ({
+  setDisablePickButton,
+  setLocationEnabled,
+  setLocation,
+  locationLoading,
+  location,
+  setPlaceDetailsEnabled,
+  placeDetailsEnabled,
+  setPlaceDescription,
+  height,
+  isModalExpand,
+  setIsModalExpand,
+  t = (text) => text,
+  left,
+  bottom,
+  polygonPaths,
+  fromVendor,
+  mapmodal,
+  zoomToLocationToken,
+}) => {
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const [localExpanded, setLocalExpanded] = useState(false);
+  const expanded =
+    typeof isModalExpand === "boolean" ? isModalExpand : localExpanded;
+  const setExpanded =
+    typeof setIsModalExpand === "function"
+      ? setIsModalExpand
+      : setLocalExpanded;
+  const containerStyle = {
+    width: expanded ? "100vw" : "100%",
+    maxHeight: expanded ? "100dvh" : "50dvh",
+    height: expanded ? "100dvh" : height ? height : isSmall ? "350px" : "350px",
+    paddingBottom: "0px",
+  };
+  const mapRef = useRef(GoogleMap);
+  const center = useMemo(
+    () => ({
+      lat: parseFloat(location?.lat),
+      lng: parseFloat(location?.lng),
+    }),
+    [location?.lng, location?.lng]
+  );
+
+  const options = useMemo(
+    () => ({
+      zoomControl: false,
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: false,
+      disableDefaultUI: true,
+      styles: theme.palette.mode === "dark" ? darkStyles : grayMapStyle,
+    }),
+    [theme.palette.mode]
+  );
+
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_KEY,
+  });
+
+  const [isMounted, setIsMounted] = useState(false);
+  const [mapSetup, setMapSetup] = useState(false);
+  const [map, setMap] = useState(null);
+  const [zoom, setZoom] = useState(polygonPaths ? 9 : 17);
+  const [centerPosition, setCenterPosition] = useState(center);
+  const [polygonInstance, setPolygonInstance] = useState(null);
+
+  const onLoad = useCallback(function callback(map) {
+    setMap(map);
+  }, []);
+
+  useEffect(() => setIsMounted(true), []);
+
+  useEffect(() => {
+    if (location && placeDetailsEnabled) {
+      setCenterPosition(location);
+    }
+    if (map?.center && mapSetup) {
+      setCenterPosition({
+        lat: map.center?.lat(),
+        lng: map.center?.lng(),
+      });
+    }
+    setIsMounted(true);
+  }, [map, mapSetup, placeDetailsEnabled, location]);
+
+  const onUnmount = useCallback(function callback(map) {
+    setMap(null);
+  }, []);
+
+  const handleZoomIn = () => {
+    if (zoom <= 21) {
+      setZoom((prevZoom) => Math.min(prevZoom + 1));
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (map && zoom >= 1) {
+      setZoom((prevZoom) => Math.max(prevZoom - 1));
+    }
+  };
+
+  // Effect to update polygon instance and adjust map bounds when polygonPaths change
+  useEffect(() => {
+    if (polygonInstance) {
+      polygonInstance.setMap(null); // Remove the old polygon
+    }
+    if (polygonPaths?.length > 0 && map) {
+      const newPolygon = new window.google.maps.Polygon({
+        paths: polygonPaths,
+        fillColor: "blue",
+        fillOpacity: 0.3,
+        strokeColor: theme.palette.error.main,
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        map,
+      });
+      setPolygonInstance(newPolygon);
+
+      newPolygon.addListener("click", (e) => {
+        if (fromVendor) {
+          setMapSetup(false);
+          setDisablePickButton?.(false);
+          setLocationEnabled?.(true);
+          setLocation({
+            lat: e.latLng.lat(),
+            lng: e.latLng.lng(),
+          });
+          setCenterPosition({
+            lat: e.latLng.lat(),
+            lng: e.latLng.lng(),
+          });
+          setPlaceDetailsEnabled(false);
+          setPlaceDescription?.(undefined);
+        }
+      });
+
+      // Create a LatLngBounds object to fit the polygon
+      const bounds = new window.google.maps.LatLngBounds();
+      polygonPaths.forEach((path) => {
+        bounds.extend(new window.google.maps.LatLng(path.lat, path.lng));
+      });
+
+      // Fit the map to the new polygon bounds
+      if (!fromVendor) {
+        map.fitBounds(bounds);
+      }
+    }
+  }, [polygonPaths, map, fromVendor]);
+
+  useEffect(() => {
+    if (map && location?.lat && location?.lng) {
+      const lat = parseFloat(location.lat);
+      const lng = parseFloat(location.lng);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const mapCenter = map.getCenter?.();
+        const isDragSync =
+          mapCenter &&
+          Math.abs(mapCenter.lat() - lat) < 0.0001 &&
+          Math.abs(mapCenter.lng() - lng) < 0.0001;
+        map.panTo({ lat, lng });
+        const targetZoom = polygonPaths ? 9 : 17;
+        const currentZoom = map.getZoom?.() ?? zoom;
+        if (!isDragSync && currentZoom < targetZoom) {
+          map.setZoom(targetZoom);
+          setZoom(targetZoom);
+        }
+      }
+    }
+  }, [map, location]);
+
+  useEffect(() => {
+    if (!map || !zoomToLocationToken) return;
+    const targetZoom = polygonPaths ? 9 : 17;
+    if (location?.lat && location?.lng) {
+      const lat = parseFloat(location.lat);
+      const lng = parseFloat(location.lng);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map.panTo({ lat, lng });
+      }
+    }
+    map.setZoom(targetZoom);
+    setZoom(targetZoom);
+  }, [zoomToLocationToken]);
+
+  const MapContent = (
+    <Stack
+      padding="0px"
+      sx={{
+        boxShadow: expanded ? "none" : "inset 0px 4px 4px rgba(0, 0, 0, 0.1)",
+        p: "4px",
+        position: "relative",
+        width: expanded ? "100vw" : "100%",
+        height: expanded ? "100dvh" : "auto",
+      }}
+    >
+      <Stack
+        position="absolute"
+        zIndex={1}
+        left={left ? left : "15px"}
+        bottom={bottom ? bottom : "6%"}
+        direction="column"
+        spacing={1}
+      >
+        <IconButton
+          sx={{
+            background: (theme) => theme.palette.neutral[100],
+            "&:hover": {
+              background: (theme) => alpha(theme.palette.neutral[100], 0.8),
+            },
+          }}
+          padding={{ xs: "3px", sm: "5px" }}
+          onClick={handleZoomIn}
+          disabled={zoom > 21}
+        >
+          <AddIcon color="primary" />
+        </IconButton>
+        <IconButton
+          sx={{
+            background: (theme) => theme.palette.neutral[100],
+            "&:hover": {
+              background: (theme) => alpha(theme.palette.neutral[100], 0.8),
+            },
+          }}
+          padding={{ xs: "3px", sm: "5px" }}
+          onClick={handleZoomOut}
+          disabled={zoom < 1}
+        >
+          <RemoveIcon color="primary" />
+        </IconButton>
+      </Stack>
+      {(!mapmodal || expanded) && (
+        <Stack
+          position="absolute"
+          zIndex={2}
+          sx={{
+            right: { xs: "10px", sm: "12px" },
+            top: expanded ? { xs: "10px", sm: "12px" } : undefined,
+            bottom: expanded
+              ? undefined
+              : { xs: "20px", sm: "80px", md: "70px" },
+          }}
+        >
+          <ModalExtendShrink
+            isModalExpand={expanded}
+            setIsModalExpand={setExpanded}
+            t={t}
+          />
+        </Stack>
+      )}
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={map ? undefined : center ?? centerPosition}
+        onLoad={onLoad}
+        zoom={zoom}
+        onUnmount={onUnmount}
+        onMouseDown={() => {
+          setMapSetup(true);
+          setDisablePickButton?.(true);
+        }}
+        onMouseUp={() => {
+          setMapSetup(false);
+          setDisablePickButton?.(false);
+          setLocationEnabled?.(true);
+          setLocation({
+            lat: map.center?.lat(),
+            lng: map.center?.lng(),
+          });
+          setCenterPosition({
+            lat: map.center?.lat(),
+            lng: map.center?.lng(),
+          });
+          setPlaceDetailsEnabled(false);
+          setPlaceDescription?.(undefined);
+        }}
+        onZoomChanged={() => {
+          if (map) {
+            setLocationEnabled?.(true);
+            setLocation({
+              lat: map.center?.lat(),
+              lng: map.center?.lng(),
+            });
+            setCenterPosition({
+              lat: map.center?.lat(),
+              lng: map.center?.lng(),
+            });
+          }
+        }}
+        onDragEnd={() => {
+          if (map) {
+            setMapSetup(false);
+            setDisablePickButton?.(false);
+            setLocationEnabled?.(true);
+            setLocation({
+              lat: map.center?.lat(),
+              lng: map.center?.lng(),
+            });
+            setCenterPosition({
+              lat: map.center?.lat(),
+              lng: map.center?.lng(),
+            });
+            setPlaceDetailsEnabled(false);
+            setPlaceDescription?.(undefined);
+          }
+        }}
+        onClick={(e) => {
+          if (fromVendor) {
+            setMapSetup(false);
+            setDisablePickButton?.(false);
+            setLocationEnabled?.(true);
+            setLocation({
+              lat: e.latLng.lat(),
+              lng: e.latLng.lng(),
+            });
+            setCenterPosition({
+              lat: e.latLng.lat(),
+              lng: e.latLng.lng(),
+            });
+            setPlaceDetailsEnabled(false);
+            setPlaceDescription?.(undefined);
+          }
+        }}
+        options={options}
+      >
+        {!locationLoading ? (
+          <img
+            src={pickMarker.src}
+            style={{
+              zIndex: 3,
+              position: "absolute",
+              marginTop: -63,
+              marginLeft: -32,
+              left: "50%",
+              top: "50%",
+              height: "60px",
+              width: "45px",
+              pointerEvents: "none",
+            }}
+            alt="map"
+          />
+        ) : (
+          <Stack
+            alignItems="center"
+            style={{
+              zIndex: 3,
+              position: "absolute",
+              marginTop: -37,
+              marginLeft: -11,
+              left: "50%",
+              top: "50%",
+              minHeight: "300px",
+            }}
+          >
+            <CircularProgress />
+          </Stack>
+        )}
+      </GoogleMap>
+    </Stack>
+  );
+
+  return isLoaded ? (
+    expanded ? (
+      <Modal open={expanded} onClose={() => setExpanded(false)}>
+        <Stack
+          sx={{
+            width: "100vw",
+            height: "100dvh",
+            backgroundColor: theme.palette.background.paper,
+            outline: "none",
+          }}
+        >
+          {MapContent}
+        </Stack>
+      </Modal>
+    ) : (
+      MapContent
+    )
+  ) : (
+    <></>
+  );
+};
+
+export default GoogleMapComponent;
