@@ -221,8 +221,8 @@ const AddNewAddress = (props) => {
                       ? t("Edit Contact Info")
                       : t("Add Contact Info")
                     : editAddress
-                    ? t("Edit Address")
-                    : t("Add New Address")}
+                      ? t("Edit Address")
+                      : t("Add New Address")}
                 </Typography>
                 {!contactInfoOnly && (
                   <Typography
@@ -245,13 +245,13 @@ const AddNewAddress = (props) => {
                   color: theme.palette.text.secondary,
                   backgroundColor: alpha(
                     theme.palette.neutral?.[400] ||
-                      theme.palette.text.secondary,
+                    theme.palette.text.secondary,
                     0.06
                   ),
                   "&:hover": {
                     backgroundColor: alpha(
                       theme.palette.neutral?.[400] ||
-                        theme.palette.text.secondary,
+                      theme.palette.text.secondary,
                       0.14
                     ),
                   },
@@ -290,7 +290,7 @@ const AddNewAddress = (props) => {
                         border: `1px solid ${theme.palette.divider}`,
                         backgroundColor: alpha(
                           theme.palette.neutral?.[200] ||
-                            theme.palette.background.default,
+                          theme.palette.background.default,
                           0.6
                         ),
                         minHeight: "44px",
@@ -341,10 +341,10 @@ const AddNewAddress = (props) => {
                         editAddress
                           ? editAddressLocation
                           : state.location
-                          ? state.location
-                          : {
-                              lat: configData?.default_location?.lat,
-                              lng: configData?.default_location?.lng,
+                            ? state.location
+                            : {
+                              lat: parseFloat(configData?.default_location?.lat || 29.3759),
+                              lng: parseFloat(configData?.default_location?.lng || 47.9774),
                             }
                       }
                       setPlaceDetailsEnabled={(value) =>
@@ -398,8 +398,8 @@ const AddNewAddress = (props) => {
                           guestUserInfo
                             ? addressType
                             : editAddress?.address_type
-                            ? editAddress?.address_type
-                            : addressType
+                              ? editAddress?.address_type
+                              : addressType
                         }
                         onClick={() => handleClick("home")}
                       >
