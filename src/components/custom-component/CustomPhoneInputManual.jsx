@@ -123,8 +123,7 @@ const CustomPhoneInputManual = ({
   const theme = useTheme();
   const { configData } = useSelector((state) => state.configData);
   const { t } = useTranslation();
-  const rawCountry = (initCountry || configData?.country || "kw")?.toLowerCase();
-  const defaultCountry = (!rawCountry || rawCountry === "in") ? "kw" : rawCountry;
+  const defaultCountry = initCountry?.toLowerCase();
   // The library calls onChange as (value, country, event, formattedValue).
   // When the typed digits match a known dial code, `country.dialCode` is the
   // detected ISD prefix — make sure that prefix is always at the front of
@@ -160,7 +159,6 @@ const CustomPhoneInputManual = ({
               }}
               specialLabel={t("Phone")}
               country={defaultCountry}
-              preferredCountries={["kw", "sa", "ae", "eg", "qa", "bh", "om"]}
               searchStyle={{ margin: "0", width: "95%", height: "50px" }}
               inputStyle={{
                 width: "100%",

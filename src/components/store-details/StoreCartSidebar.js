@@ -668,41 +668,17 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
   // cart/list?store_id=X (see store-details/index.js). Falls back to
   // filtering the global cartList by the current store_id when empty.
   const { storeCartList, cartList } = useSelector((state) => state.cart);
-  const currentStoreNumericId = storeDetails?.id;
-  const currentStoreSlug =
-    storeDetails?.slug ??
-    (typeof router?.query?.id === "string" ? router.query.id : undefined);
-
-  // Filter items in cartList for this store (matches by numeric ID or slug)
-  const cartItemsForThisStore = useMemo(() => {
-    const list = Array.isArray(cartList) ? cartList : [];
-    if (!currentStoreNumericId && !currentStoreSlug) return list;
-
-    return list.filter((i) => {
-      if (!i) return false;
-      const itemStoreId = i?.store_id ?? i?.storeId ?? i?.store_details?.id;
-      const itemStoreSlug =
-        i?.store_slug ?? i?.storeSlug ?? i?.store_details?.slug;
-
-      if (currentStoreNumericId != null && itemStoreId != null) {
-        if (String(itemStoreId) === String(currentStoreNumericId)) return true;
-      }
-      if (currentStoreSlug != null) {
-        if (itemStoreSlug && String(itemStoreSlug) === String(currentStoreSlug))
-          return true;
-        if (itemStoreId && String(itemStoreId) === String(currentStoreSlug))
-          return true;
-      }
-      if (itemStoreId == null && itemStoreSlug == null) return true;
-      return false;
-    });
-  }, [cartList, currentStoreNumericId, currentStoreSlug]);
-
+  const currentStoreId =
+    router?.query?.id ?? router?.query?.storeId ?? router?.query?.store_id;
   const storeScopedCart =
-    cartItemsForThisStore.length > 0
-      ? cartItemsForThisStore
-      : Array.isArray(storeCartList) && storeCartList.length > 0
+    Array.isArray(storeCartList) && storeCartList.length > 0
       ? storeCartList
+      : currentStoreId != null
+      ? (Array.isArray(cartList) ? cartList : [])?.filter(
+          (i) => String(i?.store_id) === String(currentStoreId)
+        )
+      : Array.isArray(cartList)
+      ? cartList
       : [];
   const { configData } = useSelector((state) => state.configData);
   console.log({ cartList, storeCartList, storeScopedCart });

@@ -1425,7 +1425,6 @@ const NewProductCard = ({
       product = {
         ...i?.item,
         cartItemId: i?.id,
-        store_id: i?.item?.store_id ?? i?.store_id ?? item?.store_id,
         quantity: i?.quantity,
         totalPrice: i?.price,
         selectedOption: [],

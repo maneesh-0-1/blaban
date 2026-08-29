@@ -359,17 +359,12 @@ const ProductCard = (props) => {
   const handleSuccess = (res) => {
     if (res) {
       let product = {};
-      res?.forEach((resItem) => {
+      res?.forEach((item) => {
         product = {
-          ...resItem?.item,
-          cartItemId: resItem?.id,
-          store_id:
-            resItem?.item?.store_id ??
-            resItem?.store_id ??
-            item?.store_id ??
-            state?.modalData?.[0]?.store_id,
-          quantity: resItem?.quantity,
-          totalPrice: resItem?.price,
+          ...item?.item,
+          cartItemId: item?.id,
+          quantity: item?.quantity,
+          totalPrice: item?.price,
           selectedOption: [],
         };
       });
