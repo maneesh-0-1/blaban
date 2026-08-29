@@ -15,7 +15,7 @@ const CustomPhoneNumberInputStyled = styled(PhoneInput)(
     "&.react-tel-input .special-label": {
       fontSize: "12px !important",
       fontWeight: "500 !important",
-      color: alpha(theme.palette.neutral[1000], .7),
+      color: alpha(theme.palette.neutral[1000], 0.7),
       left: languageDirection === "rtl" ? "80%" : "10px",
       backgroundColor: background || theme.palette.background.paper,
       zIndex: "999",
@@ -80,7 +80,7 @@ const CustomPhoneNumberInputStyled = styled(PhoneInput)(
       color: theme.palette.neutral[400],
     },
     "&.react-tel-input .selected-flag .arrow": {
-      right: languageDirection === "rtl" ? "-20px" : "25px",
+      display: "none !important", // Hides the dropdown arrow
     },
     "&.react-tel-input .form-control": {
       border: `1px solid ${theme.palette.neutral[200]}`,
@@ -109,11 +109,11 @@ const CustomPhoneNumberInputStyled = styled(PhoneInput)(
       right: languageDirection === "rtl" ? "unset" : 0,
     },
     "&.react-tel-input .iti__selected-flag .iti__arrow": {
-      transform:
-        languageDirection === "rtl" ? "rotate(180deg)" : "rotate(0deg)",
+      display: "none !important",
     },
   })
 );
+
 const CustomPhoneInput = ({
   value,
   onHandleChange,
@@ -132,7 +132,10 @@ const CustomPhoneInput = ({
   };
   const { configData } = useSelector((state) => state.configData);
   const { t } = useTranslation();
-  const defaultCountry = initCountry?.toLowerCase();
+
+  // Set Kuwait as the fixed default country
+  const defaultCountry = "kw";
+
   return (
     <NoSsr>
       <CustomStackFullWidth alignItems="flex-start" spacing={0.8}>
@@ -142,9 +145,11 @@ const CustomPhoneInput = ({
             borderRadius={borderRadius}
             autoFormat={false}
             placeholder={t("Enter phone number")}
-            value={value}
-            enableSearchField
-            enableSearch
+            value={value || "+965"}
+            country={defaultCountry}
+            onlyCountries={["kw"]}
+            disableDropdown={true}
+            countryCodeEditable={false}
             onChange={changeHandler}
             inputProps={{
               required: true,
@@ -160,18 +165,12 @@ const CustomPhoneInput = ({
                 t("Phone")
               )
             }
-            country={defaultCountry}
-            searchStyle={{ margin: "0", width: "95%", height: "50px" }}
             inputStyle={{
               width: "100%",
               height: height ? height : "56px",
               borderRadius: borderRadius ? borderRadius : "5px",
             }}
             languageDirection={lanDirection}
-            buttonClass={{ "background-color": "red" }}
-            {...(configData?.country_picker_status !== 1 && {
-              disableDropdown: true,
-            })}
           />
         )}
         {touched && errors && (
@@ -190,4 +189,5 @@ const CustomPhoneInput = ({
     </NoSsr>
   );
 };
+
 export default CustomPhoneInput;
