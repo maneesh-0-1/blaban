@@ -36,9 +36,22 @@ export const formatNumber = (value, fallbackDecimals = 2) => {
 export const getAmountWithSign = (amount, needDecimal = true) => {
   if (amount == null || isNaN(Number(amount))) return "";
 
-  const { configData } = store?.getState()?.configData || {};
+  const state = store?.getState();
+  const { configData } = state?.configData || {};
+  let currentLanguage =
+    state?.languageChange?.language ||
+    state?.configData?.language;
+
+  if (!currentLanguage && typeof window !== "undefined") {
+    try {
+      currentLanguage = JSON.parse(localStorage.getItem("language-setting"));
+    } catch {
+      currentLanguage = localStorage.getItem("language-setting");
+    }
+  }
+
+  const currencySymbol = currentLanguage === "ar" ? "د.ك" : "KD";
   const decimals = configData?.digit_after_decimal_point ?? 2;
-  const symbol = configData?.currency_symbol || "";
   const direction = configData?.currency_symbol_direction || "left";
 
   // Function to format large numbers
@@ -53,7 +66,7 @@ export const getAmountWithSign = (amount, needDecimal = true) => {
   const formattedAmount = formatLargeNumber(Number(amount));
 
   // Return amount with currency symbol
-  return direction === "left" ? `${symbol}${formattedAmount}` : `${formattedAmount}${symbol}`;
+  return direction === "left" ? `${currencySymbol}${formattedAmount}` : `${formattedAmount}${currencySymbol}`;
 };
 
 

@@ -23,8 +23,21 @@ const ALLOWED_PATHNAMES = new Set([
 
 /** Abbreviate a number with currency symbol — e.g. 1200 → "$ 1.2k" */
 const abbreviateAmount = (amount) => {
-  const { configData } = store?.getState()?.configData || {};
-  const symbol = configData?.currency_symbol || "$";
+  const state = store?.getState();
+  const { configData } = state?.configData || {};
+  let currentLanguage =
+    state?.languageChange?.language ||
+    state?.configData?.language;
+
+  if (!currentLanguage && typeof window !== "undefined") {
+    try {
+      currentLanguage = JSON.parse(localStorage.getItem("language-setting"));
+    } catch {
+      currentLanguage = localStorage.getItem("language-setting");
+    }
+  }
+
+  const symbol = currentLanguage === "ar" ? "د.ك" : "KD";
   const direction = configData?.currency_symbol_direction || "left";
 
   let formatted;
