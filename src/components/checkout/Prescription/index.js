@@ -64,43 +64,56 @@ const PrescriptionCheckout = ({ storeId, page }) => {
     refetch();
   }, [storeId]);
   useEffect(() => {
-    const currentLatLng = JSON.parse(localStorage.getItem("currentLatLng"));
+    let currentLatLng = null;
+    try {
+      currentLatLng = JSON.parse(localStorage.getItem("currentLatLng") || "null");
+    } catch (e) {}
     const location = localStorage.getItem("location");
-    setAddress({
-      ...currentLatLng,
-      latitude: currentLatLng?.lat,
-      longitude: currentLatLng?.lng,
-      address: location,
-      address_type: "Selected Address",
-    });
+    if (currentLatLng?.lat && currentLatLng?.lng) {
+      setAddress({
+        ...currentLatLng,
+        latitude: currentLatLng?.lat,
+        longitude: currentLatLng?.lng,
+        address: location || "",
+        address_type: "Selected Address",
+      });
+    }
     refetch();
   }, []);
 
-  const currentLatLng = JSON.parse(
-    window.localStorage.getItem("currentLatLng")
-  );
+  const currentLatLng = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      return JSON.parse(window.localStorage.getItem("currentLatLng") || "null");
+    } catch (e) {
+      return null;
+    }
+  }, []);
   const handleChange = (e) => {
     setNote(e.target.value);
   };
 
   const { data: zoneData } = useQuery(
-    ["zoneId", location],
+    ["zoneId", location, currentLatLng],
     async () => GoogleApi.getZoneId(currentLatLng),
     {
       retry: 1,
+      enabled: Boolean(currentLatLng?.lat && currentLatLng?.lng),
     }
   );
+  const originLat = storeData?.latitude;
+  const originLng = storeData?.longitude;
+  const destLat = address?.latitude || address?.lat;
+  const destLng = address?.longitude || address?.lng;
+
   const { data: distanceData, refetch: refetchDistance } = useQuery(
-    ["get-distance", storeData, address],
+    ["get-distance", storeData?.id, originLat, originLng, destLat, destLng],
     () => GoogleApi.distanceApi(storeData, address),
     {
-      enabled: false,
+      enabled: Boolean(originLat && originLng && destLat && destLng),
       onError: onErrorResponse,
     }
   );
-  useEffect(() => {
-    storeData && address && refetchDistance();
-  }, [storeData, address]);
   const { mutate: orderMutation, isLoading: orderLoading } = useMutation(
     "order-place",
     OrderApi.prescriptionPlaceOrder

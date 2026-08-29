@@ -248,15 +248,20 @@ const ItemCheckout = (props) => {
   );
   console.log({ zoneData, storeData });
 
+  const originLat = storeData?.latitude;
+  const originLng = storeData?.longitude;
+  const destLat = address?.latitude || address?.lat;
+  const destLng = address?.longitude || address?.lng;
+
   const {
     data: distanceData,
     refetch: refetchDistance,
     isLoading,
   } = useQuery(
-    ["get-distancesss", storeData, address, orderType],
+    ["get-distancesss", storeData?.id, originLat, originLng, destLat, destLng, orderType],
     () => GoogleApi.distanceApi(storeData, address),
     {
-      enabled: true,
+      enabled: Boolean(originLat && originLng && destLat && destLng),
       onError: onErrorResponse,
     }
   );
@@ -301,15 +306,20 @@ const ItemCheckout = (props) => {
   console.log({ address });
 
   useEffect(() => {
-    const currentLatLng = JSON.parse(localStorage.getItem("currentLatLng"));
+    let currentLatLng = null;
+    try {
+      currentLatLng = JSON.parse(localStorage.getItem("currentLatLng") || "null");
+    } catch (e) {}
     const location = localStorage.getItem("location");
-    setAddress({
-      ...currentLatLng,
-      latitude: currentLatLng?.lat,
-      longitude: currentLatLng?.lng,
-      address: location,
-      address_type: "Selected Address",
-    });
+    if (currentLatLng?.lat && currentLatLng?.lng) {
+      setAddress({
+        ...currentLatLng,
+        latitude: currentLatLng?.lat,
+        longitude: currentLatLng?.lng,
+        address: location || "",
+        address_type: "Selected Address",
+      });
+    }
     refetch();
   }, []);
 

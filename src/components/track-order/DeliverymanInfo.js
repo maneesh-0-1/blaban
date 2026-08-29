@@ -21,18 +21,24 @@ import { handleDistance } from "../../utils/CustomFunctions";
 const DeliverymanInfo = (props) => {
   const { data, configData, t } = props;
   const productImage = configData?.base_urls?.delivery_man_image_url;
+  const originLat = data?.delivery_man?.lat;
+  const originLng = data?.delivery_man?.lng;
+  const destLat = data?.delivery_address?.latitude ?? data?.delivery_address?.lat;
+  const destLng = data?.delivery_address?.longitude ?? data?.delivery_address?.lng;
+
   const origin = {
-    latitude: data?.delivery_man?.lat,
-    longitude: data?.delivery_man?.lng,
+    latitude: originLat,
+    longitude: originLng,
   };
   const destination = {
-    latitude: data?.delivery_address?.latitude,
-    longitude: data?.delivery_address?.longitude,
+    latitude: destLat,
+    longitude: destLng,
   };
   const { data: distanceData, refetch: refetchDistance } = useQuery(
-    ["get-distance", origin, destination],
+    ["get-distance", originLat, originLng, destLat, destLng],
     () => GoogleApi.distanceApi(origin, destination),
     {
+      enabled: Boolean(originLat && originLng && destLat && destLng),
       onError: onErrorResponse,
     }
   );
