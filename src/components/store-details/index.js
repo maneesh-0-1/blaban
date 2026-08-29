@@ -332,7 +332,8 @@ const StoreDetails = ({ storeDetails, configData }) => {
     isFetching: cartListFetching,
     refetch: cartListRefetch,
   } = useGetAllCartList(guestId, cartListSuccessHandler, storeDetails?.id);
-  const isCartLoading = cartListLoading || cartListFetching;
+  const isCartLoading =
+    cartListLoading && (!cartList || cartList.length === 0);
 
   useEffect(() => {
     refetchModule();

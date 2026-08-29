@@ -132,7 +132,8 @@ const CustomPhoneInput = ({
   };
   const { configData } = useSelector((state) => state.configData);
   const { t } = useTranslation();
-  const defaultCountry = initCountry?.toLowerCase();
+  const rawCountry = (initCountry || configData?.country || "kw")?.toLowerCase();
+  const defaultCountry = (!rawCountry || rawCountry === "in") ? "kw" : rawCountry;
   return (
     <NoSsr>
       <CustomStackFullWidth alignItems="flex-start" spacing={0.8}>
@@ -161,6 +162,7 @@ const CustomPhoneInput = ({
               )
             }
             country={defaultCountry}
+            preferredCountries={["kw", "sa", "ae", "eg", "qa", "bh", "om"]}
             searchStyle={{ margin: "0", width: "95%", height: "50px" }}
             inputStyle={{
               width: "100%",

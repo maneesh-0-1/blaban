@@ -240,6 +240,11 @@ const FoodDetailModal = ({
         product = {
           ...item?.item,
           cartItemId: item?.id,
+          store_id:
+            item?.item?.store_id ??
+            item?.store_id ??
+            productData?.store_id ??
+            productData?.store_details?.id,
           totalPrice: item?.price,
           quantity: item?.quantity,
           food_variations: item?.item?.food_variations,
