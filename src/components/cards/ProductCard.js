@@ -442,13 +442,21 @@ const ProductCard = (props) => {
       }
     } else {
       if (item?.module_type === "food") {
-        if (item?.food_variations?.length > 0 || item?.has_variant) {
+        if (
+          item?.food_variations?.length > 0 ||
+          item?.add_ons?.length > 0 ||
+          item?.has_variant
+        ) {
           dispatch({ type: ACTION.setOpenModal, payload: true });
         } else {
           e.stopPropagation();
           addToCartHandler();
         }
-      } else if (item?.variations?.length > 0 || item?.has_variant) {
+      } else if (
+        item?.variations?.length > 0 ||
+        item?.add_ons?.length > 0 ||
+        item?.has_variant
+      ) {
         dispatch({ type: ACTION.setOpenModal, payload: true });
       } else {
         e.stopPropagation();

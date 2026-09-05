@@ -424,15 +424,7 @@ const CartControls = ({
   }, [expanded]);
 
   if (!isProductExist) {
-    return (
-      <AddBtn onClick={onAdd}>
-        {isLoading ? (
-          <CircularProgress size={14} />
-        ) : (
-          <AddIcon sx={{ fontSize: "18px", color: "neutral.1050" }} />
-        )}
-      </AddBtn>
-    );
+    return null;
   }
 
   // Collapsible side button (− / +) — width animates 0 ↔ 36
@@ -1688,13 +1680,21 @@ const NewProductCard = ({
         addToCartHandler();
       }
     } else if (item?.module_type === "food") {
-      if (item?.food_variations?.length > 0 || item?.has_variant) {
+      if (
+        item?.food_variations?.length > 0 ||
+        item?.add_ons?.length > 0 ||
+        item?.has_variant
+      ) {
         dispatch({ type: ACTION.setOpenModal, payload: true });
       } else {
         addToCartHandler();
       }
     } else {
-      if (item?.variations?.length > 0 || item?.has_variant) {
+      if (
+        item?.variations?.length > 0 ||
+        item?.add_ons?.length > 0 ||
+        item?.has_variant
+      ) {
         dispatch({ type: ACTION.setOpenModal, payload: true });
       } else {
         addToCartHandler();
