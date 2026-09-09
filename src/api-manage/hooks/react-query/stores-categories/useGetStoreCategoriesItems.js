@@ -82,6 +82,8 @@ const fetchPage = async (params) => {
 };
 
 export default function useGetStoreCategoriesItems(pageParams) {
+  const zoneid =
+    typeof window !== "undefined" ? localStorage.getItem("zoneid") : null;
   return useInfiniteQuery(
     [
       "store-categories-items",
@@ -93,6 +95,7 @@ export default function useGetStoreCategoriesItems(pageParams) {
       pageParams?.minMax,
       pageParams?.ratingCount,
       pageParams?.sortBy,
+      zoneid,
     ],
     () => fetchPage(pageParams),
     {

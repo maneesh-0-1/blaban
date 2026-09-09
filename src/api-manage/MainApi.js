@@ -42,13 +42,35 @@ MainApi.interceptors.request.use(function (config) {
     })();
   if (zoneidIsValid) {
     config.headers.zoneid = zoneid;
+  } else if (!config.headers.zoneid) {
+    try {
+      const storedModule = JSON.parse(
+        typeof window !== "undefined"
+          ? localStorage.getItem("module") || "null"
+          : "null"
+      );
+      const moduleZones = storedModule?.zones?.map((z) => z.id).filter(Boolean);
+      if (moduleZones && moduleZones.length > 0) {
+        config.headers.zoneid = JSON.stringify(moduleZones);
+      } else {
+        config.headers.zoneid = JSON.stringify([5, 2, 3, 4]);
+      }
+    } catch {
+      config.headers.zoneid = JSON.stringify([5, 2, 3, 4]);
+    }
   }
-  if (moduleid && !config.headers.moduleId) config.headers.moduleId = moduleid;
+
+  if (moduleid && !config.headers.moduleId) {
+    config.headers.moduleId = moduleid;
+  } else if (!config.headers.moduleId) {
+    config.headers.moduleId = 2;
+  }
+
   if (token) config.headers.authorization = `Bearer ${token}`;
   if (language) config.headers["X-localization"] = language;
   if (hostname) config.headers["origin"] = hostname;
   config.headers["X-software-id"] = software_id;
-  config.headers["Accept"] = 'application/json'
+  config.headers["Accept"] = 'application/json';
   config.headers["ngrok-skip-browser-warning"] = true;
   return config;
 });
