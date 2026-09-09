@@ -23,22 +23,11 @@ const CustomLogo = ({ logoImg, atlText, height, width, objectFit }) => {
     location = localStorage.getItem("location");
   }
   const handleClick = () => {
-    const queryModule = router?.query?.module || router?.query?.module_id;
-    const moduleValue = Array.isArray(queryModule)
-      ? queryModule[0]
-      : queryModule || getModuleId();
-    const homeHref = moduleValue
-      ? { pathname: "/home", query: { module: String(moduleValue) } }
-      : "/home";
-    if (router.pathname === "/") {
-      if (location) {
-        router.replace(homeHref, undefined, { shallow: true });
-      } else {
-        router.push("/", undefined, { shallow: true });
-      }
-    } else {
-      router.replace(homeHref, undefined, { shallow: true }).then();
-    }
+    router.replace(
+      { pathname: "/store/blaban", query: { module: "blaban" } },
+      undefined,
+      { shallow: true }
+    );
   };
   return (
 

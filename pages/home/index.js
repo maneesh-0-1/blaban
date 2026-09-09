@@ -80,6 +80,11 @@ const Home = ({ metaData, configData }) => {
 
 export default Home;
 export const getServerSideProps = async (context) => {
-  return await getCommonServerSideProps(context, "home_page");
+  return {
+    redirect: {
+      destination: "/store/blaban?module=blaban",
+      permanent: false,
+    },
+  };
 };
 Home.getLayout = (page) => <ZoneGuard>{page}</ZoneGuard>;

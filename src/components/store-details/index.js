@@ -382,13 +382,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
     setOpenStoreZoneModal(isStoreZoneMismatch);
   }, [hasCurrentLatLng, isStoreZoneMismatch, zoneid]);
 
-  useEffect(() => {
-    if (!openStoreZoneModal) return;
-    const timeoutId = window.setTimeout(() => {
-      router.replace("/");
-    }, 5000);
-    return () => window.clearTimeout(timeoutId);
-  }, [openStoreZoneModal, router]);
+  // When openStoreZoneModal is open, keep modal open for user to pick location from map
 
   const handleOpenPickFromMap = () => {
     setOpenStoreZoneModal(false);

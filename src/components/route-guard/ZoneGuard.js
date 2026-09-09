@@ -36,12 +36,7 @@ const ZoneGuard = (props) => {
         safeGetItem("selectedModuleId") ||
         storedModule?.slug ||
         storedModule?.id;
-      if (storedIdentifier) {
-        setChecked(true);
-      } else {
-        setChecked(false);
-        router.push("/", undefined, { shallow: true });
-      }
+      setChecked(true);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [router.isReady]
@@ -50,9 +45,6 @@ const ZoneGuard = (props) => {
   if (!checked) {
     return null;
   }
-
-  // If got here, it means that the redirect did not occur, and that tells us that the user is
-  // authenticated / authorized.
 
   return <>{children}</>;
 };

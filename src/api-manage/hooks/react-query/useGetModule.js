@@ -73,7 +73,7 @@ export default function useGetModule() {
   }, []);
 
   const query = useQuery(["module-list", zoneIdsKey], getModule, {
-    enabled: false,
+    enabled: true,
     onError: onErrorResponse,
   });
   const { refetch } = query;

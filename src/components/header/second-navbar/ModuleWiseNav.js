@@ -83,11 +83,7 @@ const ModuleWiseNav = (props) => {
 		</CustomStackFullWidth>
 	);
 	const handleIconClick = () => {
-		if (location) {
-			router.push("/home");
-		} else {
-			router.push("/");
-		}
+		router.push({ pathname: "/store/blaban", query: { module: "blaban" } });
 	};
 	const getIcon = () => (
 		<Box

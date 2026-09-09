@@ -13,76 +13,58 @@ const ModuleChecker = () => {
   const dispatch = useDispatch();
   const { data, refetch } = useGetModule();
   
-// useEffect(() => {
-//     if (data) {
-//       dispatch(setModules(data));
-//     }
-//   }, [data]);
-  // Sync Storage -> URL (keep module param on every route)
   useEffect(() => {
-    if (!router.isReady || typeof window === "undefined") return;
-
-    const moduleFromUrl = router.query.module;
-    const legacyModuleId = router.query.module_id;
-
-    const storedIdentifier =
-      getSavedModuleIdentifier() ||
-      JSON.parse(localStorage.getItem("module") || "null")?.slug ||
-      JSON.parse(localStorage.getItem("module") || "null")?.id;
-
-    const identifierToUse = moduleFromUrl || legacyModuleId || storedIdentifier;
-
-    if (!identifierToUse) return;
-
-    // Add module if missing, and/or remove legacy module_id
-    if (!moduleFromUrl || legacyModuleId) {
-      const { module_id: _legacy, ...restQuery } = router.query;
-      router.replace(
-        {
-          pathname: router.pathname,
-          query: { ...restQuery, module: String(identifierToUse) },
-        },
-        undefined,
-        { shallow: true, scroll: false }
-      );
+    if (data?.length > 0) {
+      dispatch(setModules(data));
     }
-  }, [router.isReady, router.asPath]);
+  }, [data, dispatch]);
 
-  // Sync URL -> Storage
+  // Sync URL / Default -> Storage & Redux
   useEffect(() => {
+    if (!data || data.length === 0) return;
+
     const moduleIdFromUrl = router.query.module || router.query.module_id;
     const moduleIdFromStorage = getCurrentModuleId();
 
-    if (moduleIdFromUrl && !moduleIdFromStorage) {
-      refetch();
-    }
-  }, [router.query.module, router.query.module_id, refetch]);
-
-  useEffect(() => {
-    const moduleIdFromUrl = router.query.module || router.query.module_id;
-    const moduleIdFromStorage = getCurrentModuleId();
-   
-    if (data && moduleIdFromUrl && !moduleIdFromStorage) {
+    if (moduleIdFromUrl) {
       const moduleIdStr = String(moduleIdFromUrl);
-      const selectedModule = data.find(
+      const matchedModule = data.find(
         (item) =>
           String(item?.slug) === moduleIdStr || String(item?.id) === moduleIdStr
       );
-      if (selectedModule) {
-        localStorage.setItem("module", JSON.stringify(selectedModule));
-        saveModuleParam(selectedModule?.id, selectedModule?.slug);
-        dispatch(setSelectedModule(selectedModule));
-      }else{
-        toast.error("Selected module is not available");
-        localStorage.removeItem("module");
-        router.replace(
-          { pathname: "/", query: {} },
-          undefined,
-          { shallow: true }
-        );
+      const moduleToSet = matchedModule || data[0];
+      localStorage.setItem("module", JSON.stringify(moduleToSet));
+      saveModuleParam(moduleToSet?.id, moduleToSet?.slug);
+      dispatch(setSelectedModule(moduleToSet));
+    } else if (!moduleIdFromStorage) {
+      // First visit / no module in URL or storage: auto-select the first/default module (e.g. B.Laban)
+      const defaultModule = data[0];
+      if (defaultModule) {
+        localStorage.setItem("module", JSON.stringify(defaultModule));
+        saveModuleParam(defaultModule?.id, defaultModule?.slug);
+        dispatch(setSelectedModule(defaultModule));
+        const identifier = defaultModule?.slug || defaultModule?.id;
+        if (identifier && router.isReady && router.pathname === "/home") {
+          const { module_id: _legacy, ...restQuery } = router.query;
+          router.replace(
+            {
+              pathname: router.pathname,
+              query: { ...restQuery, module: String(identifier) },
+            },
+            undefined,
+            { shallow: true, scroll: false }
+          );
+        }
+      }
+    } else {
+      const matchedModule = data.find(
+        (item) => String(item?.id) === String(moduleIdFromStorage)
+      );
+      if (matchedModule) {
+        dispatch(setSelectedModule(matchedModule));
       }
     }
-  }, [data, router.query.module, router.query.module_id, dispatch]);
+  }, [data, router.query.module, router.query.module_id, router.isReady, router.pathname, dispatch]);
 
   return null;
 };

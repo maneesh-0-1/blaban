@@ -30,6 +30,12 @@ export function middleware(request) {
   // Get module parameter from cookie (set on client)
   const moduleFromCookie = request.cookies.get("selectedModule")?.value;
 
+  // Redirect root path and /home to /store/blaban?module=blaban
+  if (pathname === "/" || pathname === "/home") {
+    const url = new URL("/store/blaban?module=blaban", request.url);
+    return NextResponse.redirect(url);
+  }
+
   // Check if request already has module/module_id param
   const hasModuleParam =
     searchParams.has("module") || searchParams.has("module_id");
