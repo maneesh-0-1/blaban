@@ -16,7 +16,21 @@ MainApi.interceptors.request.use(function (config) {
 
   if (typeof window !== "undefined") {
     zoneid = localStorage.getItem("zoneid");
-    token = localStorage.getItem("token");
+    const rawToken = localStorage.getItem("token");
+    if (
+      rawToken &&
+      rawToken !== "null" &&
+      rawToken !== "undefined" &&
+      rawToken !== "false" &&
+      rawToken.trim() !== ""
+    ) {
+      token = rawToken;
+    } else {
+      if (rawToken === "null" || rawToken === "undefined" || rawToken === "false") {
+        localStorage.removeItem("token");
+      }
+      token = undefined;
+    }
     language = JSON.parse(localStorage.getItem("language-setting"));
     currentLocation = JSON.parse(localStorage.getItem("currentLatLng"));
     moduleid = JSON.parse(localStorage.getItem("module"))?.id;
@@ -66,7 +80,11 @@ MainApi.interceptors.request.use(function (config) {
     config.headers.moduleId = 2;
   }
 
-  if (token) config.headers.authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.authorization = `Bearer ${token}`;
+  } else {
+    delete config.headers.authorization;
+  }
   if (language) config.headers["X-localization"] = language;
   if (hostname) config.headers["origin"] = hostname;
   config.headers["X-software-id"] = software_id;
@@ -78,10 +96,12 @@ MainApi.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
-    const message =
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      error?.response?.data?.errors?.[0]?.message;
+    if (typeof window !== "undefined" && status === 401) {
+      const existingToken = localStorage.getItem("token");
+      if (existingToken) {
+        localStorage.removeItem("token");
+      }
+    }
     if (typeof window !== "undefined" && status === 422 ) {
       window.location.href = "/";
     }

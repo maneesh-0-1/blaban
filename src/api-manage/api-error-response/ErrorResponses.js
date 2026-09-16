@@ -4,12 +4,28 @@ import Router from "next/router";
 
 export const handleTokenExpire = (item, status) => {
   if (status === 401) {
-    if (typeof window !== "undefined" && window.localStorage.getItem("token")) {
-      toast.error(t("Your account is inactive or Your token has been expired"));
+    if (typeof window !== "undefined") {
+      const rawToken = window.localStorage.getItem("token");
+      const hadToken =
+        rawToken &&
+        rawToken !== "null" &&
+        rawToken !== "undefined" &&
+        rawToken !== "false" &&
+        rawToken.trim() !== "";
       window.localStorage.removeItem("token");
-      Router.push("/home", undefined, { shallow: true });
+      if (hadToken) {
+        toast.error(
+          t("Your account is inactive or Your token has been expired"),
+          { id: "session-expired" }
+        );
+        Router.push("/home", undefined, { shallow: true });
+      }
     }
-  } else if (item?.message) {
+  } else if (
+    item?.message &&
+    !item.message.includes("status code 401") &&
+    item.message !== "Unauthenticated."
+  ) {
     toast.error(item.message, {
       id: "error",
     });
@@ -20,6 +36,11 @@ export const onErrorResponse = (error) => {
   const errors = error?.response?.data?.errors;
   const status = error?.response?.status;
   const message = error?.response?.data?.message || error?.message;
+
+  if (status === 401) {
+    handleTokenExpire(error, status);
+    return;
+  }
 
   if (Array.isArray(errors)) {
     errors.forEach((item) => {
@@ -45,8 +66,13 @@ export const onErrorResponse = (error) => {
 };
 
 export const onSingleErrorResponse = (error) => {
-  const errors = error?.response?.data?.errors;
   const status = error?.response?.status;
+  if (status === 401) {
+    handleTokenExpire(error, status);
+    return;
+  }
+
+  const errors = error?.response?.data?.errors;
   const message = error?.response?.data?.message || error?.message;
 
   if (Array.isArray(errors) && errors.length > 0) {
@@ -55,7 +81,11 @@ export const onSingleErrorResponse = (error) => {
   if (errors && typeof errors === "object" && Object.keys(errors).length > 0) {
     return onErrorResponse(error);
   }
-  if (message) {
+  if (
+    message &&
+    !message.includes("status code 401") &&
+    message !== "Unauthenticated."
+  ) {
     toast.error(message, {
       id: "error",
     });

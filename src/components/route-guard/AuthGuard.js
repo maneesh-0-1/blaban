@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
+import { getGuestId, getToken } from "helper-functions/getToken";
 
 const AuthGuard = (props) => {
   const { children, from, requireToken = false } = props;
@@ -13,8 +14,8 @@ const AuthGuard = (props) => {
       if (!router.isReady) {
         return;
       }
-      const token = localStorage.getItem("token");
-      const guest = localStorage.getItem("guest_id");
+      const token = getToken();
+      const guest = getGuestId();
       // requireToken=true → only a real JWT token grants access (e.g. profile page).
       // Guest IDs must not bypass login-only routes.
       const isAuthenticated = requireToken

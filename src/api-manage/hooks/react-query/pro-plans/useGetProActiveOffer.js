@@ -3,6 +3,7 @@ import { getCurrentModuleType } from "../../../../helper-functions/getCurrentMod
 import { pro_active_offer } from "../../../ApiRoutes";
 import MainApi from "../../../MainApi";
 import { onErrorResponse } from "../../../api-error-response/ErrorResponses";
+import { getToken } from "../../../../helper-functions/getToken";
 
 const getProActiveOffer = async (moduleType) => {
   const { data } = await MainApi.get(pro_active_offer, {
@@ -13,12 +14,18 @@ const getProActiveOffer = async (moduleType) => {
 
 export const useGetProActiveOffer = ({ enabled = true } = {}) => {
   const moduleType = getCurrentModuleType();
+  const token = typeof window !== "undefined" ? getToken() : null;
+  const isAuth = Boolean(token);
   return useQuery(
     ["pro-customer-active-offer", moduleType ?? null],
     () => getProActiveOffer(moduleType),
     {
-      enabled,
-      onError: onErrorResponse,
+      enabled: Boolean(enabled && isAuth),
+      onError: (err) => {
+        if (err?.response?.status !== 401) {
+          onErrorResponse(err);
+        }
+      },
       staleTime: 5 * 60 * 1000,
       cacheTime: Infinity,
       refetchOnMount: false,

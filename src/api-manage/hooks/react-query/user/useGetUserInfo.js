@@ -13,11 +13,13 @@ const getData = async () => {
     const { data } = await MainApi.get(user_info_api);
     return data;
   }
+  return null;
 };
 
 export default function useGetUserInfo(handleSuccess) {
+  const token = typeof window !== "undefined" ? getToken() : null;
   return useQuery("user-info", () => getData(), {
-    enabled: true,
+    enabled: Boolean(token),
     staleTime: 10000,
     cacheTime: 5000,
     onSuccess: handleSuccess,
