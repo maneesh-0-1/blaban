@@ -730,21 +730,21 @@ export const newCartItemsTotalAmount = (cartList) => {
 
 export const getInfoFromZoneData = (zoneData) => {
   let chargeInfo;
+  const zones =
+    zoneData?.data?.zone_data ??
+    zoneData?.zone_data ??
+    (Array.isArray(zoneData) ? zoneData : null);
 
-  console.log("vvv", zoneData);
-  if (zoneData?.zone_data?.length > 0) {
-    zoneData?.zone_data?.forEach((item, index) => {
+  const curModuleType = getCurrentModuleType();
+  const curModuleId = getCurrentModuleId();
+
+  if (Array.isArray(zones) && zones.length > 0) {
+    zones.forEach((item) => {
       if (item?.modules?.length > 0) {
-        item?.modules?.forEach((moduleItem) => {
-          console.log(
-            "vvv",
-            moduleItem?.id,
-            getCurrentModuleType(),
-            getCurrentModuleId()
-          );
+        item.modules.forEach((moduleItem) => {
           if (
-            moduleItem?.module_type === getCurrentModuleType() &&
-            moduleItem?.id === getCurrentModuleId()
+            moduleItem?.module_type === curModuleType &&
+            (String(moduleItem?.id) === String(curModuleId) || !curModuleId)
           ) {
             chargeInfo = {
               ...moduleItem,
@@ -1209,12 +1209,36 @@ export const removeSpecialCharacters = (inputString) => {
   return inputString?.replace(pattern, "");
 };
 export const getDigitalMethodFromZone = (storeId, zoneData) => {
-  if (zoneData?.zone_data?.length > 0) {
-    const zone = zoneData?.zone_data?.find((item) => item?.id === storeId);
-    if (zone) {
-      return zone;
+  if (!zoneData) return undefined;
+  const zones =
+    zoneData?.data?.zone_data ??
+    zoneData?.zone_data ??
+    (Array.isArray(zoneData) ? zoneData : null);
+
+  if (Array.isArray(zones) && zones.length > 0) {
+    if (storeId !== undefined && storeId !== null && storeId !== "") {
+      const zone = zones.find(
+        (item) => String(item?.id) === String(storeId)
+      );
+      if (zone) {
+        return zone;
+      }
     }
+    return zones[0];
   }
+  if (
+    zoneData?.digital_payment !== undefined ||
+    zoneData?.cash_on_delivery !== undefined
+  ) {
+    return zoneData;
+  }
+  if (
+    zoneData?.data?.digital_payment !== undefined ||
+    zoneData?.data?.cash_on_delivery !== undefined
+  ) {
+    return zoneData.data;
+  }
+  return undefined;
 };
 export function capitalizeText(text) {
   return text

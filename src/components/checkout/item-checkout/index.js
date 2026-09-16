@@ -1077,13 +1077,32 @@ const ItemCheckout = (props) => {
   const isZoneDigital = getDigitalMethodFromZone(storeData?.zone_id, zoneData);
 
   const hasOnlyPaymentMethod = () => {
+    const isDigitalActive =
+      (isZoneDigital?.digital_payment ??
+        (configData?.digital_payment ||
+          configData?.digital_payment_info?.digital_payment)) &&
+      (configData?.digital_payment ||
+        configData?.digital_payment_info?.digital_payment);
+    const isCodActive =
+      configData?.cash_on_delivery &&
+      (isZoneDigital ? isZoneDigital?.cash_on_delivery : true);
+
     if (
-      !configData?.cash_on_delivery &&
+      !isCodActive &&
       configData?.customer_wallet_status !== 1 &&
       configData?.offline_payment_status !== 1 &&
-      configData?.digital_payment &&
-      configData?.active_payment_method_list?.length === 1 &&
-      isZoneDigital?.digital_payment
+      isDigitalActive &&
+      configData?.active_payment_method_list?.length === 1
+    ) {
+      setPaymentMethod(configData?.active_payment_method_list[0]?.gateway);
+      setPaymentMethodImage(
+        configData?.active_payment_method_list[0]?.gateway_image_full_url
+      );
+    } else if (
+      !paymentMethod &&
+      !isCodActive &&
+      isDigitalActive &&
+      configData?.active_payment_method_list?.length > 0
     ) {
       setPaymentMethod(configData?.active_payment_method_list[0]?.gateway);
       setPaymentMethodImage(
@@ -1097,10 +1116,27 @@ const ItemCheckout = (props) => {
   }, [configData, isZoneDigital]);
 
   useEffect(() => {
-    if (isZoneDigital?.cash_on_delivery && configData?.cash_on_delivery) {
-      setPaymentMethod("cash_on_delivery");
+    const isCodActive =
+      configData?.cash_on_delivery &&
+      (isZoneDigital ? isZoneDigital?.cash_on_delivery : true);
+
+    if (isCodActive) {
+      if (!paymentMethod || paymentMethod === "cash_on_delivery") {
+        setPaymentMethod("cash_on_delivery");
+      }
+    } else if (
+      isZoneDigital &&
+      !isZoneDigital.cash_on_delivery &&
+      (paymentMethod === "cash_on_delivery" || !paymentMethod)
+    ) {
+      if (configData?.active_payment_method_list?.length > 0) {
+        setPaymentMethod(configData.active_payment_method_list[0].gateway);
+        setPaymentMethodImage(
+          configData.active_payment_method_list[0].gateway_image_full_url
+        );
+      }
     }
-  }, [isZoneDigital, configData?.cash_on_delivery]);
+  }, [isZoneDigital, configData?.cash_on_delivery, configData?.active_payment_method_list]);
 
   useEffect(() => {
     if (isInitialCartRender.current) {

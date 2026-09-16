@@ -247,9 +247,20 @@ const OtherModulePayment = (props) => {
   const offlineSectionRef = useRef(null);
   const isPartialPaymentActive =
     usePartialPayment && configData?.partial_payment_status === 1;
+  const isDigitalPaymentActive = Boolean(
+    (isZoneDigital?.digital_payment ??
+      (configData?.digital_payment ||
+        configData?.digital_payment_info?.digital_payment)) &&
+      (configData?.digital_payment ||
+        configData?.digital_payment_info?.digital_payment) &&
+      configData?.active_payment_method_list?.length > 0
+  );
+  const isCodPaymentActive = Boolean(
+    configData?.cash_on_delivery &&
+      (isZoneDigital ? isZoneDigital?.cash_on_delivery : true)
+  );
   const allowCodForPartialPayment =
-    (isZoneDigital?.cash_on_delivery &&
-      configData?.cash_on_delivery &&
+    (isCodPaymentActive &&
       configData?.partial_payment_method === "both") ||
     configData?.partial_payment_method === "cod";
   const allowDigitalForPartialPayment =
@@ -520,8 +531,7 @@ const OtherModulePayment = (props) => {
                   </PaymentCard>
                 </Box>
               )
-            : isZoneDigital?.cash_on_delivery &&
-              configData?.cash_on_delivery && (
+            : isCodPaymentActive && (
                 <Box
                   sx={{ flex: { xs: "1 1 100%", sm: `1 1 ${codFlexBasis}` } }}
                 >
@@ -557,7 +567,7 @@ const OtherModulePayment = (props) => {
               )}
 
           {/* Bring Change */}
-          {isZoneDigital?.cash_on_delivery && !failed && (
+          {isCodPaymentActive && !failed && (
             <Box sx={{ flex: "1 1 100%" }}>
               <BringChangeAmount
                 changeAmount={changeAmount}
@@ -572,10 +582,9 @@ const OtherModulePayment = (props) => {
         </Stack>
 
         {/* ── Online payment methods ──────────────────────────────────── */}
-        {isZoneDigital?.digital_payment &&
+        {isDigitalPaymentActive &&
           paidBy !== "receiver" &&
           forprescription !== "true" &&
-          configData?.digital_payment_info?.digital_payment &&
           (!isPartialPaymentActive || allowDigitalForPartialPayment) && (
             <Stack spacing={1.25} mb={2}>
               <Stack direction="row" alignItems="baseline" gap={0.75}>
