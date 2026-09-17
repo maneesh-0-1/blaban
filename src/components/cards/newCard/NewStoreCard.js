@@ -453,7 +453,7 @@ const NewStoreCard = ({
                           fontVariantNumeric: "tabular-nums",
                         }}
                       >
-                        {rating.toFixed(1)}
+                        {Number(rating || 0).toFixed(1)}
                       </Typography>
                     </Stack>
                     <Typography
@@ -799,7 +799,7 @@ const NewStoreCard = ({
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {Number(item.avg_rating).toFixed(1)}
+                {Number(item?.avg_rating || 0).toFixed(1)}
               </Typography>
               {item?.rating_count > 0 && (
                 <Typography

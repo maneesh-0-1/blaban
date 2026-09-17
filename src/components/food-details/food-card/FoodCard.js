@@ -49,8 +49,8 @@ const FoodCard = ({ product, productImageUrl }) => {
   const [openModal, setOpenModal] = React.useState(false);
   const { t } = useTranslation();
   const imageUrl = product?.image_full_url;
-  const { configData, token } = useSelector(
-    (state) => state.configDataSettings
+  const { configData } = useSelector(
+    (state) => state.configData
   );
 
   const { wishLists } = useSelector((state) => state.wishList);
@@ -165,7 +165,7 @@ const FoodCard = ({ product, productImageUrl }) => {
             {restaurant_name || restaurant_name}
           </FoodSubTitleTypography>
           <RatingWrapTypography variant="subtitle2">
-            {avg_rating.toFixed(1)}
+            {Number(avg_rating || 0).toFixed(1)}
             <RatingStarIcon
               fontSize="small"
               sx={{

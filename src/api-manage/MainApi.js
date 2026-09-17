@@ -67,10 +67,10 @@ MainApi.interceptors.request.use(function (config) {
       if (moduleZones && moduleZones.length > 0) {
         config.headers.zoneid = JSON.stringify(moduleZones);
       } else {
-        config.headers.zoneid = JSON.stringify([5, 2, 3, 4]);
+        config.headers.zoneid = JSON.stringify([6, 5, 2, 3, 4]);
       }
     } catch {
-      config.headers.zoneid = JSON.stringify([5, 2, 3, 4]);
+      config.headers.zoneid = JSON.stringify([6, 5, 2, 3, 4]);
     }
   }
 

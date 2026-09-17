@@ -178,7 +178,7 @@ const StoresInfoCard = (props) => {
             >
               {/*getNumberWithConvertedDecimalPoint(data?.avg_rating, configData?.digit_after_decimal_point)*/}
               <Typography fontWeight="bold">
-                {data?.avg_rating.toFixed(1)}
+                {Number(data?.avg_rating || 0).toFixed(1)}
               </Typography>
               <RatingStar fontSize="16px" color="warning.dark" />
             </Stack>

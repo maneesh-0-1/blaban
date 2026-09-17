@@ -22,7 +22,7 @@ const ProductCardMedia = ({
   available_time_ends,
 }) => {
   const [language_direction, setlanguage_direction] = useState("ltr");
-  const { configData } = useSelector((state) => state.configDataSettings);
+  const { configData } = useSelector((state) => state.configData);
   const theme = useTheme();
   let currencySymbol;
   let currencySymbolDirection;

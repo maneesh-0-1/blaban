@@ -36,14 +36,16 @@ export default function SearchResult({ searchValue, count, currentTab }) {
           >
             {`"${searchValue ? searchValue : "search"}"`}{" "}
           </Typography>
-          <Typography
-            component="span"
-            color={theme.palette.primary.main}
-            fontWeight="500"
-            fontSize="16px"
-          >
-            {count}{" "}
-          </Typography>
+          {count != null && !isNaN(Number(count)) && (
+            <Typography
+              component="span"
+              color={theme.palette.primary.main}
+              fontWeight="500"
+              fontSize="16px"
+            >
+              {count}{" "}
+            </Typography>
+          )}
           {currentTab === "items" ? t(items_text) : t(stores_Text)}{" "}
         </Typography>
       </Grid>

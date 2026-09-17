@@ -77,21 +77,19 @@ export const getDiscountedAmount = (
   storeDiscount,
   quantity
 ) => {
-  console.log({discount,discountType})
-  //product wise discount
-  let mainPrice = price;
-  let q = quantity ? quantity : 1;
-  if (discount > 0) {
+  const numPrice = Number(price);
+  if (isNaN(numPrice)) return 0;
+  let mainPrice = numPrice;
+  const numDiscount = Number(discount);
+  let q = quantity ? Number(quantity) || 1 : 1;
+  if (numDiscount > 0) {
     if (discountType === "amount") {
-      mainPrice = price - discount * q;
-console.log({mainPrice,price});
+      mainPrice = numPrice - numDiscount * q;
     } else if (discountType === "percent" || discountType === "fixed") {
-      mainPrice = price - (discount / 100) * price;
+      mainPrice = numPrice - (numDiscount / 100) * numPrice;
     }
   }
-  
-  
-  return mainPrice;
+  return isNaN(mainPrice) ? numPrice : mainPrice;
 };
 export const getSelectedAddOn = (add_ons) => {
   let add_on = "";

@@ -366,7 +366,7 @@ const StoreRow = ({
         </Stack>
       )}
 
-      {rating > 0 && (
+      {Number(rating) > 0 && !isNaN(Number(rating)) && (
         <Stack
           direction="row"
           alignItems="center"

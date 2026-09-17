@@ -14,7 +14,7 @@ const ProductUpdateModal = ({
   const [product, setProduct] = useState(null);
   const [language_direction, setlanguage_direction] = useState("");
   const { cartItem } = useSelector((state) => state.cart);
-  const { configData } = useSelector((state) => state.configDataSettings);
+  const { configData } = useSelector((state) => state.configData);
   useEffect(() => {
     setProduct(cartItem);
   }, []);
