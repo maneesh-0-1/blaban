@@ -1,6 +1,6 @@
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, alpha } from "@mui/material";
 
 export const WrapperCurrentLocationPick = styled(Stack)(
   ({ theme, isXSmall }) => ({
@@ -9,63 +9,65 @@ export const WrapperCurrentLocationPick = styled(Stack)(
     alignItems: "center",
     gap: isXSmall ? 8 : 12,
     right: isXSmall ? 12 : 16,
-    bottom: isXSmall ? 12 : 16,
+    bottom: isXSmall ? 16 : 20,
+    zIndex: 10,
   })
 );
+
 export const CustomBoxWrapper = styled(Box)(({ theme, expand }) => ({
   outline: "none",
   position: "absolute",
-  insetBlockStart: expand === "false" && "50%",
-  left: expand === "false" && "50%",
-  transform: expand === "false" && "translate(-50%, -50%)",
-  bgColor: "background.paper",
-  boxShadow: 24,
-  padding: "10px",
-  width:
-    expand === "false"
-      ? "90%"
-      : "100%" /* Add a width that changes based on screen size */,
-  height: expand === "true" && "100%",
-  maxWidth: expand === "false" && "845px",
-  minWidth: expand === "false" && "100px",
+  top: expand === "true" ? 0 : "50%",
+  left: expand === "true" ? 0 : "50%",
+  transform: expand === "true" ? "none" : "translate(-50%, -50%)",
+  boxShadow:
+    expand === "true"
+      ? "none"
+      : "0px 20px 40px -8px rgba(0, 0, 0, 0.2), 0px 0px 1px 1px rgba(0, 0, 0, 0.05)",
+  width: expand === "true" ? "100%" : "92%",
+  maxWidth: expand === "true" ? "100%" : "720px",
+  height: expand === "true" ? "100%" : "auto",
+  maxHeight: expand === "true" ? "100dvh" : "90vh",
   background: theme.palette.background.paper,
-  borderRadius: "5px",
-  [theme.breakpoints.down("md")]: {
-    maxWidth: expand === "false" && "500px",
-  },
+  borderRadius: expand === "true" ? "0px" : "20px",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   [theme.breakpoints.down("sm")]: {
-    maxWidth: expand === "false" && "90%",
+    width: expand === "true" ? "100%" : "96%",
+    borderRadius: expand === "true" ? "0px" : "16px",
   },
 }));
+
 export const LocationView = styled(Stack)(({ theme }) => ({
   flexDirection: "row",
   alignItems: "center",
-  flex: "1 0",
-  maxWidth: "800px",
-  width: "97%",
-  background: theme.palette.neutral[100],
-  color: theme.palette.neutral[1000],
-  top: "15%",
-  height: "48px",
-  padding: "8px",
-  position: "absolute",
-  [theme.breakpoints.down("md")]: {
-    top: "22%",
-  },
-  [theme.breakpoints.down("sm")]: {
-    top: "32%",
-  },
+  gap: "10px",
+  width: "100%",
+  background:
+    theme.palette.mode === "dark"
+      ? alpha(theme.palette.background.default, 0.8)
+      : alpha(theme.palette.neutral[100], 0.9),
+  borderRadius: "12px",
+  padding: "10px 14px",
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
 }));
+
 export const PrimaryButton = styled(Button)(
   ({ theme, color, width, backgroundcolor }) => ({
     width: width ? width : "100%",
+    borderRadius: "10px",
+    padding: "10px 20px",
+    fontWeight: 600,
+    textTransform: "none",
+    fontSize: "0.95rem",
     color: theme.palette.whiteContainer.main,
     backgroundColor: backgroundcolor
       ? backgroundcolor
       : theme.palette.primary.main,
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
-      // color: theme.palette.neutral[100],
     },
   })
 );

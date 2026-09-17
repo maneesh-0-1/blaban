@@ -74,6 +74,38 @@ const StorePage = ({ configData, storeDetails, distance }) => {
 
 export default StorePage;
 
+const ssrCache = new Map();
+const CONFIG_TTL_MS = 120 * 1000; // 2 minutes
+const STORE_TTL_MS = 60 * 1000;  // 1 minute
+
+const fetchWithCache = async (url, options, ttlMs) => {
+  const cacheKey = `${url}_${JSON.stringify(options?.headers || {})}`;
+  const now = Date.now();
+  const cached = ssrCache.get(cacheKey);
+
+  if (cached && now - cached.timestamp < ttlMs) {
+    return { ok: true, json: async () => cached.data, status: 200 };
+  }
+
+  try {
+    const res = await fetch(url, options);
+    if (res.ok) {
+      const data = await res.json();
+      ssrCache.set(cacheKey, { timestamp: now, data });
+      return { ok: true, json: async () => data, status: res.status };
+    }
+    if (cached) {
+      return { ok: true, json: async () => cached.data, status: 200 };
+    }
+    return { ok: false, status: res.status, json: async () => null };
+  } catch (err) {
+    if (cached) {
+      return { ok: true, json: async () => cached.data, status: 200 };
+    }
+    throw err;
+  }
+};
+
 export const getServerSideProps = async (context) => {
   const {
     id: storeId,
@@ -87,7 +119,7 @@ export const getServerSideProps = async (context) => {
   const language = req.cookies.languageSetting || "en";
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), 10000);
 
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -103,16 +135,24 @@ export const getServerSideProps = async (context) => {
     const moduleId = module || legacyModuleId;
 
     const [configRes, storeDetailsRes] = await Promise.all([
-      fetch(`${baseUrl}${config_api}`, {
-        method: "GET",
-        headers: { ...headersCommon, ...(lat ? { lat } : {}), ...(lng ? { lng } : {}) },
-        signal: controller.signal,
-      }),
-      fetch(`${baseUrl}${store_details_api}/${storeId}`, {
-        method: "GET",
-        headers: { ...headersCommon, ...(moduleId ? { moduleId } : {}) },
-        signal: controller.signal,
-      }),
+      fetchWithCache(
+        `${baseUrl}${config_api}`,
+        {
+          method: "GET",
+          headers: { ...headersCommon, ...(lat ? { lat } : {}), ...(lng ? { lng } : {}) },
+          signal: controller.signal,
+        },
+        CONFIG_TTL_MS
+      ),
+      fetchWithCache(
+        `${baseUrl}${store_details_api}/${storeId}`,
+        {
+          method: "GET",
+          headers: { ...headersCommon, ...(moduleId ? { moduleId } : {}) },
+          signal: controller.signal,
+        },
+        STORE_TTL_MS
+      ),
     ]);
 
     clearTimeout(timeout);

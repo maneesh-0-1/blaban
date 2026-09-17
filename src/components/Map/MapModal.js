@@ -2,11 +2,18 @@ import React, { memo, useEffect, useState } from "react";
 import {
   Autocomplete,
   Backdrop,
+  Box,
   Button,
+  CircularProgress,
+  Chip,
   IconButton,
+  InputAdornment,
   Modal,
   Skeleton,
+  Stack,
+  TextField,
   Typography,
+  alpha,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -16,14 +23,12 @@ import {
   PrimaryButton,
   WrapperCurrentLocationPick,
 } from "./map.style";
-import { SearchLocationTextField } from "../landing-page/hero-section/HeroSection.style";
 import UseCurrentLocation from "./UseCurrentLocation";
 import CloseIcon from "@mui/icons-material/Close";
-import {
-  CustomBoxFullWidth,
-  CustomStackFullWidth,
-  CustomTypographyGray,
-} from "src/styled-components/CustomStyles.style";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import RoomIcon from "@mui/icons-material/Room";
 import { useTranslation } from "react-i18next";
 import useGetAutocompletePlace from "../../api-manage/hooks/react-query/google-api/usePlaceAutoComplete";
@@ -33,14 +38,10 @@ import useGetPlaceDetails from "../../api-manage/hooks/react-query/google-api/us
 import { useDispatch, useSelector } from "react-redux";
 import GoogleMapComponent from "./GoogleMapComponent";
 import toast from "react-hot-toast";
-import "simplebar-react/dist/simplebar.min.css";
-import SimpleBar from "simplebar-react";
-
 import { useRouter } from "next/router";
 import { ModuleSelection } from "../landing-page/hero-section/module-selection";
 import { useGeolocated } from "react-geolocated";
 import { module_select_success } from "src/utils/toasterMessages";
-import { FacebookCircularProgress } from "../loading-spinners/FacebookLoading";
 import { setWishList } from "src/redux/slices/wishList";
 import { useWishListGet } from "src/api-manage/hooks/react-query/wish-list/useWishListGet";
 import { getToken } from "src/helper-functions/getToken";
@@ -62,8 +63,7 @@ const MapModal = ({
 }) => {
   const router = useRouter();
   const theme = useTheme();
-
-  const isXSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { configData } = useSelector((state) => state.configData);
   const { t } = useTranslation();
   const [searchKey, setSearchKey] = useState("");
@@ -73,45 +73,36 @@ const MapModal = ({
   const [placeDetailsEnabled, setPlaceDetailsEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [placeId, setPlaceId] = useState("");
-  const [placeDescription, setPlaceDescription] = useState(undefined);
   const [location, setLocation] = useState(
     selectedLocation ? selectedLocation : configData?.default_location
   );
   const { selectedModule } = useSelector((state) => state.utilsData);
   const [zoneId, setZoneId] = useState(undefined);
   const [isLoadingCurrentLocation, setLoadingCurrentLocation] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState({});
   const [rerenderMap, setRerenderMap] = useState(false);
   const [zoomToLocationToken, setZoomToLocationToken] = useState(0);
   const [zoneIdEnabled, setZoneIdEnabled] = useState(true);
-  const [loadingAuto, setLoadingAuto] = useState(false);
   const [isDisablePickButton, setDisablePickButton] = useState(false);
   const [isModalExpand, setIsModalExpand] = useState(false);
-  const [currentLocationValue, setCurrentLactionValue] = useState({
-    description: null,
-  });
+  const [resolvedAddress, setResolvedAddress] = useState("");
   const [openModuleSelection, setOpenModuleSelection] = useState(false);
+
   const { data: places, isLoading: placesIsLoading } = useGetAutocompletePlace(
     searchKey,
     enabled
   );
-  console.log({ predictions });
 
   const dispatch = useDispatch();
-  const { coords, isGeolocationAvailable, isGeolocationEnabled, getPosition } =
-    useGeolocated({
-      positionOptions: {
-        enableHighAccuracy: false,
-      },
-      userDecisionTimeout: 5000,
-      isGeolocationEnabled: true,
-    });
+  const { coords, isGeolocationEnabled } = useGeolocated({
+    positionOptions: {
+      enableHighAccuracy: false,
+    },
+    userDecisionTimeout: 5000,
+    isGeolocationEnabled: true,
+  });
 
   useEffect(() => {
     if (!places) return;
-    // Support both API shapes — `suggestions` (Places Autocomplete v2)
-    // and `predictions` (legacy). Never leave `predictions` undefined or
-    // the Autocomplete crashes on `.map()`.
     const list = Array.isArray(places?.suggestions)
       ? places.suggestions.map((item) => ({
           place_id: item?.placePrediction?.placeId,
@@ -131,32 +122,22 @@ const MapModal = ({
       : [];
     setPredictions(list);
   }, [places]);
-  const { data: geoCodeResults, refetch: refetchCurrentLocation } =
+
+  const { data: geoCodeResults, isLoading: isGeocoding, refetch: refetchCurrentLocation } =
     useGetGeoCode(location, geoLocationEnable);
+
   useEffect(() => {
-    if (geoCodeResults) {
-      setCurrentLactionValue({
-        description: geoCodeResults?.results[0]?.formatted_address,
-      });
-    } else {
-      setCurrentLactionValue({
-        description: "",
-      });
+    if (geoCodeResults?.results?.[0]?.formatted_address) {
+      setResolvedAddress(geoCodeResults.results[0].formatted_address);
     }
   }, [geoCodeResults]);
 
-  // Reflect the resolved address in the search input — fires on initial
-  // geocode, after picking a suggestion (which triggers a new geocode),
-  // after dragging the pin, and after the "use current location" button.
-  useEffect(() => {
-    const desc = currentLocationValue?.description;
-    if (desc) setSearchKey(desc);
-  }, [currentLocationValue?.description]);
   const {
     data: zoneData,
     error: errorLocation,
-    isLoading,
+    isLoading: isZoneLoading,
   } = useGetZoneId(location, zoneIdEnabled);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       if (zoneData) {
@@ -164,54 +145,42 @@ const MapModal = ({
         if (fromReceiver !== "1") {
           localStorage.setItem("zoneid", zoneData?.zone_id);
         }
-      }
-      if (!zoneData) {
+      } else {
         setZoneId(undefined);
       }
     }
   }, [zoneData]);
-  const successHandler = () => {
-    setLoadingAuto(false);
-  };
 
-  const { isLoading: isLoading2, data: placeDetails } = useGetPlaceDetails(
+  const { data: placeDetails } = useGetPlaceDetails(
     placeId,
     placeDetailsEnabled,
-    successHandler
+    () => {}
   );
-  //
 
   useEffect(() => {
-    if (placeDetails) {
+    if (placeDetails?.location?.latitude && placeDetails?.location?.longitude) {
       setLocation({
-        lat: placeDetails?.location?.latitude,
-        lng: placeDetails?.location?.longitude,
+        lat: placeDetails.location.latitude,
+        lng: placeDetails.location.longitude,
       });
     }
   }, [placeDetails]);
-  useEffect(() => {
-    if (placeDescription) {
-      setCurrentLocation(placeDescription);
-    }
-  }, [placeDescription]);
-  useEffect(() => {
-    if (coords) {
-      setCurrentLocation({
-        lat: coords.latitude,
-        lng: coords.longitude,
-      });
-    }
-  }, []);
 
   const handleLocationSelection = (value) => {
-    setPlaceId(value?.place_id);
-    setPlaceDescription(value?.description);
+    if (!value) return;
+    const id = typeof value === "string" ? predictions?.[0]?.place_id : value?.place_id;
+    const desc = typeof value === "string" ? predictions?.[0]?.description : value?.description;
+    if (id) {
+      setPlaceId(id);
+      setPlaceDetailsEnabled(true);
+      if (desc) setSearchKey(desc);
+    }
   };
+
   const handleLocationSet = (values) => {
     setLocation(values);
   };
 
-  // get module from localstorage
   const moduleType = getCurrentModuleType();
   const onSuccessHandler = (response) => {
     dispatch(setWishList(response));
@@ -222,6 +191,7 @@ const MapModal = ({
     onSuccessHandler
   );
   const { refetch: rentalWishlistRefetch } = useGetWishList(onSuccessHandler);
+
   const handlePickLocationOnClick = () => {
     if (zoneId && geoCodeResults && location) {
       if (getToken()) {
@@ -237,7 +207,7 @@ const MapModal = ({
       if (fromReceiver !== "1" && toparcel !== "1") {
         localStorage.setItem(
           "location",
-          geoCodeResults?.results[0]?.formatted_address
+          geoCodeResults?.results[0]?.formatted_address || resolvedAddress
         );
         localStorage.setItem("currentLatLng", JSON.stringify(location));
       } else {
@@ -245,14 +215,17 @@ const MapModal = ({
       }
 
       if (toparcel === "1") {
-        handleLocation(location, geoCodeResults?.results[0]?.formatted_address);
+        handleLocation(
+          location,
+          geoCodeResults?.results[0]?.formatted_address || resolvedAddress
+        );
         handleClose();
       } else {
         if (fromStore) {
           if (fromparcel) {
             localStorage.setItem(
               "location",
-              geoCodeResults?.results[0]?.formatted_address
+              geoCodeResults?.results[0]?.formatted_address || resolvedAddress
             );
             localStorage.setItem("currentLatLng", JSON.stringify(location));
             handleClose();
@@ -279,6 +252,8 @@ const MapModal = ({
     handleClose?.();
   };
 
+  const isZoneAvailable = Boolean(zoneId && !errorLocation?.response?.data);
+
   return (
     <>
       <Modal
@@ -288,243 +263,315 @@ const MapModal = ({
         slots={{ backdrop: Backdrop }}
         slotProps={{
           backdrop: {
-            timeout: 500,
+            timeout: 300,
+            sx: { backgroundColor: "rgba(0, 0, 0, 0.65)", backdropFilter: "blur(4px)" },
           },
         }}
-        // CustomModal (used by GetLocationAlert + others) pins itself at
-        // zIndex: 1500. Sit above that so the map isn't covered by the
-        // dialog that opened it.
         sx={{ zIndex: 1600 }}
       >
         <CustomBoxWrapper
           expand={isModalExpand ? "true" : "false"}
           sx={{
-            display: openModuleSelection ? "none" : "inherit",
-            padding: { xs: "15px", md: "1.5rem" },
-            borderRadius: isModalExpand ? "0px" : { xs: "8px", md: "20px" },
-            position: "relative",
-            minHeight: "400px",
+            display: openModuleSelection ? "none" : "flex",
+            flexDirection: "column",
+            p: { xs: 2, sm: 2.5, md: 3 },
+            gap: 2,
           }}
         >
-          <IconButton
-            onClick={handleClose}
-            sx={{ position: "absolute", top: 5, right: 8, zIndex: 999 }}
+          {/* Header */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ pb: 0.5 }}
           >
-            <CloseIcon sx={{ fontSize: { xs: "18px", md: "24px" } }} />
-          </IconButton>
-          <CustomStackFullWidth spacing={2}>
-            <SimpleBar
-              style={{
-                maxHeight: isModalExpand ? "100vh" : "65vh",
-                paddingRight: "15px",
+            <Stack spacing={0.3}>
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{
+                  fontSize: { xs: "1.05rem", sm: "1.25rem" },
+                  color: (theme) => theme.palette.text.primary,
+                }}
+              >
+                {t("Pick Delivery Location")}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: { xs: "0.78rem", sm: "0.875rem" },
+                  color: (theme) => theme.palette.text.secondary,
+                }}
+              >
+                {t("Search address or drag the pin to set your exact location")}
+              </Typography>
+            </Stack>
+            <IconButton
+              onClick={handleClose}
+              sx={{
+                color: (theme) => theme.palette.text.secondary,
+                backgroundColor: (theme) => alpha(theme.palette.divider, 0.08),
+                "&:hover": {
+                  backgroundColor: (theme) => alpha(theme.palette.divider, 0.16),
+                },
+                width: 36,
+                height: 36,
               }}
             >
-              <Typography
-                fontSize={{ xs: "14px", md: "1rem" }}
-                fontWeight={500}
-              >
-                {t("Pick Location")}
-              </Typography>
-              <Typography
-                fontSize={{ xs: "12px", md: "14px" }}
-                fontWeight={400}
-                color={theme.palette.neutral[500]}
-              >
-                {t(
-                  "Sharing your location improves search accuracy and delivery estimates for smoother order delivery."
-                )}
-              </Typography>
-              <CustomStackFullWidth
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+
+          {/* Autocomplete Search Bar */}
+          <Box sx={{ position: "relative", width: "100%", zIndex: 10 }}>
+            <Autocomplete
+              fullWidth
+              freeSolo
+              id="map-location-search"
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option?.description || ""
+              }
+              filterOptions={(x) => x}
+              options={predictions || []}
+              onChange={(event, value) => {
+                if (value) {
+                  handleLocationSelection(value);
+                }
+              }}
+              inputValue={searchKey}
+              onInputChange={(event, newInputValue, reason) => {
+                if (reason === "reset") return;
+                setSearchKey(newInputValue);
+                setEnabled(Boolean(newInputValue && newInputValue.length > 1));
+              }}
+              clearOnBlur={false}
+              loading={placesIsLoading}
+              loadingText={t("Searching suggestions...")}
+              slotProps={{
+                popper: {
+                  sx: {
+                    zIndex: 1750,
+                    "& .MuiPaper-root": {
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+                      borderRadius: "12px",
+                      mt: 1,
+                      border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    },
+                  },
+                },
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder={t("Search city, street or landmark...")}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="primary" sx={{ fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <>
+                        {placesIsLoading ? (
+                          <CircularProgress color="inherit" size={18} sx={{ mr: 1 }} />
+                        ) : searchKey ? (
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setSearchKey("");
+                              setEnabled(false);
+                            }}
+                            sx={{ mr: 0.5, p: 0.5 }}
+                          >
+                            <ClearIcon fontSize="small" />
+                          </IconButton>
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                    sx: {
+                      borderRadius: "12px",
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? alpha(theme.palette.background.default, 0.6)
+                          : alpha(theme.palette.neutral[100], 0.8),
+                      height: { xs: "42px", sm: "46px" },
+                      fontSize: "0.9rem",
+                      "& fieldset": {
+                        borderColor: (theme) => alpha(theme.palette.divider, 0.15),
+                      },
+                      "&:hover fieldset": {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: (theme) => theme.palette.primary.main,
+                      },
+                    },
+                  }}
+                />
+              )}
+            />
+          </Box>
+
+          {/* Map Container */}
+          <Box
+            sx={{
+              position: "relative",
+              width: "100%",
+              flex: 1,
+              minHeight: { xs: "280px", sm: "320px", md: "360px" },
+              borderRadius: "16px",
+              overflow: "hidden",
+            }}
+          >
+            {location ? (
+              <GoogleMapComponent
+                mapmodal
+                setDisablePickButton={setDisablePickButton}
+                setLocationEnabled={setLocationEnabled}
+                setLocation={handleLocationSet}
+                setCurrentLocation={() => {}}
+                locationLoading={locationLoading}
+                location={location}
+                setPlaceDetailsEnabled={setPlaceDetailsEnabled}
+                placeDetailsEnabled={placeDetailsEnabled}
+                locationEnabled={locationEnabled}
+                setPlaceDescription={() => {}}
+                isModalExpand={isModalExpand}
+                setIsModalExpand={setIsModalExpand}
+                zoomToLocationToken={zoomToLocationToken}
+              />
+            ) : (
+              <Stack
+                alignItems="center"
+                justifyContent="center"
                 sx={{
-                  position: { xs: "relative", md: "absolute" },
-                  width: { xs: "100%", md: "90%" },
-                  top: { md: "20%" },
-                  zIndex: 999,
-                  maxWidth: { xs: "100%", md: "600px" },
-                  right: { md: "5%" },
-                  mt: { xs: 1, md: 0 },
+                  height: "100%",
+                  minHeight: "300px",
+                  borderRadius: "16px",
+                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.05),
                 }}
               >
-                {loadingAuto ? (
-                  <Skeleton width="100%" height="40px" variant="rectangular" />
+                <CircularProgress size={32} />
+              </Stack>
+            )}
+
+            {/* Floating Action Bar: Locate Me + Expand */}
+            <WrapperCurrentLocationPick
+              alignItems="center"
+              isXsmall={isMobile}
+              spacing={1}
+            >
+              <ModalExtendShrink
+                isModalExpand={isModalExpand}
+                setIsModalExpand={setIsModalExpand}
+                t={t}
+              />
+              <UseCurrentLocation
+                setLoadingCurrentLocation={setLoadingCurrentLocation}
+                setLocationEnabled={setLocationEnabled}
+                setLocation={setLocation}
+                coords={coords}
+                refetchCurrentLocation={refetchCurrentLocation}
+                setRerenderMap={setRerenderMap}
+                isLoadingCurrentLocation={isLoadingCurrentLocation}
+                isGeolocationEnabled={isGeolocationEnabled}
+                fromMapModal={true}
+                onZoomRequest={() => setZoomToLocationToken((prev) => prev + 1)}
+              />
+            </WrapperCurrentLocationPick>
+          </Box>
+
+          {/* Bottom Card: Formatted Address & Confirmation */}
+          <Stack
+            spacing={1.5}
+            sx={{
+              pt: 0.5,
+              width: "100%",
+            }}
+          >
+            {/* Resolved Address Box */}
+            <LocationView>
+              <RoomIcon
+                color={isZoneAvailable ? "primary" : "error"}
+                sx={{ fontSize: 24, flexShrink: 0 }}
+              />
+              <Stack sx={{ flex: 1, minWidth: 0 }}>
+                {isGeocoding && !resolvedAddress ? (
+                  <Skeleton variant="text" width="80%" height={20} />
                 ) : (
-                  <Autocomplete
-                    fullWidth
-                    freeSolo
-                    id="combo-box-demo"
-                    getOptionLabel={(option) =>
-                      typeof option === "string"
-                        ? option
-                        : option?.description || ""
-                    }
-                    // Server-side suggestions: skip MUI's client-side
-                    // substring filter so backend results render as-is.
-                    filterOptions={(x) => x}
-                    options={predictions || []}
-                    onChange={(event, value) => {
-                      if (value) {
-                        if (typeof value === "string") {
-                          setLoadingAuto(true);
-                          handleLocationSelection(predictions?.[0]);
-                        } else {
-                          handleLocationSelection(value);
-                        }
-                      }
-                      setPlaceDetailsEnabled(true);
-                    }}
-                    // Controlled input — without this, the input text snaps
-                    // back to `currentLocationValue.description` (geocoded
-                    // address) whenever it resolves, swallowing the user's
-                    // typing. `searchKey` is the source of truth here.
-                    inputValue={searchKey}
-                    onInputChange={(event, newInputValue, reason) => {
-                      if (reason === "reset") return;
-                      setSearchKey(newInputValue);
-                      setEnabled(!!newInputValue);
-                    }}
-                    clearOnBlur={false}
-                    value={currentLocationValue}
-                    loading={placesIsLoading}
-                    loadingText={t("Search suggestions are loading...")}
-                    // The parent Modal pins itself at zIndex 1600. MUI's
-                    // Autocomplete popper defaults to theme.zIndex.modal
-                    // (1300), so the suggestion dropdown was rendering
-                    // BEHIND the modal — visible in the DOM but hidden
-                    // from view. Float it above the modal.
-                    slotProps={{ popper: { sx: { zIndex: 1700 } } }}
-                    componentsProps={{
-                      popper: { sx: { zIndex: 1700 } },
-                    }}
-                    renderInput={(params) => (
-                      <SearchLocationTextField
-                        sx={{
-                          borderRadius: "4px",
-                          border: (theme) =>
-                            `1px solid ${theme.palette.neutral[200]}`,
-                          "& .MuiOutlinedInput-root": {
-                            height: "40px",
-                          },
-                        }}
-                        frommap="true"
-                        label={null}
-                        {...params}
-                        placeholder={t("Search location")}
-                        onChange={(event) => {
-                          setSearchKey(event.target.value);
-                          if (event.target.value) {
-                            setEnabled(true);
-                          } else {
-                            setEnabled(false);
-                          }
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            setSearchKey(e.target.value);
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                )}
-              </CustomStackFullWidth>
-              <CustomBoxFullWidth
-                sx={{
-                  mt: 1,
-                  color: (theme) => theme.palette.neutral[1000],
-                  p: "5px",
-                  position: "relative",
-                }}
-              >
-                <LocationView>
-                  {geoCodeResults?.results?.length > 0 ? (
-                    <>
-                      <RoomIcon fontSize="small" color="primary" />
-                      <Typography>
-                        {geoCodeResults?.results[0]?.formatted_address}
-                      </Typography>
-                    </>
-                  ) : (
-                    <>
-                      <Skeleton variant="rounded" width={300} height={20} />
-                    </>
-                  )}
-                </LocationView>
-                {!!location ? (
-                  <GoogleMapComponent
-                    mapmodal
-                    setDisablePickButton={setDisablePickButton}
-                    setLocationEnabled={setLocationEnabled}
-                    setLocation={handleLocationSet}
-                    setCurrentLocation={setCurrentLocation}
-                    locationLoading={locationLoading}
-                    location={location}
-                    setPlaceDetailsEnabled={setPlaceDetailsEnabled}
-                    placeDetailsEnabled={placeDetailsEnabled}
-                    locationEnabled={locationEnabled}
-                    setPlaceDescription={setPlaceDescription}
-                    isModalExpand={isModalExpand}
-                    setIsModalExpand={setIsModalExpand}
-                    zoomToLocationToken={zoomToLocationToken}
-                  />
-                ) : (
-                  <CustomStackFullWidth
-                    alignItems="center"
-                    justifyContent="center"
+                  <Typography
+                    variant="body2"
+                    fontWeight={500}
+                    noWrap
                     sx={{
-                      minHeight: "300px",
+                      color: (theme) => theme.palette.text.primary,
+                      fontSize: { xs: "0.82rem", sm: "0.9rem" },
                     }}
                   >
-                    <FacebookCircularProgress />
-                    <CustomTypographyGray nodefaultfont="true">
-                      {t("Please wait sometimes")}
-                    </CustomTypographyGray>
-                  </CustomStackFullWidth>
+                    {resolvedAddress || t("Location selected on map")}
+                  </Typography>
                 )}
-                <WrapperCurrentLocationPick
-                  alignItems="center"
-                  isXsmall={isXSmall}
-                  spacing={{ xs: 1, md: 2 }}
-                >
-                  <ModalExtendShrink
-                    isModalExpand={isModalExpand}
-                    setIsModalExpand={setIsModalExpand}
-                    t={t}
-                  />
-                  <UseCurrentLocation
-                    setLoadingCurrentLocation={setLoadingCurrentLocation}
-                    setLocationEnabled={setLocationEnabled}
-                    setLocation={setLocation}
-                    coords={coords}
-                    refetchCurrentLocation={refetchCurrentLocation}
-                    setRerenderMap={setRerenderMap}
-                    isLoadingCurrentLocation={isLoadingCurrentLocation}
-                    isGeolocationEnabled={isGeolocationEnabled}
-                    fromMapModal={true}
-                    onZoomRequest={() =>
-                      setZoomToLocationToken((prev) => prev + 1)
-                    }
-                  />
-                </WrapperCurrentLocationPick>
-              </CustomBoxFullWidth>
-            </SimpleBar>
-            <CustomStackFullWidth
+              </Stack>
+              {zoneId && !errorLocation && (
+                <Chip
+                  icon={<CheckCircleIcon style={{ fontSize: 14 }} />}
+                  label={t("Available")}
+                  size="small"
+                  color="success"
+                  variant="outlined"
+                  sx={{
+                    height: 24,
+                    fontSize: "0.72rem",
+                    fontWeight: 600,
+                    display: { xs: "none", sm: "inline-flex" },
+                  }}
+                />
+              )}
+              {errorLocation?.response?.data && (
+                <Chip
+                  icon={<ErrorOutlineIcon style={{ fontSize: 14 }} />}
+                  label={t("Out of Zone")}
+                  size="small"
+                  color="error"
+                  variant="outlined"
+                  sx={{
+                    height: 24,
+                    fontSize: "0.72rem",
+                    fontWeight: 600,
+                    display: { xs: "none", sm: "inline-flex" },
+                  }}
+                />
+              )}
+            </LocationView>
+
+            {/* Action Buttons */}
+            <Stack
+              direction={{ xs: "column-reverse", sm: "row" }}
               alignItems="center"
               justifyContent="flex-end"
-              direction={{ xs: "column", md: "row" }}
-              sx={{
-                gap: "1rem",
-                paddingInlineEnd: "1rem",
-                width: "100%",
-              }}
+              spacing={{ xs: 1, sm: 1.5 }}
+              sx={{ width: "100%" }}
             >
               <Button
                 onClick={handleClose}
                 variant="outlined"
+                fullWidth={isMobile}
                 sx={{
-                  width: { xs: "100%", md: "auto" }, // 👈 full width only mobile
-                  minWidth: { md: "150px" },
-                  backgroundColor: (theme) => theme.palette.neutral[300],
-                  color: (theme) => theme.palette.neutral[1000],
+                  borderRadius: "10px",
+                  borderColor: (theme) => alpha(theme.palette.divider, 0.2),
+                  color: (theme) => theme.palette.text.primary,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1,
+                  "&:hover": {
+                    backgroundColor: (theme) => alpha(theme.palette.divider, 0.08),
+                  },
                 }}
               >
                 {t("Cancel")}
@@ -536,9 +583,13 @@ const MapModal = ({
                   disabled={locationLoading}
                   variant="contained"
                   color="error"
+                  fullWidth={isMobile}
                   sx={{
-                    width: { xs: "100%", md: "auto" }, // 👈 full width only mobile
-                    minWidth: { md: "150px" },
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1,
                   }}
                   onClick={() => {
                     if (zoneId) {
@@ -547,30 +598,42 @@ const MapModal = ({
                     handleClose();
                   }}
                 >
-                  {errorLocation?.response?.data?.errors[0]?.message}
+                  {errorLocation?.response?.data?.errors?.[0]?.message ||
+                    t("Out of Service Zone")}
                 </Button>
               ) : (
-                <Button
+                <PrimaryButton
                   disabled={
-                    isLoading || !geoCodeResults?.results[0]?.formatted_address
+                    isZoneLoading ||
+                    isDisablePickButton ||
+                    !resolvedAddress ||
+                    locationLoading
                   }
                   variant="contained"
+                  fullWidth={isMobile}
+                  onClick={handlePickLocationOnClick}
                   sx={{
-                    width: { xs: "100%", md: "auto" }, // 👈 full width only mobile
-                    minWidth: { md: "150px" },
+                    borderRadius: "10px",
+                    px: 4,
+                    py: 1,
+                    minWidth: { sm: "160px" },
                   }}
-                  onClick={() => handlePickLocationOnClick()}
                 >
-                  {t("Pick Locations")}
-                </Button>
+                  {locationLoading || isZoneLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    t("Confirm Location")
+                  )}
+                </PrimaryButton>
               )}
-            </CustomStackFullWidth>
-          </CustomStackFullWidth>
+            </Stack>
+          </Stack>
         </CustomBoxWrapper>
       </Modal>
+
       {openModuleSelection && (
         <ModuleSelection
-          location={currentLocation}
+          location={location}
           closeModal={handleCloseModuleModal}
           disableAutoFocus={disableAutoFocus}
           zoneId={zoneId}

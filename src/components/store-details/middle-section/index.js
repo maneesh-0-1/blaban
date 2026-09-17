@@ -476,18 +476,7 @@ const MiddleSection = (props) => {
       setCategoryList(firstPageCategories);
     }
   }, [data]);
-  useEffect(() => {
-    if (state.searchKey === "" || !state.searchKey) {
-      refetch();
-    }
-  }, [
-    state.categoryId,
-    state.type,
-    state.sortBy,
-    storeId,
-    pageParams?.filterData,
-    ratingCount,
-  ]);
+  // React-Query automatically queries when pageParams/query keys change.
   useEffect(() => {
     if (state.searchKey) {
       if (searchData?.pages?.length > 0) {
