@@ -14,13 +14,11 @@ export const getNumberWithConvertedDecimalPoint = (
   amount,
   digitAfterDecimalPoint
 ) => {
-  if (amount === 0) {
-    return amount;
-  } else {
-    return ((amount * 100) / 100).toFixed(
-      Number.parseInt(digitAfterDecimalPoint)
-    );
-  }
+  if (amount == null || amount === "") return "0";
+  const num = Number(amount);
+  if (isNaN(num)) return "0";
+  const decimals = Number.parseInt(digitAfterDecimalPoint, 10);
+  return num.toFixed(isNaN(decimals) ? 2 : decimals);
 };
 
 export const isAvailable = (start, end) => {

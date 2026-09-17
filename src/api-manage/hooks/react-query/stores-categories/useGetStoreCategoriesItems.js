@@ -101,7 +101,8 @@ export default function useGetStoreCategoriesItems(pageParams) {
     {
       enabled: Boolean(pageParams?.storeId),
       retry: 1,
-      cacheTime: 0,
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60 * 2,
       onError: onSingleErrorResponse,
       getNextPageParam: (lastPage, allPages) => {
         const nextPage = allPages.length + 1;

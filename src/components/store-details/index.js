@@ -343,7 +343,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
   useEffect(() => {
     if (moduleDataFromApi) {
       moduleDataFromApi?.filter((item) => {
-        if (storeShare.moduleId == item.id) {
+        if (String(storeShare.moduleId) === String(item.id) || String(storeShare.moduleId) === String(item.slug)) {
           localStorage.setItem("module", JSON.stringify(item));
           saveModuleParam(item?.id, item?.slug);
           dispatch(setSelectedModule(item));

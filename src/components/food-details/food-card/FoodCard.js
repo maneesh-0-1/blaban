@@ -165,7 +165,7 @@ const FoodCard = ({ product, productImageUrl }) => {
             {restaurant_name || restaurant_name}
           </FoodSubTitleTypography>
           <RatingWrapTypography variant="subtitle2">
-            {Number(avg_rating || 0).toFixed(1)}
+            {!isNaN(Number(avg_rating)) ? Number(avg_rating).toFixed(1) : "0.0"}
             <RatingStarIcon
               fontSize="small"
               sx={{

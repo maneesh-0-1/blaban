@@ -178,7 +178,7 @@ const StoresInfoCard = (props) => {
             >
               {/*getNumberWithConvertedDecimalPoint(data?.avg_rating, configData?.digit_after_decimal_point)*/}
               <Typography fontWeight="bold">
-                {Number(data?.avg_rating || 0).toFixed(1)}
+                {!isNaN(Number(data?.avg_rating)) ? Number(data?.avg_rating).toFixed(1) : "0.0"}
               </Typography>
               <RatingStar fontSize="16px" color="warning.dark" />
             </Stack>

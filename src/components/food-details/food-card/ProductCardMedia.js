@@ -5,7 +5,8 @@ import { t } from "i18next";
 import CustomImageContainer from "../CustomImageContainer";
 import { Box } from "@mui/system";
 import { useSelector } from "react-redux";
-import { getAmount, isAvailable } from "../../utils/customFunctions";
+import { isAvailable } from "../../utils/CustomFunctions";
+import { getAmountWithSign } from "helper-functions/CardHelpers";
 import { CustomOverlayBox } from "../../styled-components/CustomStyles.style";
 import { useTheme } from "@mui/material/styles";
 
@@ -24,15 +25,7 @@ const ProductCardMedia = ({
   const [language_direction, setlanguage_direction] = useState("ltr");
   const { configData } = useSelector((state) => state.configData);
   const theme = useTheme();
-  let currencySymbol;
-  let currencySymbolDirection;
-  let digitAfterDecimalPoint;
 
-  if (configData) {
-    currencySymbol = configData.currency_symbol;
-    currencySymbolDirection = configData.currency_symbol_direction;
-    digitAfterDecimalPoint = configData.digit_after_decimal_point;
-  }
   useEffect(() => {
     if (localStorage.getItem("direction")) {
       setlanguage_direction(localStorage.getItem("direction"));
@@ -41,7 +34,6 @@ const ProductCardMedia = ({
 
   const discountChipHandler = () => {
     if (restaurant_discount > 0) {
-
       return (
         <OfferTypography
           language_direction={language_direction}
@@ -49,7 +41,6 @@ const ProductCardMedia = ({
         >
           {restaurant_discount}
           {t("% OFF")}
-
         </OfferTypography>
       );
     } else {
@@ -70,12 +61,7 @@ const ProductCardMedia = ({
               language_direction={language_direction}
               sx={{ align: "left" }}
             >
-              {getAmount(
-                discount,
-                currencySymbolDirection,
-                currencySymbol,
-                digitAfterDecimalPoint
-              )}
+              {getAmountWithSign(discount)}
             </OfferTypography>
           );
         }

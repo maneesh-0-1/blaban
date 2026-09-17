@@ -249,7 +249,7 @@ const AdsCard = (props) => {
                           fontSize="14px"
                           fontWeight="600"
                         >
-                          {Number(item?.average_rating).toFixed(1)}
+                          {!isNaN(Number(item?.average_rating)) ? Number(item?.average_rating).toFixed(1) : "0.0"}
                         </Typography>
                       </>
                     )}

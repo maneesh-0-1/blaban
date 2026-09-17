@@ -50,9 +50,7 @@ const StorePage = ({ configData, storeDetails, distance }) => {
   }, [storeDetails?.id]);
 
   useEffect(() => {
-    if (!configData || Object.keys(configData).length === 0) {
-      Router.replace("/404");
-    } else {
+    if (configData && Object.keys(configData).length > 0) {
       dispatch(setConfigData(configData));
     }
   }, [configData]);
@@ -89,11 +87,11 @@ export const getServerSideProps = async (context) => {
   const language = req.cookies.languageSetting || "en";
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const origin = process.env.NEXT_CLIENT_HOST_URL;
+    const origin = process.env.NEXT_CLIENT_HOST_URL || "";
 
     const headersCommon = {
       "X-software-id": 33571750,
@@ -104,33 +102,38 @@ export const getServerSideProps = async (context) => {
 
     const moduleId = module || legacyModuleId;
 
-    console.time("Fetch Config + Store Details");
     const [configRes, storeDetailsRes] = await Promise.all([
       fetch(`${baseUrl}${config_api}`, {
         method: "GET",
-        headers: { ...headersCommon, lat, lng },
+        headers: { ...headersCommon, ...(lat ? { lat } : {}), ...(lng ? { lng } : {}) },
         signal: controller.signal,
       }),
       fetch(`${baseUrl}${store_details_api}/${storeId}`, {
         method: "GET",
-        headers: { ...headersCommon, moduleId },
+        headers: { ...headersCommon, ...(moduleId ? { moduleId } : {}) },
         signal: controller.signal,
       }),
     ]);
 
-    if (!configRes.ok || !storeDetailsRes.ok) {
-      throw new Error("One or more API calls failed.");
-    }
-
-    const [configData, storeDetails] = await Promise.all([
-      configRes.json(),
-      storeDetailsRes.json(),
-    ]);
-    console.timeEnd("Fetch Config + Store Details");
-
     clearTimeout(timeout);
 
-    if (checkMaintenanceMode(configData)) {
+    if (storeDetailsRes.status === 404) {
+      return {
+        notFound: true,
+      };
+    }
+
+    let configData = null;
+    let storeDetails = null;
+
+    if (configRes.ok) {
+      configData = await configRes.json();
+    }
+    if (storeDetailsRes.ok) {
+      storeDetails = await storeDetailsRes.json();
+    }
+
+    if (configData && checkMaintenanceMode(configData)) {
       return {
         redirect: {
           destination: "/maintainance",
@@ -139,15 +142,17 @@ export const getServerSideProps = async (context) => {
       };
     }
 
-    res.setHeader(
-      "Cache-Control",
-      "public, s-maxage=60, stale-while-revalidate=300"
-    );
+    if (res) {
+      res.setHeader(
+        "Cache-Control",
+        "public, s-maxage=60, stale-while-revalidate=300"
+      );
+    }
 
     return {
       props: {
-        configData,
-        storeDetails,
+        configData: configData || null,
+        storeDetails: storeDetails || null,
         distance: distance || null,
       },
     };
@@ -155,7 +160,11 @@ export const getServerSideProps = async (context) => {
     clearTimeout(timeout);
     console.error("SSR fetch failed:", error.message);
     return {
-      notFound: true,
+      props: {
+        configData: null,
+        storeDetails: null,
+        distance: distance || null,
+      },
     };
   }
 };

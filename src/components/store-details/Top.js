@@ -673,7 +673,7 @@ const Top = (props) => {
                           lineHeight: 1.15,
                         }}
                       >
-                        {Number(storeDetails?.avg_rating || 0).toFixed(1)}
+                        {(!isNaN(Number(storeDetails?.avg_rating)) ? Number(storeDetails?.avg_rating).toFixed(1) : "0.0")}
                       </Typography>
                     </Stack>
                     <Typography

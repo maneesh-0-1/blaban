@@ -12,7 +12,10 @@ const CustomRatingBox = (props) => {
   const { rating } = props;
   const { configData } = useSelector((state) => state.configData);
   const getRating = () => {
-    return rating?.toFixed(configData?.digit_after_decimal_point);
+    const num = Number(rating);
+    if (isNaN(num)) return "0.0";
+    const decimals = Number.parseInt(configData?.digit_after_decimal_point, 10) || 1;
+    return num.toFixed(decimals);
   };
   const theme = useTheme();
   // isXsmall = useMediaQuery(theme.breakpoints.down("sm"))

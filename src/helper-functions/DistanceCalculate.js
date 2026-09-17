@@ -3,19 +3,14 @@ import { t } from "i18next";
 
 export const DistanceCalculate = ({ distance }) => {
   const { configData } = useSelector((state) => state.configData);
-  const distanceValue = (distance / 1000).toFixed(
-    configData?.digit_after_decimal_point
-  );
+  const numDistance = Number(distance);
+  if (distance == null || isNaN(numDistance)) return "0 km";
 
-  const getDistance = () => {
-    if (Number.parseInt(distanceValue) > 1000) {
-      return t("1k+ km");
-    } else {
-      return `${(distance / 1000).toFixed(
-        configData?.digit_after_decimal_point
-      )}km `;
-    }
-  };
-
-  return distance ? getDistance() : "0 km";
+  const decimals = Number.parseInt(configData?.digit_after_decimal_point, 10) || 2;
+  const distanceInKm = numDistance / 1000;
+  if (distanceInKm > 1000) {
+    return t("1k+ km");
+  } else {
+    return `${distanceInKm.toFixed(decimals)}km `;
+  }
 };

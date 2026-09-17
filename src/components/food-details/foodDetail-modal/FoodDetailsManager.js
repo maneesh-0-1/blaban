@@ -339,7 +339,7 @@ const FoodDetailsManager = (props) => {
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              {Number(item?.avg_rating).toFixed(1)}
+              {!isNaN(Number(item?.avg_rating)) ? Number(item?.avg_rating).toFixed(1) : "0.0"}
             </Typography>
             {Number(item?.rating_count) > 0 && (
               <Typography

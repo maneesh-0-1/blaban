@@ -484,7 +484,7 @@ const MiddleSection = (props) => {
     state.categoryId,
     state.type,
     state.sortBy,
-    id,
+    storeId,
     pageParams?.filterData,
     ratingCount,
   ]);
@@ -601,9 +601,14 @@ const MiddleSection = (props) => {
     setOffset(1);
   }, [checkState?.veg, checkState.non_veg]);
 
-  let moduleId = getModuleId()
-    ? getModuleId()
-    : parseInt(router.query.module || router.query.module_id);
+  const selectedModule = useSelector((state) => state.utilsData?.selectedModule);
+  const rawModule = router.query.module || router.query.module_id;
+  const parsedModule = parseInt(rawModule, 10);
+  const moduleId =
+    getModuleId() ||
+    selectedModule?.id ||
+    storeDetails?.module_id ||
+    (!isNaN(parsedModule) ? parsedModule : null);
   const handleSearchResult = (value) => {
     setSearchInputValue(value ?? "");
     setOffset(1);
@@ -643,7 +648,7 @@ const MiddleSection = (props) => {
   return (
     <NoSsr>
       <CustomStackFullWidth>
-        {moduleId && (
+        {Boolean(storeId || moduleId) && (
           <Grid container gap={{ xs: 0, md: 0 }} sx={{ position: "relative" }}>
             {/* <Grid
                 item
@@ -1002,7 +1007,7 @@ const MiddleSection = (props) => {
                     <DotSpin />
                   </Box>
                 )}
-              {isLoading && !state.data?.products?.length ? (
+              {(isLoading || !state.data) && !state.data?.products?.length ? (
                 <Stack gap={4}>{handleShimmerProducts()}</Stack>
               ) : state.data?.products?.length === 0 &&
                 !isRefetching &&

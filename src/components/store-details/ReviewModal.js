@@ -99,11 +99,15 @@ const RestaurantReviewModal = ({
     }
   };
   const getPercentOfNumber = (percentRate) => {
-    const total = restaurantDetails?.ratings.reduce(
-      (sum, current) => sum + current,
-      0
-    );
-    return percentRate ? ((percentRate / total) * 100).toFixed(1) : 0;
+    const total = Array.isArray(restaurantDetails?.ratings)
+      ? restaurantDetails.ratings.reduce(
+          (sum, current) => sum + Number(current || 0),
+          0
+        )
+      : 0;
+    return percentRate && total > 0
+      ? ((Number(percentRate) / total) * 100).toFixed(1)
+      : "0";
   };
   const handleClick = (itemReview) => {
     console.log({ itemReview });

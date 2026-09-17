@@ -545,7 +545,7 @@ const ProductInformation = ({
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {Number(state.modalData[0]?.avg_rating).toFixed(1)}
+                {!isNaN(Number(state.modalData[0]?.avg_rating)) ? Number(state.modalData[0]?.avg_rating).toFixed(1) : "0.0"}
               </Typography>
               <Typography
                 sx={{

@@ -274,8 +274,10 @@ const SearchResultStoreCard = ({ store, items = [], showAdBadge = false }) => {
   const handleClick = () => handleStoreRedirect(store, router);
 
   const formatDistance = (meters) => {
-    if (!meters && meters !== 0) return null;
-    const km = meters / 1000;
+    if (meters == null || meters === "") return null;
+    const num = Number(meters);
+    if (isNaN(num)) return null;
+    const km = num / 1000;
     return `${km.toFixed(1)} km`;
   };
 

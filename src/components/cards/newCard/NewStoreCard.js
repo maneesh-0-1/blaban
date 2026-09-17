@@ -188,9 +188,11 @@ const NewStoreCard = ({
 
   // Distance comes in meters from API — convert to km
   const formatDistance = (distanceInMeters) => {
-    if (!distanceInMeters) return null;
-    const km = distanceInMeters / 1000;
-    const decimals = configData?.digit_after_decimal_point ?? 1;
+    if (distanceInMeters == null || distanceInMeters === "") return null;
+    const num = Number(distanceInMeters);
+    if (isNaN(num)) return null;
+    const km = num / 1000;
+    const decimals = Number.parseInt(configData?.digit_after_decimal_point, 10) || 1;
     if (km > 1000) return t("1k+ km");
     return `${km.toFixed(decimals)} km`;
   };
@@ -453,7 +455,7 @@ const NewStoreCard = ({
                           fontVariantNumeric: "tabular-nums",
                         }}
                       >
-                        {Number(rating || 0).toFixed(1)}
+                        {!isNaN(Number(rating)) ? Number(rating).toFixed(1) : "0.0"}
                       </Typography>
                     </Stack>
                     <Typography
@@ -799,7 +801,7 @@ const NewStoreCard = ({
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {Number(item?.avg_rating || 0).toFixed(1)}
+                {!isNaN(Number(item?.avg_rating)) ? Number(item?.avg_rating).toFixed(1) : "0.0"}
               </Typography>
               {item?.rating_count > 0 && (
                 <Typography
