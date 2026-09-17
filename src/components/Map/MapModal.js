@@ -422,10 +422,11 @@ const MapModal = ({
             sx={{
               position: "relative",
               width: "100%",
-              flex: 1,
-              minHeight: { xs: "280px", sm: "320px", md: "360px" },
+              height: { xs: "260px", sm: "290px", md: "330px" },
+              minHeight: { xs: "240px", sm: "260px", md: "280px" },
               borderRadius: "16px",
               overflow: "hidden",
+              flexShrink: 0,
             }}
           >
             {location ? (
@@ -451,7 +452,7 @@ const MapModal = ({
                 justifyContent="center"
                 sx={{
                   height: "100%",
-                  minHeight: "300px",
+                  minHeight: "260px",
                   borderRadius: "16px",
                   backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.05),
                 }}
@@ -492,6 +493,7 @@ const MapModal = ({
             sx={{
               pt: 0.5,
               width: "100%",
+              flexShrink: 0,
             }}
           >
             {/* Resolved Address Box */}

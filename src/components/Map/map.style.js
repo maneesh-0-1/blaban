@@ -27,16 +27,25 @@ export const CustomBoxWrapper = styled(Box)(({ theme, expand }) => ({
   width: expand === "true" ? "100%" : "92%",
   maxWidth: expand === "true" ? "100%" : "720px",
   height: expand === "true" ? "100%" : "auto",
-  maxHeight: expand === "true" ? "100dvh" : "90vh",
+  maxHeight: expand === "true" ? "100dvh" : "92vh",
   background: theme.palette.background.paper,
   borderRadius: expand === "true" ? "0px" : "20px",
   display: "flex",
   flexDirection: "column",
-  overflow: "hidden",
+  overflowY: "auto",
+  overflowX: "hidden",
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  "&::-webkit-scrollbar": {
+    width: "6px",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    backgroundColor: alpha(theme.palette.text.primary, 0.15),
+    borderRadius: "3px",
+  },
   [theme.breakpoints.down("sm")]: {
     width: expand === "true" ? "100%" : "96%",
     borderRadius: expand === "true" ? "0px" : "16px",
+    maxHeight: expand === "true" ? "100dvh" : "96vh",
   },
 }));
 

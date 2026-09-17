@@ -58,9 +58,8 @@ const GoogleMapComponent = ({
       ? "100dvh"
       : height
       ? height
-      : isSmall
-      ? "320px"
-      : "400px",
+      : "100%",
+    minHeight: expanded ? "100dvh" : isSmall ? "240px" : "280px",
     borderRadius: expanded ? "0px" : "16px",
   };
 
@@ -234,7 +233,8 @@ const GoogleMapComponent = ({
       sx={{
         position: "relative",
         width: expanded ? "100vw" : "100%",
-        height: expanded ? "100dvh" : "auto",
+        height: expanded ? "100dvh" : "100%",
+        minHeight: expanded ? "100dvh" : isSmall ? "240px" : "280px",
         borderRadius: expanded ? "0px" : "16px",
         overflow: "hidden",
         boxShadow: expanded
