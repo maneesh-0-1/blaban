@@ -13,6 +13,7 @@ import { RTL } from "components/rtl";
 import { Toaster } from "react-hot-toast";
 import { SettingsConsumer, SettingsProvider } from "contexts/settings-context";
 import "../src/language/i18n";
+import "../src/utils/localStoragePollerFix";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import nProgress from "nprogress";

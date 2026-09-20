@@ -315,11 +315,11 @@ const NewNavBar = ({ configData }) => {
     const sync = () => setLocation(localStorage.getItem("location"));
     window.addEventListener("storage", sync);
     window.addEventListener("focus", sync);
-    const id = setInterval(sync, 1000);
+    window.addEventListener("onLocalStorageChange", sync);
     return () => {
       window.removeEventListener("storage", sync);
       window.removeEventListener("focus", sync);
-      clearInterval(id);
+      window.removeEventListener("onLocalStorageChange", sync);
     };
   }, []);
 

@@ -63,12 +63,12 @@ export default function useGetModule() {
     updateZoneIds();
     window.addEventListener("storage", updateZoneIds);
     window.addEventListener("focus", updateZoneIds);
-    const intervalId = window.setInterval(updateZoneIds, 1000);
+    window.addEventListener("onLocalStorageChange", updateZoneIds);
 
     return () => {
       window.removeEventListener("storage", updateZoneIds);
       window.removeEventListener("focus", updateZoneIds);
-      window.clearInterval(intervalId);
+      window.removeEventListener("onLocalStorageChange", updateZoneIds);
     };
   }, []);
 

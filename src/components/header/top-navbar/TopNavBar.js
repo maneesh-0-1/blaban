@@ -56,12 +56,12 @@ const TopNavBar = () => {
 		setTempLocation(prevLocation);
 		window.addEventListener("storage", syncLocation);
 		window.addEventListener("focus", syncLocation);
-		const intervalId = window.setInterval(syncLocation, 1000);
+		window.addEventListener("onLocalStorageChange", syncLocation);
 
 		return () => {
 			window.removeEventListener("storage", syncLocation);
 			window.removeEventListener("focus", syncLocation);
-			window.clearInterval(intervalId);
+			window.removeEventListener("onLocalStorageChange", syncLocation);
 		};
 	}, []);
 
