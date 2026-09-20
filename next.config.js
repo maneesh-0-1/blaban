@@ -1,12 +1,16 @@
 const nextConfig = {
   reactStrictMode: true,
-  // Hide Next.js dev-mode indicator (bottom-left "N" badge)
-  devIndicators: {
-    buildActivity: false,
-    appIsrStatus: false,
-  },
+  devIndicators: false,
   experimental: {
     swcPlugins: [],
+  },
+  modularizeImports: {
+    '@mui/material': {
+      transform: '@mui/material/{{member}}',
+    },
+    '@mui/icons-material': {
+      transform: '@mui/icons-material/{{member}}',
+    },
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {

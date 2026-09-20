@@ -22,8 +22,10 @@ import { persistStore } from "redux-persist";
 import { useTranslation } from "react-i18next";
 import useScrollToTop from "../src/api-manage/hooks/custom-hooks/useScrollToTop";
 import { useEffect } from "react";
-import ModuleChecker from "../src/components/module-select/ModuleChecker";
-import ProSubscriptionExpiredModal from "../src/components/pro-plan/ProSubscriptionExpiredModal";
+import dynamic from "next/dynamic";
+
+const ModuleChecker = dynamic(() => import("../src/components/module-select/ModuleChecker"), { ssr: false });
+const ProSubscriptionExpiredModal = dynamic(() => import("../src/components/pro-plan/ProSubscriptionExpiredModal"), { ssr: false });
 
 Router.events.on("routeChangeStart", nProgress.start);
 Router.events.on("routeChangeError", nProgress.done);
