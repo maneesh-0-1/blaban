@@ -1,35 +1,42 @@
-import React, { memo, useEffect, useState } from "react";
+﻿import React, { memo, useEffect, useState } from "react";
 import { CustomImageContainerStyled } from "styled-components/CustomStyles.style";
 import placeholder from "../../public/static/no-image-found.png";
 import { Box } from "@mui/system";
 
 const CustomImageContainer = ({
-  cursor,
-  mdHeight,
-  maxWidth,
-  height,
-  width,
-  objectfit,
-  minwidth,
-  src,
-  alt,
-  borderRadius,
-  marginBottom,
-  smHeight,
-  smMb,
-  smMaxWidth,
-  smWidth,
-  aspectRatio,
-  padding,
-  loading,
-  bg,
-  borderBottomRightRadius,
+  cursor = undefined,
+  mdHeight = undefined,
+  maxWidth = undefined,
+  height = undefined,
+  width = undefined,
+  objectfit = undefined,
+  minwidth = undefined,
+  src = undefined,
+  alt = undefined,
+  borderRadius = undefined,
+  marginBottom = undefined,
+  smHeight = undefined,
+  smMb = undefined,
+  smMaxWidth = undefined,
+  smWidth = undefined,
+  aspectRatio = undefined,
+  padding = undefined,
+  loading = undefined,
+  priority = false,
+  fetchpriority = undefined,
+  bg = undefined,
+  borderBottomRightRadius = undefined,
   ...rest
 }) => {
-  const [imageFile, setState] = useState(null);
+  const initialSrc = src ? src : (placeholder?.src || "");
+  const [imageFile, setState] = useState(initialSrc);
+
   useEffect(() => {
-    setState(src ? src : placeholder?.src);
+    setState(src ? src : (placeholder?.src || ""));
   }, [src]);
+
+  const effectiveLoading = priority ? "eager" : (loading || "lazy");
+  const effectiveFetchPriority = fetchpriority || (priority ? "high" : undefined);
 
   return (
     <CustomImageContainerStyled
@@ -67,7 +74,8 @@ const CustomImageContainer = ({
           onError={() => {
             setState(placeholder?.src);
           }}
-          loading={loading || "lazy"}
+          loading={effectiveLoading}
+          {...(effectiveFetchPriority ? { fetchPriority: effectiveFetchPriority } : {})}
         />
       )}
     </CustomImageContainerStyled>

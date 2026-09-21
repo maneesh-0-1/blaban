@@ -1,4 +1,4 @@
-import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
+﻿import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
 import {
   Avatar,
   Box,
@@ -45,13 +45,13 @@ import ForgotPassword from "components/auth/ForgotPassword/ForgotPassword";
 import CustomModal from "components/modal";
 import useGetGroupedCart from "../../../api-manage/hooks/react-query/add-cart/useGetGroupedCart";
 import useGetGuest from "../../../api-manage/hooks/react-query/guest/useGetGuest";
-import AllCartDrawer from "./AllCartDrawer";
+const AllCartDrawer = dynamic(() => import("./AllCartDrawer"), { ssr: false });
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getModuleIdentifier, saveModuleParam } from "utils/moduleParamManager";
 
 const AuthModal = dynamic(() => import("components/auth/AuthModal"));
 
-// ─── Styled ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Styled â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ModuleTab = styled(Box)(({ theme, active }) => ({
   padding: "10px 24px",
@@ -99,7 +99,7 @@ const ModuleBarWrapper = styled(Box)(({ theme, hidden }) => ({
   transition: "max-height 0.35s ease",
 }));
 
-// ─── Sub-components (reuse logic from SecondNavbar) ──────────────────────────
+// â”€â”€â”€ Sub-components (reuse logic from SecondNavbar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const parseJsonFromStorage = (value) => {
   if (!value) return null;
@@ -228,7 +228,7 @@ const WishListIcon = ({ totalWishList }) => {
   );
 };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const NewNavBar = ({ configData }) => {
   const theme = useTheme();
@@ -252,7 +252,7 @@ const NewNavBar = ({ configData }) => {
   const isSearchAwarePage =
     router.pathname === "/home" || router.pathname === "/search";
 
-  // ── Redux ──
+  // â”€â”€ Redux â”€â”€
   const { cartList } = useSelector((state) => state.cart);
   const { selectedModule } = useSelector((state) => state.utilsData);
   const { offlineInfoStep } = useSelector((state) => state.offlinePayment);
@@ -270,7 +270,7 @@ const NewNavBar = ({ configData }) => {
     !isSearchlessModule &&
     (!isSearchAwarePage || !searchBannerInView);
 
-  // ── Local state ──
+  // â”€â”€ Local state â”€â”€
   const [moduleType, setModuleType] = useState("");
   const [openPopover, setOpenPopover] = useState(false);
   const [openSignIn, setOpenSignIn] = useState(false);
@@ -278,7 +278,7 @@ const NewNavBar = ({ configData }) => {
   const [toggled, setToggled] = useState(false);
   const anchorRef = useRef(null);
 
-  // ── localStorage (client-side only) ──
+  // â”€â”€ localStorage (client-side only) â”€â”€
   const [location, setLocation] = useState(() => {
     if (typeof window === "undefined") return null;
     return localStorage.getItem("location");
@@ -323,7 +323,7 @@ const NewNavBar = ({ configData }) => {
     };
   }, []);
 
-  // ── Data hooks ──
+  // â”€â”€ Data hooks â”€â”€
   const { data: guestData, refetch: guestRefetch } = useGetGuest();
 
   useEffect(() => {
@@ -353,7 +353,7 @@ const NewNavBar = ({ configData }) => {
   }, [moduleType]);
 
   // Non-rental cartList is populated centrally by useGetGroupedCart's
-  // onSuccess (flattens cart/get-all → cartList). Only rental needs a
+  // onSuccess (flattens cart/get-all â†’ cartList). Only rental needs a
   // manual dispatch here from its booking list.
   useEffect(() => {
     if (moduleType === "rental") {
@@ -394,7 +394,7 @@ const NewNavBar = ({ configData }) => {
   const [authInitialView, setAuthInitialView] = useState("landing");
 
   // Reopen the sign-in modal whenever something dispatches
-  // `setOpenSignInModal(true)` — e.g. ForgotPassword's "Back to Login".
+  // `setOpenSignInModal(true)` â€” e.g. ForgotPassword's "Back to Login".
   useEffect(() => {
     if (openSignInModal) {
       setModalFor("sign-in");
@@ -403,7 +403,7 @@ const NewNavBar = ({ configData }) => {
     }
   }, [openSignInModal]);
 
-  // ── Icons row (right side) ──
+  // â”€â”€ Icons row (right side) â”€â”€
   const renderIcons = () => (
     <Stack direction="row" alignItems="center" spacing={1}>
       {token && moduleType !== "parcel" && (
@@ -566,7 +566,7 @@ const NewNavBar = ({ configData }) => {
     </Stack>
   );
 
-  // ── Desktop top bar ──
+  // â”€â”€ Desktop top bar â”€â”€
   const renderDesktopTopBar = () => (
     <Stack
       direction="row"
@@ -651,7 +651,7 @@ const NewNavBar = ({ configData }) => {
     router.push({ pathname: "/home", query: { module: moduleIdentifier } });
   };
 
-  // ── Module bar ──
+  // â”€â”€ Module bar â”€â”€
   const renderModuleBar = () => {
     if (!modules?.length) return null;
     if (router.pathname === "/profile") return null;
@@ -747,3 +747,4 @@ const NewNavBar = ({ configData }) => {
 };
 
 export default NewNavBar;
+

@@ -1,4 +1,4 @@
-import { Box, IconButton, Stack, Typography, useTheme } from "@mui/material";
+﻿import { Box, IconButton, Stack, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,7 +6,8 @@ import { t } from "i18next";
 import toast from "react-hot-toast";
 
 import AddressReselectPopover from "../top-navbar/address-reselect/AddressReselectPopover";
-import AllCartDrawer from "./AllCartDrawer";
+import dynamic from "next/dynamic";
+const AllCartDrawer = dynamic(() => import("./AllCartDrawer"), { ssr: false });
 import { getModule } from "helper-functions/getLanguage";
 import MobileSearchOverlay from "./MobileSearchOverlay";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
@@ -28,15 +29,15 @@ import useScrollDirection from "hooks/useScrollDirection";
 import { useGetCategories } from "api-manage/hooks/react-query/all-category/all-categorys";
 
 /**
- * Mobile navbar — three sections (default state):
+ * Mobile navbar â€” three sections (default state):
  *   1) Top row: address (location) + cart icon
  *   2) Module tabs row: horizontally scrollable list of modules
  *   3) Search bar: full-width
  *
  * Behavior on scroll:
- *   - Scrolling down past threshold → sections 1 & 2 collapse, search bar
+ *   - Scrolling down past threshold â†’ sections 1 & 2 collapse, search bar
  *     stays sticky at top.
- *   - Scrolling up → all three sections become visible again.
+ *   - Scrolling up â†’ all three sections become visible again.
  */
 const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
   const theme = useTheme();
@@ -144,7 +145,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
   };
   const moduleNoun = MODULE_NOUN[getCurrentModuleType()] ?? t("Items");
 
-  // Animated placeholder — cycles through [moduleNoun, ...category names].
+  // Animated placeholder â€” cycles through [moduleNoun, ...category names].
   const { data: categoriesResponse } = useGetCategories();
   const animatedItems = useMemo(() => {
     const base = [moduleNoun];
@@ -176,7 +177,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
   const rawNoun = animatedItems[phIndex] ?? moduleNoun;
   // Keep long category names from breaking the placeholder UI
   const currentNoun =
-    rawNoun.length > 22 ? `${rawNoun.slice(0, 22).trimEnd()}…` : rawNoun;
+    rawNoun.length > 22 ? `${rawNoun.slice(0, 22).trimEnd()}â€¦` : rawNoun;
 
   const searchPlaceholder = (
     <span
@@ -220,7 +221,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
     return getCartListModuleWise(cartList)?.length || 0;
   }, [cartList]);
 
-  // ── Module-wise section chips ──
+  // â”€â”€ Module-wise section chips â”€â”€
   const sectionChips = useMemo(() => {
     const sectionsFn = {
       [ModuleTypes.FOOD]: getFoodSections,
@@ -234,7 +235,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
     } catch (e) {
       return [];
     }
-    // selectedModule?.module_type triggers recompute when module changes —
+    // selectedModule?.module_type triggers recompute when module changes â€”
     // getCurrentModuleType() reads localStorage and isn't tracked by React
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModule?.module_type]);
@@ -259,11 +260,11 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
     });
   };
 
-  // ── Module switching — always redirect to /home?module=... from any page ──
+  // â”€â”€ Module switching â€” always redirect to /home?module=... from any page â”€â”€
   const handleSelectModule = (item) => {
     const isHome = router.pathname === "/home";
     const isSameModule = item?.id === selectedModule?.id;
-    // Already on /home with the same module → no-op
+    // Already on /home with the same module â†’ no-op
     if (isHome && isSameModule) return;
 
     dispatch(setSelectedModule(item));
@@ -291,7 +292,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
     }
   }, [selectedModule?.id]);
 
-  // ── Render ──
+  // â”€â”€ Render â”€â”€
   if (isSearchPage) return null;
   if (router.pathname === "/profile") return null;
   if (router.pathname === "/store/[id]") return null;
@@ -400,9 +401,9 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
             : "none",
         }}
       >
-        {/* ── Grey header wrapper for Section 1 + 2 ── */}
+        {/* â”€â”€ Grey header wrapper for Section 1 + 2 â”€â”€ */}
         <Box sx={{ backgroundColor: theme.palette.background.secondary }}>
-          {/* ── Section 1: Address + Cart ── */}
+          {/* â”€â”€ Section 1: Address + Cart â”€â”€ */}
           <Box
             sx={{
               overflow: "hidden",
@@ -423,7 +424,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
                 minHeight: "36px",
               }}
             >
-              {/* Address column — title row + subtitle row */}
+              {/* Address column â€” title row + subtitle row */}
               <Box
                 ref={addressAnchorRef}
                 onClick={() => setAddressPopoverOpen(true)}
@@ -489,7 +490,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
                 </Stack>
               </Box>
 
-              {/* Cart — monochrome stroke icon */}
+              {/* Cart â€” monochrome stroke icon */}
               {getCurrentModuleType() === ModuleTypes.PARCEL ? null : (
                 <IconButton
                   onClick={() => {
@@ -556,7 +557,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
             </Stack>
           </Box>
 
-          {/* ── Section 2: Module tabs ── */}
+          {/* â”€â”€ Section 2: Module tabs â”€â”€ */}
           {showModuleTabs && (
             <Box
               sx={{
@@ -645,7 +646,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
             </Box>
           )}
         </Box>
-        {/* ── Section 3: Search bar — home only, hidden for rental and parcel */}
+        {/* â”€â”€ Section 3: Search bar â€” home only, hidden for rental and parcel */}
         {isHomePage &&
           getCurrentModuleType() !== ModuleTypes.RENTAL &&
           getCurrentModuleType() !== ModuleTypes.PARCEL &&
@@ -699,7 +700,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
               </Stack>
             </Box>
           )}
-        {/* ── Module-wise section chips (scrollable filter row) ── */}
+        {/* â”€â”€ Module-wise section chips (scrollable filter row) â”€â”€ */}
         {sectionChips.length > 0 &&
           (router.pathname === "/home" ||
             router.pathname === "/home/[...slug]") && (
@@ -814,3 +815,4 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
 };
 
 export default MobileNavBar;
+

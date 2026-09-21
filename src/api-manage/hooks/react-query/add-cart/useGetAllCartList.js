@@ -1,4 +1,4 @@
-import MainApi from "../../../MainApi";
+﻿import MainApi from "../../../MainApi";
 import { useQuery } from "react-query";
 import { all_cart_list } from "../../../ApiRoutes";
 import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponses";
@@ -7,6 +7,9 @@ import { getToken } from "helper-functions/getToken";
 const getData = async (guestId, store_id) => {
   try {
     const userToken = getToken();
+    if (!userToken && !guestId) {
+      return [];
+    }
     const query = new URLSearchParams();
     if (!userToken && guestId) query.set("guest_id", guestId);
     if (store_id) query.set("store_id", store_id);
@@ -29,11 +32,11 @@ export default function useGetAllCartList(
   // Include store_id AND token so re-login triggers a fresh fetch for the
   // store-details sidebar cart (token change = new key = new request).
   return useQuery(
-    ["cart-itemss", store_id ?? null, token ?? null],
+    ["cart-itemss", store_id ?? null, token ?? null, guestId ?? null],
     () => getData(guestId, store_id),
     {
       onSuccess: cartListSuccessHandler,
-      enabled: Boolean(store_id),
+      enabled: Boolean(store_id && (token || guestId)),
       onError: onSingleErrorResponse,
     }
   );

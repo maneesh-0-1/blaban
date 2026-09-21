@@ -1,4 +1,4 @@
-import { Children } from "react";
+﻿import { Children } from "react";
 import Document, { Head, Html, Main, NextScript } from "next/document";
 import createEmotionServer from "@emotion/server/create-instance";
 import createEmotionCache from "../src/utils/create-emotion-cache";
@@ -16,7 +16,7 @@ class CustomDocument extends Document {
                 (function () {
                   try {
                     var mode = "light";
-                    var cookieMatch = document.cookie.match(/(?:^|;\\s*)themeMode=(dark|light)(?:;|$)/);
+                    var cookieMatch = document.cookie.match(/(?:^|;\s*)themeMode=(dark|light)(?:;|$)/);
 
                     if (cookieMatch && cookieMatch[1]) {
                       mode = cookieMatch[1];
@@ -51,20 +51,9 @@ class CustomDocument extends Document {
             rel="stylesheet"
           />
 
-          {/* Social login scripts */}
-          <script
-            type="application/javascript"
-            src="https://accounts.google.com/gsi/client"
-            async
-          />
-          <script
-            type="text/javascript"
-            src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
-            async
-          />
           <meta name="theme-color" content="#111827" />
 
-          {/* ✅ Analytics scripts */}
+          {/* Analytics scripts */}
           {analyticsConfig.google_tag_manager && (
             <script
               dangerouslySetInnerHTML={{
@@ -189,8 +178,8 @@ class CustomDocument extends Document {
         </Head>
 
         <body>
-        <Main />
-        <NextScript />
+          <Main />
+          <NextScript />
         </body>
       </Html>
     );
@@ -217,25 +206,38 @@ CustomDocument.getInitialProps = async (ctx) => {
     />
   ));
 
-  // 🛠 Fetch analytics config server-side
-  let analyticsConfig = {};
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://yourdomain.com";
-    const res = await fetch(`${baseUrl}/api/v1/config/get-analytic-scripts`, {
-      headers: {
-        "X-software-id": 33571750,
-        "X-server": "server",
-        origin: process.env.NEXT_CLIENT_HOST_URL || "http://localhost:3000",
-      },
-    });
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      data.forEach((item) => {
-        if (item.type && item.script_id) analyticsConfig[item.type] = item.script_id;
+  // Cached analytics config server-side (10 min in-memory TTL)
+  let analyticsConfig = global.__cachedAnalyticsConfig || {};
+  const lastFetched = global.__cachedAnalyticsTime || 0;
+  const now = Date.now();
+
+  if (now - lastFetched > 10 * 60 * 1000) {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://yourdomain.com";
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const res = await fetch(`${baseUrl}/api/v1/config/get-analytic-scripts`, {
+        headers: {
+          "X-software-id": 33571750,
+          "X-server": "server",
+          origin: process.env.NEXT_CLIENT_HOST_URL || "http://localhost:3000",
+        },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const freshConfig = {};
+        data.forEach((item) => {
+          if (item.type && item.script_id) freshConfig[item.type] = item.script_id;
+        });
+        analyticsConfig = freshConfig;
+        global.__cachedAnalyticsConfig = freshConfig;
+        global.__cachedAnalyticsTime = now;
+      }
+    } catch (err) {
+      // Non-blocking fallback
     }
-  } catch (err) {
-    console.error("Error fetching analytics config:", err);
   }
 
   return {

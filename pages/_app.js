@@ -1,6 +1,5 @@
-import "../src/styles/globals.css";
+﻿import "../src/styles/globals.css";
 import "../src/styles/nprogress.css";
-import "@flaticon/flaticon-uicons/css/all/all.css";
 import { CacheProvider } from "@emotion/react";
 import { Provider as ReduxProvider } from "react-redux";
 import createEmotionCache from "../src/utils/create-emotion-cache";
@@ -23,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import useScrollToTop from "../src/api-manage/hooks/custom-hooks/useScrollToTop";
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
+import Script from "next/script";
 
 const ModuleChecker = dynamic(() => import("../src/components/module-select/ModuleChecker"), { ssr: false });
 const ProSubscriptionExpiredModal = dynamic(() => import("../src/components/pro-plan/ProSubscriptionExpiredModal"), { ssr: false });
@@ -75,6 +75,14 @@ function MyApp(props) {
   return (
     <>
       {useScrollToTop()}
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="lazyOnload"
+      />
+      <Script
+        src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
+        strategy="lazyOnload"
+      />
       <CacheProvider value={emotionCache}>
         <QueryClientProvider client={queryClient}>
           <ReduxProvider store={store}>
