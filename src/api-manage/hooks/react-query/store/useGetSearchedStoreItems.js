@@ -1,4 +1,4 @@
-import MainApi from "../../../MainApi";
+import MainApi, { baseUrl } from "../../../MainApi";
 import { store_item_search_api } from "../../../ApiRoutes";
 import { useInfiniteQuery, useQuery } from "react-query";
 import {
@@ -18,7 +18,7 @@ const getData = async (pageParams) => {
     return data;
   } else {
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_BASE_URL}${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`,
+      `${baseUrl}${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`,
       {
         headers: {
           "Content-Type": "application/json",

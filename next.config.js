@@ -17,6 +17,18 @@ const nextConfig = {
       exclude: ['error', 'warn'], // Keep error and warn, remove log, info, debug, etc.
     } : false,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/backend-api/api/:path*',
+        destination: 'https://admin.blabankw.com/api/:path*',
+      },
+      {
+        source: '/backend-api/:path*',
+        destination: 'https://admin.blabankw.com/api/:path*',
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

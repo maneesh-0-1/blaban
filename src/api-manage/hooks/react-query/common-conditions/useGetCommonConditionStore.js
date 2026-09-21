@@ -1,9 +1,9 @@
 import { useQuery } from "react-query";
 import { common_condition_product_in_store } from "../../../ApiRoutes";
-import MainApi from "../../../MainApi";
+import MainApi, { baseUrl } from "../../../MainApi";
 import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponses";
 import { getCurrentModuleType } from "../../../../helper-functions/getCurrentModuleType";
-import axios, { Axios } from "axios";
+import axios from "axios";
 
 const getCommonConditionStoreProduct = async (params) => {
   const { id, moduleId, storeZoneId, offset, limit } = params;
@@ -12,7 +12,7 @@ const getCommonConditionStoreProduct = async (params) => {
     return data;
   } else {
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_BASE_URL}${common_condition_product_in_store}/${id}`,
+      `${baseUrl}${common_condition_product_in_store}/${id}`,
       {
         headers: {
           "Content-Type": "application/json",

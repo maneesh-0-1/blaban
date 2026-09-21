@@ -1,7 +1,10 @@
 
 
 import axios from "axios";
-export const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+export const baseUrl =
+  typeof window !== "undefined"
+    ? "/backend-api"
+    : process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
 const MainApi = axios.create({
   baseURL: baseUrl,
 });

@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import { popular_items_in_store } from "../../../ApiRoutes";
-import MainApi from "../../../MainApi";
+import MainApi, { baseUrl } from "../../../MainApi";
 import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponses";
 import { getCurrentModuleType } from "../../../../helper-functions/getCurrentModuleType";
 import axios from "axios";
@@ -29,7 +29,7 @@ const getPopularProductsInStore = async (params) => {
     return data;
   } else {
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_BASE_URL}${url}`,
+      `${baseUrl}${url}`,
       {
         headers: {
           "Content-Type": "application/json",
