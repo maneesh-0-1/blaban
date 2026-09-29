@@ -1,6 +1,7 @@
 
 
 import axios from "axios";
+import { getCleanToken, isValidToken } from "../helper-functions/getToken";
 export const baseUrl =
   typeof window !== "undefined"
     ? "/backend-api"
@@ -17,19 +18,23 @@ MainApi.interceptors.request.use(function (config) {
   let hostname = process.env.NEXT_CLIENT_HOST_URL;
   let moduleid = undefined;
 
+  // Discard any malformed Authorization header that might have been manually passed in config
+  if (config.headers) {
+    const passedAuth = config.headers.authorization || config.headers.Authorization;
+    if (passedAuth && !isValidToken(passedAuth)) {
+      delete config.headers.authorization;
+      delete config.headers.Authorization;
+    }
+  }
+
   if (typeof window !== "undefined") {
     zoneid = localStorage.getItem("zoneid");
     const rawToken = localStorage.getItem("token");
-    if (
-      rawToken &&
-      rawToken !== "null" &&
-      rawToken !== "undefined" &&
-      rawToken !== "false" &&
-      rawToken.trim() !== ""
-    ) {
-      token = rawToken;
+    const validToken = getCleanToken(rawToken);
+    if (validToken) {
+      token = validToken;
     } else {
-      if (rawToken === "null" || rawToken === "undefined" || rawToken === "false") {
+      if (rawToken !== null) {
         localStorage.removeItem("token");
       }
       token = undefined;
@@ -83,10 +88,28 @@ MainApi.interceptors.request.use(function (config) {
     config.headers.moduleId = 2;
   }
 
-  if (token) {
+  // Explicitly identify guest authentication endpoints that must never carry auth headers
+  const isGuestAuthEndpoint =
+    typeof config.url === "string" &&
+    config.url.includes("auth/guest/request");
+
+  if (token && !isGuestAuthEndpoint) {
     config.headers.authorization = `Bearer ${token}`;
+    delete config.headers.Authorization;
   } else {
+    // If token is missing, invalid, or endpoint is guest auth, explicitly delete/omit Authorization header
     delete config.headers.authorization;
+    delete config.headers.Authorization;
+    if (config.headers) {
+      delete config.headers["authorization"];
+      delete config.headers["Authorization"];
+    }
+    if (config.headers?.common) {
+      delete config.headers.common.authorization;
+      delete config.headers.common.Authorization;
+      delete config.headers.common["authorization"];
+      delete config.headers.common["Authorization"];
+    }
   }
   if (language) config.headers["X-localization"] = language;
   if (hostname) config.headers["origin"] = hostname;
@@ -99,7 +122,12 @@ MainApi.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
-    if (typeof window !== "undefined" && status === 401) {
+    const msg = error?.response?.data?.message || "";
+    const isJwtError =
+      typeof msg === "string" &&
+      msg.toLowerCase().includes("the jwt string must have two dots");
+
+    if (typeof window !== "undefined" && (status === 401 || isJwtError)) {
       const existingToken = localStorage.getItem("token");
       if (existingToken) {
         localStorage.removeItem("token");

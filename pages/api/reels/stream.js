@@ -30,7 +30,22 @@ export default async function handler(req, res) {
     "X-software-id": "33571750",
   };
 
-  if (token)    upstreamHeaders["Authorization"]  = `Bearer ${token}`;
+  const isValidJwt = (t) => {
+    if (!t || typeof t !== "string") return false;
+    let clean = t.trim();
+    if (clean.startsWith("Bearer ")) clean = clean.slice(7).trim();
+    if (clean.startsWith('"') && clean.endsWith('"')) clean = clean.slice(1, -1).trim();
+    if (!clean || clean === "undefined" || clean === "null" || clean === "false" || clean === "NaN") return false;
+    const parts = clean.split(".");
+    return parts.length === 3 && parts.every((p) => p.trim().length > 0);
+  };
+
+  if (isValidJwt(token)) {
+    let clean = token.trim();
+    if (clean.startsWith("Bearer ")) clean = clean.slice(7).trim();
+    if (clean.startsWith('"') && clean.endsWith('"')) clean = clean.slice(1, -1).trim();
+    upstreamHeaders["Authorization"] = `Bearer ${clean}`;
+  }
   if (moduleId) upstreamHeaders["moduleId"]       = moduleId;
   if (zoneid)   upstreamHeaders["zoneid"]         = zoneid;
   if (lang)     upstreamHeaders["X-localization"] = lang;

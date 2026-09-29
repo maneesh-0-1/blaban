@@ -22,6 +22,7 @@ import { addWishList, removeWishListItem } from "redux/slices/wishList";
 import { not_logged_in_message } from "utils/toasterMessages";
 import { useAddToWishlist } from "api-manage/hooks/react-query/wish-list/useAddWishList";
 import { useWishListDelete } from "api-manage/hooks/react-query/wish-list/useWishListDelete";
+import { getToken } from "helper-functions/getToken";
 
 const WishLists = (props) => {
   const { t, setSideDrawerOpen } = props;
@@ -53,8 +54,7 @@ const WishLists = (props) => {
   const addToWishlistHandler = (e) => {
     e?.stopPropagation?.();
     if (!activeItem) return;
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("token") : undefined;
+    const token = getToken();
     if (!token) {
       toast.error(translate(not_logged_in_message));
       return;

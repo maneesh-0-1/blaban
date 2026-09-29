@@ -66,7 +66,7 @@ const reelPreloadInFlight = new Map<number, Promise<string | null>>();
 
 // Build proxy URL with auth query params (runs in browser — reads localStorage).
 const buildProxyUrl = (reelId: number): string => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const zoneid = localStorage.getItem("zoneid");
   const moduleId = JSON.parse(localStorage.getItem("module") || "null")?.id;
   const lang = JSON.parse(localStorage.getItem("language-setting") || "null");

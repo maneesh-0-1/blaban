@@ -8,11 +8,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { setClearCart } from "redux/slices/cart";
 import GuestCheckoutModal from "../cards/GuestCheckoutModal";
 import dynamic from "next/dynamic";
+import { getToken } from "helper-functions/getToken";
 const AuthModal = dynamic(() => import("components/auth/AuthModal"));
 const CartActions = (props) => {
   const { setSideDrawerOpen, cartList, text } = props;
   const { configData } = useSelector((state) => state.configData);
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const [open, setOpen] = useState(false);
   const [openAuth, setOpenAuth] = useState(false);
   const [modalFor, setModalFor] = useState("sign-in");

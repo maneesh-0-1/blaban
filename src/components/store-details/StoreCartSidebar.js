@@ -981,8 +981,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
     });
   };
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = getToken();
 
   const moduleParam = router.query?.module;
   const checkoutStoreId =

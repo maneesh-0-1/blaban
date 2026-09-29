@@ -30,7 +30,7 @@ import { useWishListDelete } from "api-manage/hooks/react-query/wish-list/useWis
 import AmountWithDiscountedAmount from "../AmountWithDiscountedAmount";
 import CartClearModal from "../product-details/product-details-section/CartClearModal";
 import CustomModal from "../modal";
-import { getGuestId } from "helper-functions/getToken";
+import { getGuestId, getToken } from "helper-functions/getToken";
 import { onErrorResponse } from "api-manage/api-error-response/ErrorResponses";
 import useAddCartItem from "../../api-manage/hooks/react-query/add-cart/useAddCartItem";
 import Loading from "../custom-loading/Loading";
@@ -177,10 +177,7 @@ const WishListCard = ({ item, onOpenModal }) => {
 
   const addToWishlistHandler = (e) => {
     e.stopPropagation();
-    let token = undefined;
-    if (typeof window !== "undefined") {
-      token = localStorage.getItem("token");
-    }
+    let token = getToken();
     if (token) {
       addFavoriteMutation(item?.id, {
         onSuccess: (response) => {
