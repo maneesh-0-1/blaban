@@ -24,7 +24,11 @@ import { CustomButtonPrimary } from "styled-components/CustomButtons.style";
  * Same logic as CustomLanguage (StyledMenu + confirmation modal + locale change),
  * but a minimal Figma-spec UI: "English ⌄" in info-blue, white pill, no flag icon.
  */
-const AccountLanguageButton = () => {
+const AccountLanguageButton = ({
+  sx = {},
+  size = "medium",
+  compact = false,
+}) => {
   const dispatch = useDispatch();
   const { language } = useSelector((state) => state.configData);
   const { settings, saveSettings } = useSettings();
@@ -90,11 +94,14 @@ const AccountLanguageButton = () => {
       ? JSON.parse(localStorage.getItem("language-setting") || "null")
       : null) ||
     i18n.language;
-  const currentLang =
-    languageList?.find((item) => item?.languageCode === activeCode)
-      ?.languageName ?? "English";
+  const currentLangObj =
+    languageList?.find((item) => item?.languageCode === activeCode);
+  const currentLang = compact
+    ? (currentLangObj?.languageCode?.toUpperCase() ?? "EN")
+    : (currentLangObj?.languageName ?? "English");
 
   const isMenuOpen = Boolean(anchorEl);
+  const isSmall = size === "small";
 
   return (
     <>
@@ -108,9 +115,9 @@ const AccountLanguageButton = () => {
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "6px",
-          px: "12px",
-          height: "36px",
+          gap: isSmall ? "4px" : "6px",
+          px: isSmall ? "8px" : "12px",
+          height: isSmall ? "32px" : "36px",
           backgroundColor: isMenuOpen
             ? (t) => t.palette.action.hover
             : (t) => t.palette.background.secondary ?? "#f2f2f2",
@@ -122,11 +129,12 @@ const AccountLanguageButton = () => {
           "&:hover": {
             backgroundColor: (t) => t.palette.action.hover,
           },
+          ...sx,
         }}
       >
         <Typography
           sx={{
-            fontSize: "14px",
+            fontSize: isSmall ? "13px" : "14px",
             fontWeight: 600,
             color: "text.primary",
             lineHeight: 1.2,
@@ -139,7 +147,7 @@ const AccountLanguageButton = () => {
         <i
           className="fi fi-rr-angle-small-down"
           style={{
-            fontSize: "16px",
+            fontSize: isSmall ? "14px" : "16px",
             lineHeight: 1,
             display: "flex",
             color: "inherit",

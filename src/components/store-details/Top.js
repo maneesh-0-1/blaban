@@ -1,4 +1,4 @@
-﻿import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import DirectionsIcon from "@mui/icons-material/Directions";
 import { keyframes } from "@mui/system";
@@ -48,6 +48,7 @@ import { useRouter } from "next/router";
 import StoreShare from "components/store-details/StoreShare";
 import CustomModal from "components/modal";
 import CustomPageBreadCrumb from "components/common/CustomPageBreadCrumb";
+import AccountLanguageButton from "components/header/second-navbar/account-popover/AccountLanguageButton";
 
 const PageBackground = styled(Box)(() => ({
   width: "100%",
@@ -521,6 +522,13 @@ const Top = (props) => {
           >
             {storeDetails?.name}
           </Typography>
+          <AccountLanguageButton
+            size="small"
+            sx={{
+              backgroundColor: (t) =>
+                t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",
+            }}
+          />
         </Stack>
       </Box>
 
@@ -804,9 +812,22 @@ const Top = (props) => {
                     right: 10,
                     zIndex: 2,
                     flexDirection: { xs: "row-reverse", md: "row" },
-                    gap: { xs: 1.5, md: 0.75 },
+                    alignItems: "center",
+                    gap: { xs: 1, md: 0.75 },
                   }}
                 >
+                  <AccountLanguageButton
+                    size="small"
+                    sx={{
+                      display: { xs: "inline-flex", md: "none" },
+                      backgroundColor: alpha(theme.palette.background.paper, 0.92),
+                      backdropFilter: "blur(4px)",
+                      boxShadow: "0px 2px 6px rgba(0,0,0,0.12)",
+                      borderRadius: "16px",
+                      height: "32px",
+                      px: "10px",
+                    }}
+                  />
                   {!isInWishList() ? (
                     <Tooltip title={t("Add to wishlist")} arrow>
                       <FloatingIconButton onClick={addToFavorite}>

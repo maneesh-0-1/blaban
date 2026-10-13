@@ -1,4 +1,4 @@
-﻿import { Box, IconButton, Stack, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Stack, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,6 +16,7 @@ import { getFoodSections } from "components/home/module-wise-components/food/foo
 import { getGrocerySections } from "components/home/module-wise-components/grocery/grocerySectionsConfig";
 import { getPharmacySections } from "components/home/module-wise-components/pharmacy/pharmacySectionsConfig";
 import { getEcommerceSections } from "components/home/module-wise-components/ecommerce/ecommerceSectionsConfig";
+import AccountLanguageButton from "../second-navbar/account-popover/AccountLanguageButton";
 
 import useGetGroupedCart from "../../../api-manage/hooks/react-query/add-cart/useGetGroupedCart";
 import useGetBookingList from "api-manage/hooks/react-query/useGetBookingList";
@@ -337,50 +338,65 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
           py: "12px",
         }}
       >
-        <Stack direction="row" alignItems="center" gap="8px">
-          <Box
-            onClick={() => {
-              const moduleParam =
-                typeof router.query.module === "string"
-                  ? router.query.module
-                  : getCurrentModuleType();
-              router.push(`/home?module=${moduleParam}`);
-            }}
-            sx={{
-              width: 36,
-              height: 36,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "8px",
-              cursor: "pointer",
-              flexShrink: 0,
-              "&:active": {
-                backgroundColor: theme.palette.background.secondary,
-              },
-            }}
-          >
-            <i
-              className="fi fi-rr-arrow-small-left"
-              style={{
-                fontSize: "20px",
-                lineHeight: 1,
-                display: "flex",
-                color: theme.palette.neutral[1050],
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          gap="8px"
+        >
+          <Stack direction="row" alignItems="center" gap="8px" sx={{ minWidth: 0, flex: 1 }}>
+            <Box
+              onClick={() => {
+                const moduleParam =
+                  typeof router.query.module === "string"
+                    ? router.query.module
+                    : getCurrentModuleType();
+                router.push(`/home?module=${moduleParam}`);
               }}
-            />
-          </Box>
-          <Typography
+              sx={{
+                width: 36,
+                height: 36,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                cursor: "pointer",
+                flexShrink: 0,
+                "&:active": {
+                  backgroundColor: theme.palette.background.secondary,
+                },
+              }}
+            >
+              <i
+                className="fi fi-rr-arrow-small-left"
+                style={{
+                  fontSize: "20px",
+                  lineHeight: 1,
+                  display: "flex",
+                  color: theme.palette.neutral[1050],
+                }}
+              />
+            </Box>
+            <Typography
+              sx={{
+                fontSize: "18px",
+                fontWeight: 700,
+                color: "neutral.1050",
+                letterSpacing: "-0.54px",
+                lineHeight: 1.1,
+              }}
+            >
+              {t(sectionTitle)}
+            </Typography>
+          </Stack>
+          <AccountLanguageButton
+            size="small"
             sx={{
-              fontSize: "18px",
-              fontWeight: 700,
-              color: "neutral.1050",
-              letterSpacing: "-0.54px",
-              lineHeight: 1.1,
+              backgroundColor: (t) =>
+                t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#fff",
+              boxShadow: "0px 1px 3px rgba(0,0,0,0.08)",
             }}
-          >
-            {t(sectionTitle)}
-          </Typography>
+          />
         </Stack>
       </Box>
     );
@@ -490,70 +506,80 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
                 </Stack>
               </Box>
 
-              {/* Cart â€” monochrome stroke icon */}
-              {getCurrentModuleType() === ModuleTypes.PARCEL ? null : (
-                <IconButton
-                  onClick={() => {
-                    if (getCurrentModuleType() === ModuleTypes.RENTAL) {
-                      setTaxiOpen(true);
-                      return;
-                    }
-                    setCartOpen(true);
-                  }}
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ flexShrink: 0 }}>
+                <AccountLanguageButton
+                  size="small"
                   sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "8px",
-                    color: theme.palette.neutral[1050],
-                    position: "relative",
-                    flexShrink: 0,
-                    p: "8px",
+                    backgroundColor: (t) =>
+                      t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#fff",
+                    boxShadow: "0px 1px 3px rgba(0,0,0,0.08)",
                   }}
-                  aria-label={t("Cart")}
-                >
-                  {getCurrentModuleType() === ModuleTypes.RENTAL ? (
-                    <DirectionsCarOutlinedIcon
-                      sx={{
-                        fontSize: "20px",
-                        color: theme.palette.neutral[1050],
-                      }}
-                    />
-                  ) : (
-                    <i
-                      className="fi fi-rr-shopping-cart"
-                      style={{
-                        fontSize: "16px",
-                        lineHeight: 1,
-                        display: "flex",
-                        color: theme.palette.neutral[1050],
-                      }}
-                    />
-                  )}
-                  {cartCount > 0 && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 2,
-                        right: 2,
-                        minWidth: 16,
-                        height: 16,
-                        px: "4px",
-                        borderRadius: "8px",
-                        backgroundColor: "primary.main",
-                        color: "common.white",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        lineHeight: 1,
-                      }}
-                    >
-                      {cartCount}
-                    </Box>
-                  )}
-                </IconButton>
-              )}
+                />
+                {/* Cart â€” monochrome stroke icon */}
+                {getCurrentModuleType() === ModuleTypes.PARCEL ? null : (
+                  <IconButton
+                    onClick={() => {
+                      if (getCurrentModuleType() === ModuleTypes.RENTAL) {
+                        setTaxiOpen(true);
+                        return;
+                      }
+                      setCartOpen(true);
+                    }}
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "8px",
+                      color: theme.palette.neutral[1050],
+                      position: "relative",
+                      flexShrink: 0,
+                      p: "8px",
+                    }}
+                    aria-label={t("Cart")}
+                  >
+                    {getCurrentModuleType() === ModuleTypes.RENTAL ? (
+                      <DirectionsCarOutlinedIcon
+                        sx={{
+                          fontSize: "20px",
+                          color: theme.palette.neutral[1050],
+                        }}
+                      />
+                    ) : (
+                      <i
+                        className="fi fi-rr-shopping-cart"
+                        style={{
+                          fontSize: "16px",
+                          lineHeight: 1,
+                          display: "flex",
+                          color: theme.palette.neutral[1050],
+                        }}
+                      />
+                    )}
+                    {cartCount > 0 && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 2,
+                          right: 2,
+                          minWidth: 16,
+                          height: 16,
+                          px: "4px",
+                          borderRadius: "8px",
+                          backgroundColor: "primary.main",
+                          color: "common.white",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          lineHeight: 1,
+                        }}
+                      >
+                        {cartCount}
+                      </Box>
+                    )}
+                  </IconButton>
+                )}
+              </Stack>
             </Stack>
           </Box>
 

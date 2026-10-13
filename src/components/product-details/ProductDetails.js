@@ -7,6 +7,7 @@ import { t } from "i18next";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import AccountLanguageButton from "components/header/second-navbar/account-popover/AccountLanguageButton";
 import { useWishListGet } from "api-manage/hooks/react-query/wish-list/useWishListGet";
 import { useDispatch, useSelector } from "react-redux";
 import { addWishList, removeWishListItem, setWishList } from "redux/slices/wishList";
@@ -225,6 +226,13 @@ const ProductDetails = ({ productDetailsData, configData }) => {
         >
           {showProductNameInBar ? productDetailsData?.name : t("Item Details")}
         </Typography>
+        <AccountLanguageButton
+          size="small"
+          sx={{
+            backgroundColor: (t) =>
+              t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",
+          }}
+        />
         {showProductNameInBar && (
           <IconButton
             onClick={

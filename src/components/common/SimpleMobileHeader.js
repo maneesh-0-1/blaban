@@ -1,6 +1,7 @@
 import { Box, IconButton, Stack, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
+import AccountLanguageButton from "components/header/second-navbar/account-popover/AccountLanguageButton";
 
 /**
  * Mobile-only sticky header with back arrow (→ home) + title.
@@ -53,11 +54,24 @@ const SimpleMobileHeader = ({ title, action, sx, backHref }) => {
             letterSpacing: "-0.54px",
             lineHeight: 1.1,
             flex: 1,
+            minWidth: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
           {t(title)}
         </Typography>
-        {action}
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ flexShrink: 0 }}>
+          {action}
+          <AccountLanguageButton
+            size="small"
+            sx={{
+              backgroundColor: (t) =>
+                t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",
+            }}
+          />
+        </Stack>
       </Stack>
     </Box>
   );

@@ -5,11 +5,13 @@ import {
   IconButton,
   Paper,
   Skeleton,
+  Stack,
   styled,
   Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import AccountLanguageButton from "components/header/second-navbar/account-popover/AccountLanguageButton";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -281,9 +283,23 @@ export const ModuleSelection = ({
         >
           <CustomPaper>
             <CustomStackFullWidth spacing={2}>
-              <Typography variant="h6" textAlign="center">
-                {t(module_header)}
-              </Typography>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ width: "100%", px: { xs: 0.5, sm: 1 } }}
+              >
+                <Typography variant="h6">
+                  {t(module_header)}
+                </Typography>
+                <AccountLanguageButton
+                  size="small"
+                  sx={{
+                    backgroundColor: (t) =>
+                      t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",
+                  }}
+                />
+              </Stack>
               <Grid container spacing={isXSmall ? 1 : 2} width="98%">
                 {modulesToShow &&
                   (modulesToShow?.length > 0 ? (

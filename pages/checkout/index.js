@@ -21,6 +21,7 @@ import useScrollToTop from "api-manage/hooks/custom-hooks/useScrollToTop";
 import { setConfigData } from "redux/slices/configData";
 import { useGetConfigData } from "../../src/api-manage/hooks/useGetConfigData";
 import useGetLandingPage from "../../src/api-manage/hooks/react-query/useGetLandingPage";
+import AccountLanguageButton from "../../src/components/header/second-navbar/account-popover/AccountLanguageButton";
 
 const CheckoutMobileHeader = () => {
   const router = useRouter();
@@ -40,29 +41,39 @@ const CheckoutMobileHeader = () => {
       <Stack
         direction="row"
         alignItems="center"
+        justifyContent="space-between"
         gap="8px"
         sx={{ px: "12px", py: "12px" }}
       >
-        <IconButton
-          onClick={() => router.back()}
-          sx={{ p: "4px", color: "neutral.1050", flexShrink: 0 }}
-        >
-          <i
-            className="fi fi-rr-arrow-small-left"
-            style={{ fontSize: "22px", lineHeight: 1, display: "flex" }}
-          />
-        </IconButton>
-        <Typography
+        <Stack direction="row" alignItems="center" gap="8px" sx={{ minWidth: 0, flex: 1 }}>
+          <IconButton
+            onClick={() => router.back()}
+            sx={{ p: "4px", color: "neutral.1050", flexShrink: 0 }}
+          >
+            <i
+              className="fi fi-rr-arrow-small-left"
+              style={{ fontSize: "22px", lineHeight: 1, display: "flex" }}
+            />
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "neutral.1050",
+              letterSpacing: "-0.54px",
+              lineHeight: 1.1,
+            }}
+          >
+            {t("Checkout")}
+          </Typography>
+        </Stack>
+        <AccountLanguageButton
+          size="small"
           sx={{
-            fontSize: "18px",
-            fontWeight: 700,
-            color: "neutral.1050",
-            letterSpacing: "-0.54px",
-            lineHeight: 1.1,
+            backgroundColor: (t) =>
+              t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",
           }}
-        >
-          {t("Checkout")}
-        </Typography>
+        />
       </Stack>
     </Box>
   );
