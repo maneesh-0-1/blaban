@@ -28,6 +28,7 @@ const AccountLanguageButton = ({
   sx = {},
   size = "medium",
   compact = false,
+  showGlobeIcon = false,
 }) => {
   const dispatch = useDispatch();
   const { language } = useSelector((state) => state.configData);
@@ -38,12 +39,27 @@ const AccountLanguageButton = ({
   const [openModal, setOpenModal] = useState(false);
   const anchorRef = useRef(null);
 
+  const getSafeStorage = (key) => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return raw;
+      }
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = JSON.parse(localStorage.getItem("language-setting"));
+      const stored = getSafeStorage("language-setting");
       localStorage.setItem(
         "language-setting",
-        JSON.stringify(stored || i18n.language)
+        JSON.stringify(stored || i18n.language || "en")
       );
     }
   }, []);
@@ -51,10 +67,8 @@ const AccountLanguageButton = ({
   // Hydrate Redux from localStorage on mount / when language changes
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const languageSetting = JSON.parse(
-        localStorage.getItem("language-setting")
-      );
-      const country = JSON.parse(localStorage.getItem("country"));
+      const languageSetting = getSafeStorage("language-setting");
+      const country = getSafeStorage("country");
       if (languageSetting && languageSetting !== language) {
         dispatch(setCountryCode(country));
         dispatch(setLanguage(languageSetting));
@@ -90,12 +104,12 @@ const AccountLanguageButton = ({
   // Prefer Redux language; fall back to localStorage if Redux not yet hydrated
   const activeCode =
     language ||
-    (typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("language-setting") || "null")
-      : null) ||
-    i18n.language;
+    getSafeStorage("language-setting") ||
+    i18n.language ||
+    "en";
   const currentLangObj =
-    languageList?.find((item) => item?.languageCode === activeCode);
+    languageList?.find((item) => item?.languageCode === activeCode) ||
+    languageList?.[0];
   const currentLang = compact
     ? (currentLangObj?.languageCode?.toUpperCase() ?? "EN")
     : (currentLangObj?.languageName ?? "English");
@@ -132,6 +146,18 @@ const AccountLanguageButton = ({
           ...sx,
         }}
       >
+        {showGlobeIcon && (
+          <i
+            className="fi fi-rs-globe"
+            style={{
+              fontSize: isSmall ? "15px" : "17px",
+              lineHeight: 1,
+              display: "flex",
+              alignItems: "center",
+              color: "inherit",
+            }}
+          />
+        )}
         <Typography
           sx={{
             fontSize: isSmall ? "13px" : "14px",

@@ -17,6 +17,7 @@ import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { ModuleTypes } from "helper-functions/moduleTypes";
 import SearchProductModal from "../home/search/SearchProductModal";
 import FloatingCartButton from "../header/new-navbar/FloatingCartButton";
+import FloatingLanguageButton from "../common/FloatingLanguageButton";
 
 // Routes that own their own sticky/in-flow header on mobile (no extra mt needed).
 // Adding a route here removes the default mobile navbar offset on that page.
@@ -209,6 +210,7 @@ const MainLayout = ({ children, configData }) => {
         router.pathname !== "/product/[id]" && <BottomNav />}
       <SearchProductModal />
       <FloatingCartButton />
+      <FloatingLanguageButton />
     </MainLayoutRoot>
   );
 };
