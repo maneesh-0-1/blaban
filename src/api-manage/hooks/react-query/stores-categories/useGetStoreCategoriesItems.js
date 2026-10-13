@@ -12,7 +12,7 @@ const buildUrl = (params) => {
     storeId,
     categoryId = [],
     offset = 1,
-    limit = 12,
+    limit = 500,
     type,
     minMax = [0, 1],
     filterData = [],
@@ -21,8 +21,13 @@ const buildUrl = (params) => {
   } = params || {};
 
   const parts = [`store_id=${storeId}`, `offset=${offset}`, `limit=${limit}`];
-  if (Array.isArray(categoryId) && categoryId.length > 0) {
-    parts.push(`category_id=${categoryId.join(",")}`);
+  const catArr = Array.isArray(categoryId)
+    ? categoryId
+    : categoryId != null && categoryId !== ""
+    ? [categoryId]
+    : [];
+  if (catArr.length > 0) {
+    parts.push(`category_id=${catArr.join(",")}`);
   }
   // The backend treats "halal" as a tag/filter rather than a categorical
   // type. So when the user picks halal in the UI we route it through
@@ -60,23 +65,42 @@ const buildUrl = (params) => {
 
 const fetchPage = async (params) => {
   const { data } = await MainApi.get(buildUrl(params));
-  // Normalize: the endpoint now returns items pre-grouped under
+  // Normalize: the endpoint returns items pre-grouped under
   // `category_wise_items: { "<categoryId>": [...] }`. Flatten into a single
   // `products` array (dedup by id) so downstream consumers that expect the
-  // older `products` shape keep working.
-  if (data && !Array.isArray(data?.products) && data?.category_wise_items) {
+  // older `products` shape keep working, while preserving category attribution.
+  if (data && data?.category_wise_items) {
     const seen = new Set();
     const flat = [];
-    Object.values(data.category_wise_items).forEach((bucket) => {
+    Object.entries(data.category_wise_items).forEach(([catId, bucket]) => {
       if (!Array.isArray(bucket)) return;
       bucket.forEach((item) => {
+        if (!item) return;
+        if (item.category_id == null && catId) {
+          item.category_id = catId;
+        }
         if (item?.id != null && !seen.has(item.id)) {
           seen.add(item.id);
           flat.push(item);
         }
       });
     });
-    data.products = flat;
+    if (!Array.isArray(data?.products) || data.products.length === 0) {
+      data.products = flat;
+    }
+    // Ensure any category ID present in category_wise_items is represented in categories
+    if (Array.isArray(data?.categories)) {
+      const knownCatIds = new Set(data.categories.map((c) => String(c?.id)));
+      Object.keys(data.category_wise_items).forEach((catId) => {
+        if (!knownCatIds.has(String(catId))) {
+          data.categories.push({
+            id: Number(catId) || catId,
+            name: `Category ${catId}`,
+          });
+          knownCatIds.add(String(catId));
+        }
+      });
+    }
   }
   return data;
 };
@@ -84,29 +108,39 @@ const fetchPage = async (params) => {
 export default function useGetStoreCategoriesItems(pageParams) {
   const zoneid =
     typeof window !== "undefined" ? localStorage.getItem("zoneid") : null;
+  const effectiveLimit = pageParams?.limit || 500;
   return useInfiniteQuery(
     [
-      "store-categories-items",
+      "store-categories-items-v5",
       pageParams?.storeId,
-      pageParams?.offset,
       pageParams?.categoryId,
       pageParams?.type,
       pageParams?.filterData,
       pageParams?.minMax,
       pageParams?.ratingCount,
       pageParams?.sortBy,
+      effectiveLimit,
       zoneid,
     ],
-    () => fetchPage(pageParams),
+    ({ pageParam = 1 }) =>
+      fetchPage({
+        ...pageParams,
+        offset: pageParam,
+        limit: effectiveLimit,
+      }),
     {
       enabled: Boolean(pageParams?.storeId),
-      retry: 1,
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60 * 2,
+      retry: 2,
+      cacheTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60,
       onError: onSingleErrorResponse,
       getNextPageParam: (lastPage, allPages) => {
-        const nextPage = allPages.length + 1;
-        return lastPage?.products?.length > 0 ? nextPage : undefined;
+        const totalSize = lastPage?.total_size || 0;
+        const totalFetched = allPages.reduce(
+          (sum, p) => sum + (p?.products?.length || 0),
+          0
+        );
+        return totalFetched < totalSize ? allPages.length + 1 : undefined;
       },
     }
   );

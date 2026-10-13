@@ -85,7 +85,28 @@ const CategoryPageContent = () => {
   const moduleType = getCurrentModuleType();
 
   const rawId = router.query.id;
-  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  const rawSlug = router.query.slug;
+  const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
+
+  // Fetch all categories to build breadcrumb + sub-category chips
+  const { data: categoriesResponse } = useGetCategories();
+
+  // Resolve category id: from query id, numeric slug, or matching category slug
+  const id = useMemo(() => {
+    if (rawId) {
+      return Array.isArray(rawId) ? rawId[0] : rawId;
+    }
+    if (slug && !isNaN(Number(slug))) {
+      return slug;
+    }
+    const cats = categoriesResponse?.data ?? [];
+    const allCats = cats.flatMap((c) => [c, ...(c?.childes ?? [])]);
+    const matched = allCats.find(
+      (c) => c?.slug && String(c.slug) === String(slug)
+    );
+    return matched?.id ? String(matched.id) : (slug || undefined);
+  }, [rawId, slug, categoriesResponse]);
+
   const q = typeof router.query.q === "string" ? router.query.q.trim() : "";
   const moduleParam =
     typeof router.query.module === "string" ? router.query.module : undefined;
@@ -95,9 +116,6 @@ const CategoryPageContent = () => {
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [appliedFilterCount, setAppliedFilterCount] = useState(0);
   const [appliedFilters, setAppliedFilters] = useState({});
-
-  // Fetch all categories to build breadcrumb + sub-category chips
-  const { data: categoriesResponse } = useGetCategories();
 
   const subCategories = useMemo(() => {
     const cats = categoriesResponse?.data ?? [];

@@ -307,7 +307,7 @@ const MiddleSection = (props) => {
   // large page instead of paging by offset. The search endpoint still uses
   // the same `offset` state but the inView-driven bump effect below is
   // also disabled, so neither path keeps requesting more.
-  const limit = 100;
+  const limit = 500;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {
@@ -389,6 +389,24 @@ const MiddleSection = (props) => {
       // user's selected sort, overriding the backend response.
       const backendOrdered = res?.products ?? [];
 
+      // Merge category_wise_items from res into existing state
+      const prevCatWise = state?.data?.category_wise_items || {};
+      const newCatWise = res?.category_wise_items || {};
+      const mergedCatWise = { ...prevCatWise };
+      Object.entries(newCatWise).forEach(([catId, items]) => {
+        if (!mergedCatWise[catId]) {
+          mergedCatWise[catId] = [...items];
+        } else {
+          const existingIds = new Set(mergedCatWise[catId].map((x) => x?.id));
+          items.forEach((item) => {
+            if (item?.id != null && !existingIds.has(item.id)) {
+              existingIds.add(item.id);
+              mergedCatWise[catId].push(item);
+            }
+          });
+        }
+      });
+
       if (offset > 1) {
         if (state?.data) {
           if (backendOrdered.length > 0) {
@@ -399,6 +417,7 @@ const MiddleSection = (props) => {
               payload: {
                 ...res,
                 products: withoutDuplicacy,
+                category_wise_items: mergedCatWise,
               },
             });
           }
@@ -408,6 +427,7 @@ const MiddleSection = (props) => {
             payload: {
               ...res,
               products: backendOrdered,
+              category_wise_items: mergedCatWise,
             },
           });
         }
@@ -423,6 +443,7 @@ const MiddleSection = (props) => {
               payload: {
                 ...res,
                 products: withoutDuplicacy,
+                category_wise_items: mergedCatWise,
               },
             });
           } else {
@@ -431,6 +452,7 @@ const MiddleSection = (props) => {
               payload: {
                 ...res,
                 products: backendOrdered,
+                category_wise_items: mergedCatWise,
               },
             });
           }
@@ -440,6 +462,7 @@ const MiddleSection = (props) => {
             payload: {
               ...res,
               products: backendOrdered,
+              category_wise_items: mergedCatWise,
             },
           });
         }
@@ -467,13 +490,29 @@ const MiddleSection = (props) => {
   // isLoadingMore detects this "load more" case: loading but data already exists.
   const isLoadingMore = isLoading && (state.data?.products?.length ?? 0) > 0;
 
-  // Pull categories from the first page. The new /store-categories/items
-  // endpoint already returns only categories relevant to this store, so no
-  // client-side `ownCategories` whitelist is needed.
+  // Pull categories from all loaded pages. The /store-categories/items
+  // endpoint returns categories relevant to this store.
   useEffect(() => {
-    const firstPageCategories = data?.pages?.[0]?.categories;
-    if (Array.isArray(firstPageCategories)) {
-      setCategoryList(firstPageCategories);
+    const pages = data?.pages || [];
+    if (pages.length === 0) return;
+    const catMap = new Map();
+    pages.forEach((p) => {
+      (p?.categories || []).forEach((c) => {
+        if (c?.id != null && !catMap.has(String(c.id))) {
+          catMap.set(String(c.id), c);
+        }
+      });
+      if (p?.category_wise_items) {
+        Object.keys(p.category_wise_items).forEach((k) => {
+          if (!catMap.has(String(k))) {
+            catMap.set(String(k), { id: Number(k) || k, name: `Category ${k}` });
+          }
+        });
+      }
+    });
+    const combined = Array.from(catMap.values());
+    if (combined.length > 0) {
+      setCategoryList(combined);
     }
   }, [data]);
   // React-Query automatically queries when pageParams/query keys change.
@@ -497,10 +536,12 @@ const MiddleSection = (props) => {
     setOffset(1);
   }, [storeId]);
 
-  // Infinite scroll disabled: previously this effect bumped `offset` when
-  // the sentinel scrolled into view, which kept hitting
-  // /store-categories/items?offset=N. With a single high-limit page (see
-  // `limit` above) we no longer want to auto-paginate.
+  // Auto-fetch remaining pages if a store has more items than the single-page limit
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && !isLoading) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
 
   const handleCategoryId = (id) => {
     setOffset(1);
@@ -1011,26 +1052,85 @@ const MiddleSection = (props) => {
                 </Stack>
               ) : (
                 (() => {
-                  const allProducts = state.data?.products ?? [];
-                  console.log({ allProducts });
+                  const allProducts = (() => {
+                    if (state.searchKey && state.data?.products?.length > 0) {
+                      return state.data.products;
+                    }
+                    const seen = new Set();
+                    const list = [];
+                    (data?.pages || []).forEach((p) => {
+                      (p?.products || []).forEach((item) => {
+                        if (item?.id != null && !seen.has(item.id)) {
+                          seen.add(item.id);
+                          list.push(item);
+                        }
+                      });
+                    });
+                    if (list.length > 0) return list;
+                    return state.data?.products ?? [];
+                  })();
 
-                  // Group products by their category id. Defensive: handle both
-                  // `category_ids: [{id, ...}]` (object form) and
-                  // `category_ids: [25, 40]` (id-only form), and fall back to
-                  // the primary `category_id` if the array is missing/empty.
+                  // Group products by their category id.
+                  // 1. Direct from category_wise_items (most accurate from backend API)
                   const productsByCategory = {};
+
+                  if (data?.pages?.length > 0) {
+                    data.pages.forEach((p) => {
+                      if (p?.category_wise_items && typeof p.category_wise_items === "object") {
+                        Object.entries(p.category_wise_items).forEach(([catId, items]) => {
+                          if (Array.isArray(items)) {
+                            const key = String(catId);
+                            if (!productsByCategory[key]) productsByCategory[key] = [];
+                            items.forEach((item) => {
+                              if (!productsByCategory[key].some((x) => x?.id === item?.id)) {
+                                productsByCategory[key].push(item);
+                              }
+                            });
+                          }
+                        });
+                      }
+                    });
+                  }
+
+                  if (state.data?.category_wise_items && typeof state.data.category_wise_items === "object") {
+                    Object.entries(state.data.category_wise_items).forEach(([catId, items]) => {
+                      if (Array.isArray(items)) {
+                        const key = String(catId);
+                        if (!productsByCategory[key]) productsByCategory[key] = [];
+                        items.forEach((item) => {
+                          if (!productsByCategory[key].some((x) => x?.id === item?.id)) {
+                            productsByCategory[key].push(item);
+                          }
+                        });
+                      }
+                    });
+                  }
+
+                  // 2. Also map from allProducts in case products were added/filtered or category_wise_items is incomplete
                   allProducts.forEach((p) => {
                     const ids = new Set();
-                    (p?.category_ids || []).forEach((c) => {
-                      const id = c?.id ?? c;
-                      if (id != null) ids.add(String(id));
-                    });
-                    if (ids.size === 0 && p?.category_id != null) {
+                    let catIds = p?.category_ids;
+                    if (typeof catIds === "string") {
+                      try {
+                        catIds = JSON.parse(catIds);
+                      } catch {
+                        catIds = [];
+                      }
+                    }
+                    if (Array.isArray(catIds)) {
+                      catIds.forEach((c) => {
+                        const id = c?.id ?? c;
+                        if (id != null && String(id) !== "0") ids.add(String(id));
+                      });
+                    }
+                    if (p?.category_id != null) {
                       ids.add(String(p.category_id));
                     }
                     ids.forEach((id) => {
                       if (!productsByCategory[id]) productsByCategory[id] = [];
-                      productsByCategory[id].push(p);
+                      if (!productsByCategory[id].some((x) => x?.id === p?.id)) {
+                        productsByCategory[id].push(p);
+                      }
                     });
                   });
 
