@@ -24,9 +24,10 @@ const buildUrl = ({ id, sortBy, type }) => {
 const getPopularProductsInStore = async (params) => {
   const { moduleId, storeZoneId } = params;
   const url = buildUrl(params);
+  let result;
   if (getCurrentModuleType()) {
     const { data } = await MainApi.get(url);
-    return data;
+    result = data;
   } else {
     const { data } = await axios.get(
       `${baseUrl}${url}`,
@@ -38,8 +39,25 @@ const getPopularProductsInStore = async (params) => {
         },
       }
     );
-    return data;
+    result = data;
   }
+
+  // Fallback to main store 2 if branch has no popular items
+  if (
+    (!result || !result.products || result.products.length === 0) &&
+    params?.id &&
+    String(params.id) !== "2"
+  ) {
+    try {
+      const fallbackUrl = buildUrl({ ...params, id: 2 });
+      const { data: fallbackData } = await MainApi.get(fallbackUrl);
+      if (fallbackData?.products?.length > 0) return fallbackData;
+    } catch {
+      // ignore
+    }
+  }
+
+  return result;
 };
 
 export default function usePopularProductsInStore(params) {

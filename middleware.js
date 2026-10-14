@@ -30,10 +30,23 @@ export function middleware(request) {
   // Get module parameter from cookie (set on client)
   const moduleFromCookie = request.cookies.get("selectedModule")?.value;
 
-  // Redirect root path and /home to /store/blaban?module=blaban
-  if (pathname === "/" || pathname === "/home") {
-    const url = new URL("/store/blaban?module=blaban", request.url);
-    return NextResponse.redirect(url);
+  // Handle /home: route to selected branch or to root / for branch resolution
+  if (pathname === "/home") {
+    const branch = request.cookies.get("selectedBranch")?.value;
+    const targetUrl = branch
+      ? `/store/${branch}?module=blaban`
+      : "/";
+    return NextResponse.redirect(new URL(targetUrl, request.url));
+  }
+
+  // Handle root /: if user already has a resolved branch cookie, route directly;
+  // otherwise allow request through to pages/index.js for client-side location detection.
+  if (pathname === "/") {
+    const branch = request.cookies.get("selectedBranch")?.value;
+    if (branch) {
+      const url = new URL(`/store/${branch}?module=blaban`, request.url);
+      return NextResponse.redirect(url);
+    }
   }
 
   // Check if request already has module/module_id param

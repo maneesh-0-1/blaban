@@ -63,12 +63,7 @@ const buildUrl = (params) => {
   return `${store_categories_items_api}?${parts.join("&")}`;
 };
 
-const fetchPage = async (params) => {
-  const { data } = await MainApi.get(buildUrl(params));
-  // Normalize: the endpoint returns items pre-grouped under
-  // `category_wise_items: { "<categoryId>": [...] }`. Flatten into a single
-  // `products` array (dedup by id) so downstream consumers that expect the
-  // older `products` shape keep working, while preserving category attribution.
+const normalizeResponse = (data) => {
   if (data && data?.category_wise_items) {
     const seen = new Set();
     const flat = [];
@@ -103,6 +98,32 @@ const fetchPage = async (params) => {
     }
   }
   return data;
+};
+
+const fetchPage = async (params) => {
+  const { data } = await MainApi.get(buildUrl(params));
+  let normalized = normalizeResponse(data);
+
+  // If a branch currently has 0 products/categories in the backend,
+  // fallback to main B.Laban catalog (store_id: 2) so the customer sees all products.
+  const hasNoProducts =
+    !normalized ||
+    normalized.total_size === 0 ||
+    (!normalized.products?.length && !normalized.categories?.length);
+
+  if (hasNoProducts && params?.storeId && String(params.storeId) !== "2") {
+    try {
+      const fallbackUrl = buildUrl({ ...params, storeId: 2 });
+      const { data: fallbackData } = await MainApi.get(fallbackUrl);
+      if (fallbackData) {
+        return normalizeResponse(fallbackData);
+      }
+    } catch (err) {
+      console.warn("Fallback to main store failed:", err);
+    }
+  }
+
+  return normalized;
 };
 
 export default function useGetStoreCategoriesItems(pageParams) {

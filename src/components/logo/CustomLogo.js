@@ -23,8 +23,28 @@ const CustomLogo = ({ logoImg, atlText, height, width, objectFit }) => {
     location = localStorage.getItem("location");
   }
   const handleClick = () => {
+    let targetSlug = "blaban";
+    if (typeof window !== "undefined") {
+      const savedBranch = localStorage.getItem("selectedBranch");
+      if (savedBranch) {
+        targetSlug = savedBranch;
+      } else {
+        try {
+          const latLngRaw = localStorage.getItem("currentLatLng");
+          if (latLngRaw) {
+            const parsed = JSON.parse(latLngRaw);
+            if (parsed?.lat != null && parsed?.lng != null) {
+              const { DEFAULT_BRANCHES, findNearestBranch, parseZoneIds } = require("../../utils/branchHelper");
+              const zoneIds = parseZoneIds(localStorage.getItem("zoneid"));
+              const nearest = findNearestBranch(DEFAULT_BRANCHES, parsed.lat, parsed.lng, zoneIds);
+              if (nearest?.slug) targetSlug = nearest.slug;
+            }
+          }
+        } catch {}
+      }
+    }
     router.replace(
-      { pathname: "/store/blaban", query: { module: "blaban" } },
+      { pathname: `/store/${targetSlug}`, query: { module: "blaban" } },
       undefined,
       { shallow: true }
     );

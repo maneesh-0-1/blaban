@@ -56,6 +56,11 @@ import { useTranslation } from "react-i18next";
 import { getSelectedVariations } from "components/header/second-navbar/SecondNavbar";
 import { setCartList, setStoreCartList } from "redux/slices/cart";
 import { saveModuleParam } from "utils/moduleParamManager";
+import {
+  DEFAULT_BRANCHES,
+  findNearestBranch,
+  persistBranchSelection,
+} from "utils/branchHelper";
 
 const MapModal = dynamic(() => import("../Map/MapModal"));
 
@@ -379,8 +384,27 @@ const StoreDetails = ({ storeDetails, configData }) => {
       setOpenStoreZoneModal(false);
       return;
     }
+    if (isStoreZoneMismatch && currentLatLng?.lat != null && currentLatLng?.lng != null) {
+      const zoneIds = parseZoneIdsFromStorageValue(zoneid);
+      const nearest = findNearestBranch(
+        DEFAULT_BRANCHES,
+        currentLatLng.lat,
+        currentLatLng.lng,
+        zoneIds
+      );
+      if (nearest?.slug && nearest.slug !== storeDetails?.slug) {
+        persistBranchSelection(nearest.slug, currentLatLng.lat, currentLatLng.lng, zoneid);
+        router.replace(
+          { pathname: `/store/${nearest.slug}`, query: { module: "blaban" } },
+          undefined,
+          { shallow: true }
+        );
+        setOpenStoreZoneModal(false);
+        return;
+      }
+    }
     setOpenStoreZoneModal(isStoreZoneMismatch);
-  }, [hasCurrentLatLng, isStoreZoneMismatch, zoneid]);
+  }, [hasCurrentLatLng, isStoreZoneMismatch, zoneid, storeDetails?.slug, currentLatLng, router]);
 
   // When openStoreZoneModal is open, keep modal open for user to pick location from map
 
@@ -415,6 +439,26 @@ const StoreDetails = ({ storeDetails, configData }) => {
 
     const zoneIds = parseZoneIdsFromStorageValue(latestZoneid);
     if (zoneIds.length === 0) return;
+
+    const nearest = findNearestBranch(
+      DEFAULT_BRANCHES,
+      latestCurrentLatLng.lat,
+      latestCurrentLatLng.lng,
+      zoneIds
+    );
+    if (nearest?.slug && nearest.slug !== storeDetails?.slug) {
+      persistBranchSelection(
+        nearest.slug,
+        latestCurrentLatLng.lat,
+        latestCurrentLatLng.lng,
+        latestZoneid
+      );
+      router.push({
+        pathname: `/store/${nearest.slug}`,
+        query: { module: "blaban" },
+      });
+      return;
+    }
 
     if (!zoneIds.includes(storeZoneId)) {
       setOpenStoreZoneModal(true);

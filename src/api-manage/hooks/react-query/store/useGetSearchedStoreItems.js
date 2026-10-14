@@ -11,11 +11,12 @@ import axios from "axios";
 const getData = async (pageParams) => {
   const { storeId, searchKey, offset, limit, type, moduleId, storeZoneId } =
     pageParams;
+  let result;
   if (getCurrentModuleType()) {
     const { data } = await MainApi.get(
       `${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`
     );
-    return data;
+    result = data;
   } else {
     const { data } = await axios.get(
       `${baseUrl}${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`,
@@ -27,8 +28,28 @@ const getData = async (pageParams) => {
         },
       }
     );
-    return data;
+    result = data;
   }
+
+  // Fallback to main store 2 if branch search has 0 products
+  if (
+    (!result || result.total_size === 0 || !result.products || result.products.length === 0) &&
+    storeId &&
+    String(storeId) !== "2"
+  ) {
+    try {
+      const { data: fallbackData } = await MainApi.get(
+        `${store_item_search_api}?store_id=2&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`
+      );
+      if (fallbackData?.products?.length > 0) {
+        return fallbackData;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return result;
 };
 
 export default function useGetSearchedStoreItems(

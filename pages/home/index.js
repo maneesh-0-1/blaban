@@ -80,9 +80,10 @@ const Home = ({ metaData, configData }) => {
 
 export default Home;
 export const getServerSideProps = async (context) => {
+  const branch = context.req?.cookies?.selectedBranch;
   return {
     redirect: {
-      destination: "/store/blaban?module=blaban",
+      destination: branch ? `/store/${branch}?module=blaban` : "/",
       permanent: false,
     },
   };
