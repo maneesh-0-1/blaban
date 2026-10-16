@@ -40,6 +40,24 @@ declare module 'react-image-magnify';
 declare module 'emoji-picker-react';
 declare module 'base-64';
 
+// Item & Cart Types
+export interface Item {
+    id: number;
+    name: string;
+    is_takeaway_only?: number | boolean;
+    [key: string]: any;
+}
+
+export interface CartItem {
+    id?: number;
+    item_id?: number;
+    name?: string;
+    quantity?: number;
+    item?: Item;
+    is_takeaway_only?: number | boolean;
+    [key: string]: any;
+}
+
 // Stats Section Types
 export interface StatItem {
     id: number;

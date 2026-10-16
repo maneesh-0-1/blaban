@@ -1340,3 +1340,29 @@ export const handleFailedOrderPlace = ({
     router.push(url, undefined, { shallow: true });
   }
 };
+
+/**
+ * Checks if ANY item in the active cart or item list is takeaway-only.
+ *
+ * @param {Array} cartList - The list of cart items or products
+ * @returns {boolean} - true if any item requires takeaway / in-store pickup
+ */
+export const isCartTakeawayOnly = (cartList = []) => {
+  if (!Array.isArray(cartList) || cartList.length === 0) {
+    return false;
+  }
+
+  return cartList.some((cartItem) => {
+    if (!cartItem) return false;
+    const item = cartItem.item || cartItem;
+    return (
+      item?.is_takeaway_only === 1 ||
+      item?.is_takeaway_only === "1" ||
+      item?.is_takeaway_only === true ||
+      cartItem?.is_takeaway_only === 1 ||
+      cartItem?.is_takeaway_only === "1" ||
+      cartItem?.is_takeaway_only === true
+    );
+  });
+};
+

@@ -6,6 +6,7 @@ import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
 import DeliveryAddress from "../delivery-address";
 import { Stack } from "@mui/system";
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -22,14 +23,18 @@ import RestaurantScheduleTime from "./RestaurantScheduleTime";
 import CustomTextFieldWithFormik from "components/form-fields/CustomTextFieldWithFormik";
 import { getToken } from "helper-functions/getToken";
 import LockIcon from "@mui/icons-material/Lock";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import InstantDelivery from "./InstantDelivery";
 import DeliverySpeedOptions from "./DeliverySpeedOptions";
+import { isCartTakeawayOnly } from "utils/CustomFunctions";
 
 const DeliveryDetails = (props) => {
   const {
     storeData,
     setOrderType,
     orderType,
+    isTakeawayOnly: propIsTakeawayOnly,
+    cartList,
     setAddress,
     address,
     configData,
@@ -71,7 +76,21 @@ const DeliveryDetails = (props) => {
   };
   const open = Boolean(anchorEl);
 
+  const isTakeawayOnly = Boolean(
+    propIsTakeawayOnly ?? (cartList ? isCartTakeawayOnly(cartList) : false)
+  );
+
+  React.useEffect(() => {
+    if (isTakeawayOnly && orderType !== "take_away") {
+      if (setDeliveryTip) setDeliveryTip(0);
+      setOrderType("take_away");
+    }
+  }, [isTakeawayOnly, orderType, setDeliveryTip, setOrderType]);
+
   const handleOrderType = (value) => {
+    if (isTakeawayOnly && value !== "take_away") {
+      return;
+    }
     if (value === "take_away") {
       setDeliveryTip(0);
     }
@@ -81,19 +100,21 @@ const DeliveryDetails = (props) => {
     setCheck(e.target.checked);
   };
   const orderTypeOptions = [
-    isHomeDelivery && {
-      value: "delivery",
-      label: t("Home Delivery"),
-      onClick: () => handleOrderType("delivery"),
-    },
-    !forprescription &&
-      configData?.takeaway_status === 1 &&
-      storeData?.take_away && {
-        value: "take_away",
-        label: t("Take Away"),
-        onClick: () => handleOrderType("take_away"),
+    !isTakeawayOnly &&
+      isHomeDelivery && {
+        value: "delivery",
+        label: t("Home Delivery"),
+        onClick: () => handleOrderType("delivery"),
       },
     !forprescription &&
+      (isTakeawayOnly ||
+        (configData?.takeaway_status === 1 && storeData?.take_away)) && {
+        value: "take_away",
+        label: t("Takeaway / In-Store Pickup"),
+        onClick: () => handleOrderType("take_away"),
+      },
+    !isTakeawayOnly &&
+      !forprescription &&
       storeData?.schedule_order &&
       getToken() && {
         value: "schedule_order",
@@ -177,6 +198,35 @@ const DeliveryDetails = (props) => {
               })}
             </Stack>
           </Stack>
+
+          {isTakeawayOnly && (
+            <Alert
+              severity="warning"
+              icon={<InfoOutlinedIcon sx={{ fontSize: 20 }} />}
+              sx={{
+                mt: 1.5,
+                borderRadius: "10px",
+                alignItems: "center",
+                fontSize: { xs: "12px", md: "13px" },
+                fontWeight: 500,
+                backgroundColor: (theme) =>
+                  alpha(theme.palette.warning.main, 0.12),
+                color: (theme) => theme.palette.warning.dark || "#b76e00",
+                border: (theme) =>
+                  `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+                "& .MuiAlert-icon": {
+                  color: (theme) => theme.palette.warning.main,
+                },
+                "& .MuiAlert-message": {
+                  lineHeight: 1.5,
+                },
+              }}
+            >
+              {t(
+                "Your cart contains perishable items available for In-Store Pickup only. Home Delivery is disabled for this order."
+              )}
+            </Alert>
+          )}
         </Box>
       )}
       {orderType === "schedule_order" && (

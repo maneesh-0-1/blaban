@@ -19,6 +19,7 @@ export interface ChatProduct {
   category_name?: string;
   stock?: number;
   variations?: Array<{ type: string; price: number; stock?: number }>;
+  is_takeaway_only?: number | boolean;
 }
 
 export interface ChatStore {
@@ -58,6 +59,7 @@ export interface ChatCartItem {
   store_name?: string;
   variation?: unknown;
   item?: ChatProduct & Record<string, any>;
+  is_takeaway_only?: number | boolean;
 }
 
 export interface ChatCategory {
@@ -68,6 +70,7 @@ export interface ChatCategory {
   slug?: string;
   parent_id?: number | null;
   priority?: number;
+  is_takeaway_only?: number | boolean;
 }
 
 export interface ChatMessageMetadata {

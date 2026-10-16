@@ -45,6 +45,7 @@ import {
   handleDistance,
   isAvailable,
   isFoodAvailableBySchedule,
+  isCartTakeawayOnly,
 } from "utils/CustomFunctions";
 import { today, tomorrow } from "utils/formatedDays";
 import { cod_exceeds_message } from "utils/toasterMessages";
@@ -118,7 +119,20 @@ const ItemCheckout = (props) => {
   const { order_id } = router?.query;
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const [check, setCheck] = React.useState(null);
-  const [orderType, setOrderType] = useState("delivery");
+  const activeCartItems = page === "campaign" ? campaignItemList : cartList;
+  const isTakeawayOnly = useMemo(
+    () => isCartTakeawayOnly(activeCartItems),
+    [activeCartItems]
+  );
+  const [orderType, setOrderType] = useState(() =>
+    isCartTakeawayOnly(activeCartItems) ? "take_away" : "delivery"
+  );
+
+  useEffect(() => {
+    if (isTakeawayOnly && orderType !== "take_away") {
+      setOrderType("take_away");
+    }
+  }, [isTakeawayOnly, orderType]);
   const [payableAmount, setPayableAmount] = useState(null);
   const [address, setAddress] = useState(undefined);
   const { couponInfo } = useSelector((state) => state.profileInfo);
@@ -1203,6 +1217,8 @@ const ItemCheckout = (props) => {
                 storeData={storeData}
                 setOrderType={setOrderType}
                 orderType={orderType}
+                isTakeawayOnly={isTakeawayOnly}
+                cartList={activeCartItems}
                 setAddress={setAddress}
                 address={address}
                 customDispatch={customDispatch}
