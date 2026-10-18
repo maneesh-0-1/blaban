@@ -11,10 +11,11 @@ const getSearch = async (pageParams) => {
     page_limit,
     pageParam,
   } = pageParams;
+  const limit = page_limit ? page_limit : 500;
   const { data } = await MainApi.get(
     `/api/v1/${search_type}/search?name=${searchValue}&offset=${
       pageParam ? pageParam : offset
-    }&limit=100`
+    }&limit=${limit}`
   );
   return data;
 };

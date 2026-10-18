@@ -23,7 +23,7 @@ const ProductSearchPage = ({ configData }) => {
 	const router = useRouter();
 	const [currentTab, setCurrentTab] = useState(tabsData[0].value);
 	const [searchValue, setSearchValue] = useState("");
-	const [page_limit, setPageLimit] = useState(50);
+	const [page_limit, setPageLimit] = useState(500);
 	const [offset, setOffset] = useState(1);
 	const [pageData, setPageData] = useState({});
 	const [checkfilter, setCheckfilter] = useState(false);

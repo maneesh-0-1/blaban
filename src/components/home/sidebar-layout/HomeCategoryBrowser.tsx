@@ -19,7 +19,7 @@ type Props = {
   categoryId: string;
 };
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 500;
 
 const dedupeById = (existing: any[], incoming: any[]) => {
   if (existing.length === 0) return incoming;

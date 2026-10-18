@@ -11,15 +11,16 @@ import axios from "axios";
 const getData = async (pageParams) => {
   const { storeId, searchKey, offset, limit, type, moduleId, storeZoneId } =
     pageParams;
+  const itemLimit = limit || 500;
   let result;
   if (getCurrentModuleType()) {
     const { data } = await MainApi.get(
-      `${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`
+      `${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${itemLimit}&type=${type}`
     );
     result = data;
   } else {
     const { data } = await axios.get(
-      `${baseUrl}${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`,
+      `${baseUrl}${store_item_search_api}?store_id=${storeId}&name=${searchKey}&offset=${offset}&limit=${itemLimit}&type=${type}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -39,7 +40,7 @@ const getData = async (pageParams) => {
   ) {
     try {
       const { data: fallbackData } = await MainApi.get(
-        `${store_item_search_api}?store_id=2&name=${searchKey}&offset=${offset}&limit=${limit}&type=${type}`
+        `${store_item_search_api}?store_id=2&name=${searchKey}&offset=${offset}&limit=${itemLimit}&type=${type}`
       );
       if (fallbackData?.products?.length > 0) {
         return fallbackData;

@@ -39,11 +39,12 @@ export function middleware(request) {
     return NextResponse.redirect(new URL(targetUrl, request.url));
   }
 
-  // Handle root /: if user already has a resolved branch cookie, route directly;
+  // Handle root /: if user already has a resolved branch with coordinates or a specific branch, route directly;
   // otherwise allow request through to pages/index.js for client-side location detection.
   if (pathname === "/") {
     const branch = request.cookies.get("selectedBranch")?.value;
-    if (branch) {
+    const currentLatLng = request.cookies.get("currentLatLng")?.value;
+    if (branch && (currentLatLng || branch !== "blaban")) {
       const url = new URL(`/store/${branch}?module=blaban`, request.url);
       return NextResponse.redirect(url);
     }

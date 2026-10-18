@@ -38,7 +38,7 @@ const getSearch = async (pageParams) => {
     offset: pageParam ?? offset ?? 0,
     data_type,
     list_type: currentTab === 0 ? "item" : "store",
-    limit: page_limit ?? 12,
+    limit: page_limit ?? 500,
     category_ids:
       category_ids ??
       (selectedCategoriesId.length ? selectedCategoriesId : undefined),

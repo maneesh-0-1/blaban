@@ -19,22 +19,23 @@ const getData = async (pageParams) => {
     ratingCount,
   } = pageParams;
   const categoryId = categoryIdEr?.length === 0 ? [0] : categoryIdEr;
+  const itemLimit = limit || 500;
   if (getCurrentModuleType()) {
     if (minMax[0] !== 0 && minMax[1] !== 1) {
       const { data } = await MainApi.get(
-        `${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${limit}&type=${type}&min_price=${minMax[0]}&max_price=${minMax[1]}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`
+        `${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${itemLimit}&type=${type}&min_price=${minMax[0]}&max_price=${minMax[1]}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`
       );
       return data;
     } else {
       const { data } = await MainApi.get(
-        `${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${limit}&type=${type}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`
+        `${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${itemLimit}&type=${type}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`
       );
       return data;
     }
   } else {
     if (minMax[0] !== 0 && minMax[1] !== 1) {
       const { data } = await axios.get(
-        `${baseUrl}${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${limit}&type=${type}&min_price=${minMax[0]}&max_price=${minMax[1]}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`,
+        `${baseUrl}${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${itemLimit}&type=${type}&min_price=${minMax[0]}&max_price=${minMax[1]}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -46,7 +47,7 @@ const getData = async (pageParams) => {
       return data;
     } else {
       const { data } = await axios.get(
-        `${baseUrl}${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${limit}&type=${type}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`,
+        `${baseUrl}${latest_items_api}?store_id=${storeId}&category_id=${categoryId}&offset=${offset}&limit=${itemLimit}&type=${type}&filter=${JSON.stringify(filterData)}&rating_count=${ratingCount}`,
         {
           headers: {
             "Content-Type": "application/json",

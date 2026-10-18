@@ -20,8 +20,8 @@ const TAB_ALL = "all";
 const TAB_ITEMS = "items";
 const TAB_STORES = "stores";
 
-const ALL_TAB_LIMIT = 10;
-const PAGE_LIMIT = 20;
+const ALL_TAB_LIMIT = 500;
+const PAGE_LIMIT = 500;
 
 // ── Sub-category chips (mobile only) ────────────────────────────────────────
 const SubCategoryChips = ({ subCategories, activeSubCatId, onSelect }) => {

@@ -70,12 +70,12 @@ const Root = () => {
       }
     } catch {}
 
-    // 3. Fallback timer: if browser prompt is pending or customer ignores it for > 2.5s,
-    // seamlessly proceed to all products (blaban) without blocking.
+    // 3. Fallback timer: if browser prompt is pending or customer ignores it for > 10s,
+    // proceed to all products (blaban) without blocking.
     const fallbackTimer = setTimeout(() => {
       setStatus("all_products");
       navigateToBranch("blaban");
-    }, 2500);
+    }, 10000);
 
     // 4. Request GPS location seamlessly from browser
     if (typeof navigator !== "undefined" && navigator.geolocation) {
@@ -126,8 +126,8 @@ const Root = () => {
           navigateToBranch("blaban");
         },
         {
-          enableHighAccuracy: false,
-          timeout: 2400,
+          enableHighAccuracy: true,
+          timeout: 10000,
           maximumAge: 300000,
         }
       );
@@ -300,9 +300,10 @@ export default Root;
 export const getServerSideProps = async (context) => {
   const { req } = context;
   const branch = req?.cookies?.selectedBranch;
+  const currentLatLng = req?.cookies?.currentLatLng;
 
-  // If returning customer already has a resolved branch cookie, redirect immediately on server
-  if (branch) {
+  // If returning customer already has a resolved branch cookie with location, redirect immediately on server
+  if (branch && (currentLatLng || branch !== "blaban")) {
     return {
       redirect: {
         destination: `/store/${branch}?module=blaban`,

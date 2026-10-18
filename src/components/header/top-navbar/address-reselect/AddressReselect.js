@@ -9,6 +9,12 @@ import { CustomStackFullWidth } from "../../../../styled-components/CustomStyles
 import AddressReselectPopover from "./AddressReselectPopover";
 import { getModule } from "helper-functions/getLanguage";
 import { AddressTypographyGray } from "../TopNavBar";
+import {
+  DEFAULT_BRANCHES,
+  findNearestBranch,
+  persistBranchSelection,
+  parseZoneIds,
+} from "../../../../utils/branchHelper";
 
 const AddressReselect = ({ location, setOpenDrawer }) => {
   const theme = useTheme();
@@ -85,15 +91,32 @@ const AddressReselect = ({ location, setOpenDrawer }) => {
       localStorage.setItem("location", address?.address);
       const values = { lat: address?.lat, lng: address?.lng };
       localStorage.setItem("currentLatLng", JSON.stringify(values));
-      if (address.zone_ids && address.zone_ids.length > 0) {
-        const value = [address.zone_ids];
-
-        localStorage.setItem("zoneid", JSON.stringify(address.zone_ids));
+      const zoneIds = address.zone_ids || [];
+      if (zoneIds.length > 0) {
+        localStorage.setItem("zoneid", JSON.stringify(zoneIds));
         toast.success(t(`New ${getModule()?.module_type === "rental" ? "Pickup" : "Delivery"} address selected.`));
-        setOpenPopover(false);
       }
+
+      if (address?.lat != null && address?.lng != null) {
+        const nearest = findNearestBranch(
+          DEFAULT_BRANCHES,
+          address.lat,
+          address.lng,
+          zoneIds
+        );
+        if (nearest?.slug) {
+          persistBranchSelection(nearest.slug, address.lat, address.lng, zoneIds.length > 0 ? JSON.stringify(zoneIds) : null);
+          if (router.pathname.startsWith("/store")) {
+            router.push({
+              pathname: `/store/${nearest.slug}`,
+              query: { module: "blaban" },
+            });
+          }
+        }
+      }
+      setOpenPopover(false);
     }
-  }, [address, t]);
+  }, [address, t, router]);
   const handleClickToLandingPage = () => {
     setOpenPopover(true);
     setOpenDrawer?.(false);
