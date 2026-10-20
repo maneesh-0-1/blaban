@@ -1,4 +1,3 @@
-import HotBanner from "components/common/HotBanner";
 import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import CustomSearch from "../../custom-search/CustomSearch";
 import {
@@ -689,10 +688,7 @@ const MiddleSection = (props) => {
       <CustomStackFullWidth>
         {Boolean(storeId || moduleId) && (
           <Grid container gap={{ xs: 0, md: 0 }} sx={{ position: "relative" }}>
-            {/* Hot Promotional Banner */}
-            <Grid item xs={12} sx={{ mb: { xs: 2, md: 2.5 } }}>
-              <HotBanner />
-            </Grid>
+            /* HotBanner removed per client request - replaced with hero banner slider */
 
             
             

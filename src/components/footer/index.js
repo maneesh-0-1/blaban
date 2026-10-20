@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 import { Box } from "@mui/system";
 import FooterBottom from "./FooterBottom";
 import FooterMiddle from "./footer-middle/FooterMiddle";
-import FooterTop from "./footer-top/FooterTop";
 import useGetLandingPage from "api-manage/hooks/react-query/useGetLandingPage";
 import { useEffect } from "react";
 
@@ -44,8 +43,7 @@ const FooterComponent = ({ configData }) => {
           gap: { xs: "24px", md: "48px" },
         }}
       >
-        <FooterTop landingPageData={landingPageData} />
-        <FooterMiddle
+                <FooterMiddle
           configData={configData}
           landingPageData={landingPageData}
         />
