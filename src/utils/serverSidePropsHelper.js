@@ -1,9 +1,7 @@
 import { fetchPageMetadata } from "utils/fetchPageMetaData";
 
 // Maintenance mode is only enforced when the admin has explicitly opted
-// the react website into the maintenance window. The legacy check
-// (`configData.maintenance_mode` alone) would also lock out the site
-// during mobile-only or admin-only maintenance windows.
+// the react website into the maintenance window.
 export const checkMaintenanceMode = (configData) => {
   const isMaintenanceMode =
     configData?.maintenance_mode_data?.maintenance_system_setup?.includes(
@@ -20,7 +18,7 @@ export const getCommonServerSideProps = async (
   const { req, res } = context;
   const language = req.cookies.languageSetting;
 
-  const configRes = await fetch(
+  const fetchConfig = fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/config`,
     {
       method: "GET",
@@ -31,8 +29,12 @@ export const getCommonServerSideProps = async (
         origin: process.env.NEXT_CLIENT_HOST_URL,
       },
     }
-  );
-  const config = await configRes.json();
+  ).then(r => r.json()).catch(() => null);
+
+  const fetchMeta = fetchPageMetadata(pageName, pageId, language).catch(() => null);
+
+  // Parallelize config and metadata requests
+  const [config, metaData] = await Promise.all([fetchConfig, fetchMeta]);
 
   if (
     checkMaintenanceMode(config) &&
@@ -47,7 +49,6 @@ export const getCommonServerSideProps = async (
     };
   }
 
-  const metaData = await fetchPageMetadata(pageName, pageId, language);
   // Set cache control headers for 1 hour (3600 seconds)
   res.setHeader(
     "Cache-Control",

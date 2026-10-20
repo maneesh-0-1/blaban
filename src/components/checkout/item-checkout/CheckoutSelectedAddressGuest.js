@@ -112,7 +112,7 @@ const CheckoutSelectedAddressGuest = ({
                       <MapsHomeWorkSharpIcon
                         sx={{ color: theme.palette.primary.main }}
                       />
-                      <Typography>{`Road - ${guestUserInfo?.road} , House - ${guestUserInfo?.house} , Floor - ${guestUserInfo?.floor}, `}</Typography>
+                      <Typography>{`Block: ${guestUserInfo?.block || "-"}, Street: ${guestUserInfo?.road || "-"}, Building: ${guestUserInfo?.house || "-"}, Floor: ${guestUserInfo?.floor || "-"}`}</Typography>
                     </Stack>
                   )}
               </CustomStackFullWidth>

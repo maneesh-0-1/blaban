@@ -521,32 +521,7 @@ const FoodDetailsManager = (props) => {
                   </Box>
                 </BadgeWithTooltip>
               )}
-              {showVeg && (
-                <BadgeWithTooltip title={item?.veg ? t("Veg") : t("Non Veg")}>
-                  <Box
-                    sx={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      backgroundColor: "background.paper",
-                      border: `1px solid ${theme.palette.divider}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      padding: "3px",
-                    }}
-                  >
-                    {item?.veg ? (
-                      <ProductVegSvg
-                        color={theme.palette.customColor?.vegIcon}
-                      />
-                    ) : (
-                      <ProductNonVegSvg />
-                    )}
-                  </Box>
-                </BadgeWithTooltip>
-              )}
+              
             </Stack>
           );
         })()}

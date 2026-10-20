@@ -59,6 +59,7 @@ const AddressForm = ({
     useUpdatedAddress();
 
   const addAddressFormik = useFormik({
+    validationSchema: ValidationSchemaForAddAddress({ checkoutLocationOnly, contactInfoOnly }),
     initialValues: {
       contact_person_email: token
         ? email
@@ -99,6 +100,13 @@ const AddressForm = ({
         : "",
       latitude: lat,
       longitude: lng,
+      block: token
+        ? editAddress
+          ? editAddress?.block || ""
+          : ""
+        : guestUserInfo
+        ? guestUserInfo.block || ""
+        : "",
       road: token
         ? editAddress
           ? editAddress?.road
@@ -221,6 +229,7 @@ console.log({editAddress,address});
         });
       }
     } else {
+      updateSelectedAddress(values);
       dispatch(setGuestUserInfo(values));
       dispatch(setOpenAddressModal(false));
     }
@@ -240,6 +249,9 @@ console.log({editAddress,address});
   };
   const additionalHandler = (value) => {
     addAddressFormik.setFieldValue("additional_information", value);
+  };
+  const blockHandler = (value) => {
+    addAddressFormik.setFieldValue("block", value);
   };
   const roadHandler = (value) => {
     addAddressFormik.setFieldValue("road", value);
@@ -269,6 +281,7 @@ console.log({editAddress,address});
     addAddressFormik.setFieldValue("contact_person_name", "");
     addAddressFormik.setFieldValue("contact_person_number", "");
     addAddressFormik.setFieldValue("additional_information", "");
+    addAddressFormik.setFieldValue("block", "");
     addAddressFormik.setFieldValue("house", "");
     addAddressFormik.setFieldValue("floor", "");
     //setAddressType("");
@@ -346,8 +359,33 @@ console.log({editAddress,address});
             <>
               <Grid item xs={12} md={6}>
                 <CustomTextFieldWithFormik
+                  required="true"
                   type="text"
-                  label={t("House")}
+                  label={t("Block / Avenue")}
+                  touched={addAddressFormik.touched.block}
+                  errors={addAddressFormik.errors.block}
+                  fieldProps={addAddressFormik.getFieldProps("block")}
+                  onChangeHandler={blockHandler}
+                  value={addAddressFormik.values.block}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <CustomTextFieldWithFormik
+                  required="true"
+                  type="text"
+                  label={t("Street")}
+                  touched={addAddressFormik.touched.road}
+                  errors={addAddressFormik.errors.road}
+                  fieldProps={addAddressFormik.getFieldProps("road")}
+                  onChangeHandler={roadHandler}
+                  value={addAddressFormik.values.road}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <CustomTextFieldWithFormik
+                  required="true"
+                  type="text"
+                  label={t("Building / House")}
                   touched={addAddressFormik.touched.house}
                   errors={addAddressFormik.errors.house}
                   fieldProps={addAddressFormik.getFieldProps("house")}
@@ -357,24 +395,14 @@ console.log({editAddress,address});
               </Grid>
               <Grid item xs={12} md={6}>
                 <CustomTextFieldWithFormik
+                  required="true"
                   type="text"
-                  label={t("Floor")}
+                  label={t("Floor / Apartment")}
                   touched={addAddressFormik.touched.floor}
                   errors={addAddressFormik.errors.floor}
                   fieldProps={addAddressFormik.getFieldProps("floor")}
                   onChangeHandler={floorHandler}
                   value={addAddressFormik.values.floor}
-                />
-              </Grid>
-              <Grid item xs={12} md={token ? "12" : "6"}>
-                <CustomTextFieldWithFormik
-                  type="text"
-                  label={t("Road")}
-                  touched={addAddressFormik.touched.road}
-                  errors={addAddressFormik.errors.road}
-                  fieldProps={addAddressFormik.getFieldProps("road")}
-                  onChangeHandler={roadHandler}
-                  value={addAddressFormik.values.road}
                 />
               </Grid>
               <Grid item xs={12} md={12}>

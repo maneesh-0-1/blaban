@@ -23,7 +23,6 @@ import CustomSlider from "../../search/CustomSlider";
 import { useTheme } from "@emotion/react";
 import CheckboxWithChild from "./CheckboxWithChild";
 import HighToLow from "../../../sort/HighToLow";
-import VegNonVegCheckBox from "../../group-buttons/OutlinedGroupButtons";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { ModuleTypes } from "helper-functions/moduleTypes";
 import { useSelector } from "react-redux";
@@ -303,14 +302,7 @@ const Sidebar = (props) => {
           })}
         </CustomPaperBox>
       )}
-      {getCurrentModuleType() === ModuleTypes.FOOD && isSmall && (
-        <VegNonVegCheckBox
-          selected={state.type}
-          handleSelection={handleSelection}
-          checkState={checkState}
-          setCheckState={setCheckState}
-        />
-      )}
+      
 
       <CustomStackFullWidth spacing={2}>
         <Typography fontWeight="bold" color={theme.palette.neutral[1000]}>

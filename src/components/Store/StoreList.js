@@ -4,7 +4,6 @@ import { Card, Chip, FormControlLabel, Grid, IconButton, List, ListItem, ListIte
 
 import { useSelector } from "react-redux";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
-import GroupButtons from "../GroupButtons";
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
@@ -88,13 +87,7 @@ const StoreList = ({ storeType, type, setType, data, sortby, setSortby, searchKe
         justifyContent="flex-start"
       // alignItems="center"
       >
-        {selectedModule?.module_type === "food" && storeType !== 'top_offer_near_me' && (
-          <Grid item xs={12} sm={12} md={12} align="center">
-            <CustomStackFullWidth alignItems="center" justifyContent="center">
-              <GroupButtons setType={setType} type={type} />
-            </CustomStackFullWidth>
-          </Grid>
-        )}
+        
         {storeType === "top_offer_near_me" && (
           <Grid item xs={12} sm={12} md={12}>
             <Stack direction={{ xs: "colum", sm: "row", md: "row" }} spacing={2} justifyContent="space-between" alignItems="center">
@@ -123,19 +116,7 @@ const StoreList = ({ storeType, type, setType, data, sortby, setSortby, searchKe
                     onClick={() => setType(type === 'halal' ? '' : 'halal')}
                   />
 
-                  <CustomChip
-                    variant="outlined"
-                    value={type === 'veg'}
-                    label="Only Veg"
-                    onClick={() => setType(type === 'veg' ? '' : 'veg')}
-                  />
-
-                  <CustomChip
-                    variant="outlined"
-                    value={type === 'non_veg'}
-                    label="Only Non Veg"
-                    onClick={() => setType(type === 'non_veg' ? '' : 'non_veg')}
-                  />
+                  
 
                 </>}
               </Stack>

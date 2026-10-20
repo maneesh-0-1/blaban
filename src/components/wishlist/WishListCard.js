@@ -1,3 +1,4 @@
+import { notifyItemAddedToCart } from "utils/cartFeedback";
 import React, { useEffect, useReducer, useState } from "react";
 import { handleProductRedirect } from "helper-functions/handleProductRedirect";
 
@@ -95,6 +96,7 @@ const WishListCard = ({ item, onOpenModal }) => {
       });
       reduxDispatch(setCart(product));
       toast.success(t("Item added to cart"));
+      notifyItemAddedToCart(item?.name);
       dispatch({ type: ACTION.setClearCartModal, payload: false });
     }
   };

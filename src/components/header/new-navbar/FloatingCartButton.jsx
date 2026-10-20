@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import { useMemo, useState, useEffect } from "react";
+import { Box, Typography, useTheme, keyframes } from "@mui/material";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
@@ -12,16 +12,24 @@ import { store } from "redux/store";
 // Modules where the floating button is visible
 const ALLOWED_MODULES = new Set(["food", "grocery", "pharmacy", "shop"]);
 
-// Next.js route patterns where the button is visible
-const ALLOWED_PATHNAMES = new Set([
-  "/home",
-  "/search",
-  "/home/wishlist",
-  "/home/[...slug]", // covers /home/offers, /home/free-delivery, /home/top-rated, /home/nearby
-  "/home/category/[slug]", // /home/category/...
+// Pages where floating cart should NOT appear (checkout, order confirmation)
+const DISALLOWED_PATHNAMES = new Set([
+  "/checkout",
+  "/order",
+  "/order-success",
+  "/parcel-delivery-info",
+  "/rental/checkout",
+  "/rental/cart",
+  "/chat",
 ]);
 
-/** Abbreviate a number with currency symbol — e.g. 1200 → "$ 1.2k" */
+const pulseAnimation = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+`;
+
+/** Abbreviate a number with currency symbol — e.g. 1200 → "KD 1.2k" */
 const abbreviateAmount = (amount) => {
   const state = store?.getState();
   const { configData } = state?.configData || {};
@@ -68,20 +76,25 @@ const FloatingCartButton = () => {
   );
   const { cartList, cartGroups } = useSelector((state) => state.cart);
 
+  // Listen for open-cart-drawer custom event
+  useEffect(() => {
+    const handleOpen = () => setOpen(true);
+    if (typeof window !== "undefined") {
+      window.addEventListener("open-cart-drawer", handleOpen);
+      return () => window.removeEventListener("open-cart-drawer", handleOpen);
+    }
+  }, []);
+
   // Module + page visibility guards
-  const moduleType = selectedModule?.module_type ?? getCurrentModuleType();
-  const isAllowedModule = ALLOWED_MODULES.has(moduleType);
-  const isAllowedPage = ALLOWED_PATHNAMES.has(router.pathname);
+  const moduleType = selectedModule?.module_type ?? getCurrentModuleType() ?? "food";
+  const isAllowedModule = ALLOWED_MODULES.has(moduleType) || true;
+  const isBlockedPage = DISALLOWED_PATHNAMES.has(router.pathname);
   const { refetch } = useGetGroupedCart();
 
   // Badge count — current module items only
   const cartItems = getCartListModuleWise(cartList) ?? [];
-  const itemCount = cartItems.length;
-  console.log({ cartItems, cartGroups });
+  const itemCount = cartItems.length > 0 ? cartItems.length : (cartList?.length || 0);
 
-  // Grand total = sum of every cart line's (price × quantity).
-  // `price` on the cart line already includes variation/addon pricing — prefer
-  // it over `item.price`, which is only the base item price.
   const lineTotal = (ci) =>
     (ci?.price ?? ci?.item?.price ?? 0) * (ci?.quantity ?? 1);
 
@@ -96,13 +109,22 @@ const FloatingCartButton = () => {
         return storeSum + carts.reduce((s, ci) => s + lineTotal(ci), 0);
       }, 0);
     }
-    return cartItems.reduce((s, ci) => s + lineTotal(ci), 0);
-  }, [cartGroups, cartItems]);
+    const list = cartItems.length > 0 ? cartItems : (cartList || []);
+    return list.reduce((s, ci) => s + lineTotal(ci), 0);
+  }, [cartGroups, cartItems, cartList]);
 
-  if (!itemCount || !isAllowedModule || !isAllowedPage) return null;
+  const isStoreDetailPage = router.pathname === "/store/[id]";
+  const showMobileBar = itemCount > 0 && !isBlockedPage && !isStoreDetailPage;
+  const showDesktopPill = itemCount > 0 && !isBlockedPage;
+
+  // Bottom position: sits right above BottomNav (65px + 10px margin = 75px) on normal pages,
+  // or 16px from bottom on pages where BottomNav is absent (e.g. store or product page).
+  const isPageWithoutBottomNav = router.pathname === "/store/[id]" || router.pathname === "/product/[id]";
+  const mobileBottomPos = isPageWithoutBottomNav ? "16px" : "75px";
 
   return (
     <>
+      {/* ── DESKTOP FLOATING PILL ── */}
       <Box
         onClick={() => setOpen(true)}
         role="button"
@@ -111,8 +133,8 @@ const FloatingCartButton = () => {
           position: "fixed",
           top: "215px",
           insetInlineEnd: 0,
-          zIndex: (th) => th.zIndex.appBar - 1,
-          display: { xs: "none", md: "flex" },
+          zIndex: 1250,
+          display: showDesktopPill ? { xs: "none", md: "flex" } : "none",
           flexDirection: "column",
           alignItems: "stretch",
           width: "80px",
@@ -122,9 +144,12 @@ const FloatingCartButton = () => {
           boxShadow: "-9px 0px 20px 0px rgba(0,0,0,0.14)",
           cursor: "pointer",
           userSelect: "none",
+          transition: "transform 0.2s ease",
+          "&:hover": {
+            transform: "translateX(-4px)",
+          },
         }}
       >
-        {/* ── Top section: cart icon + badge ── */}
         <Box
           sx={{
             backgroundColor: theme.palette.background.paper,
@@ -136,7 +161,6 @@ const FloatingCartButton = () => {
             position: "relative",
           }}
         >
-          {/* Icon + badge wrapper */}
           <Box sx={{ position: "relative", display: "inline-flex" }}>
             <i
               className="fi fi-rr-shopping-cart"
@@ -147,7 +171,6 @@ const FloatingCartButton = () => {
                 color: theme.palette.text.primary,
               }}
             />
-            {/* Badge — top-right of the icon */}
             <Box
               sx={{
                 position: "absolute",
@@ -155,17 +178,24 @@ const FloatingCartButton = () => {
                 insetInlineEnd: "-8px",
                 borderRadius: "9999px",
                 backgroundColor: "#039d55",
+                color: "#fff",
+                fontSize: "10px",
+                fontWeight: 700,
+                minWidth: "18px",
+                height: "18px",
                 border: `2px solid ${theme.palette.background.paper}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                p: 0,
+                px: "4px",
+                animation: `${pulseAnimation} 0.5s ease-in-out`,
               }}
-            ></Box>
+            >
+              {itemCount}
+            </Box>
           </Box>
         </Box>
 
-        {/* ── Bottom section: amount ── */}
         <Box
           sx={{
             backgroundColor: "#f1f6fd",
@@ -178,7 +208,7 @@ const FloatingCartButton = () => {
         >
           <Typography
             sx={{
-              fontSize: "14px",
+              fontSize: "13px",
               fontWeight: 700,
               color: theme.palette.text.primary,
               lineHeight: 1.3,
@@ -187,9 +217,99 @@ const FloatingCartButton = () => {
               whiteSpace: "nowrap",
             }}
           >
-            {itemCount > 99 ? "99+" : itemCount}{" "}
-            {itemCount > 1 ? t("items") : t("item")}
+            {abbreviateAmount(grandTotal)}
           </Typography>
+        </Box>
+      </Box>
+
+      {/* ── MOBILE FLOATING CART BAR (HIGH Z-INDEX 1250) ── */}
+      <Box
+        onClick={() => setOpen(true)}
+        role="button"
+        aria-label={t("View Cart")}
+        sx={{
+          position: "fixed",
+          bottom: mobileBottomPos,
+          left: "14px",
+          right: "14px",
+          maxWidth: "460px",
+          mx: "auto",
+          zIndex: 1250,
+          display: showMobileBar ? { xs: "flex", md: "none" } : "none",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: "#039D55",
+          color: "#ffffff",
+          borderRadius: "16px",
+          px: "16px",
+          py: "12px",
+          boxShadow: "0 10px 28px rgba(3, 157, 85, 0.42)",
+          cursor: "pointer",
+          userSelect: "none",
+          animation: `${pulseAnimation} 0.4s ease-out`,
+          transition: "transform 0.15s ease, box-shadow 0.15s ease",
+          "&:active": {
+            transform: "scale(0.98)",
+          },
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Box
+            sx={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(255, 255, 255, 0.22)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+            }}
+          >
+            <i
+              className="fi fi-rr-shopping-bag"
+              style={{ fontSize: "18px", color: "#ffffff", lineHeight: 1 }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                top: "-4px",
+                right: "-4px",
+                backgroundColor: "#ffffff",
+                color: "#039D55",
+                borderRadius: "9999px",
+                fontSize: "11px",
+                fontWeight: 800,
+                minWidth: "18px",
+                height: "18px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                px: "4px",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+              }}
+            >
+              {itemCount}
+            </Box>
+          </Box>
+          <Box>
+            <Typography sx={{ fontSize: "14px", fontWeight: 700, lineHeight: 1.2, color: "#ffffff" }}>
+              {itemCount} {itemCount > 1 ? t("Items") : t("Item")}
+            </Typography>
+            <Typography sx={{ fontSize: "12px", fontWeight: 500, opacity: 0.92, color: "#ffffff" }}>
+              {abbreviateAmount(grandTotal)}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#ffffff" }}>
+            {t("View Cart")}
+          </Typography>
+          <i
+            className="fi fi-rr-arrow-small-right"
+            style={{ fontSize: "18px", color: "#ffffff", display: "flex" }}
+          />
         </Box>
       </Box>
 

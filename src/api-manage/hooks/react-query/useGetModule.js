@@ -5,9 +5,36 @@ import { onErrorResponse } from "../../api-error-response/ErrorResponses";
 import { useEffect, useState } from "react";
 import { filterOutRiderShareModules } from "helper-functions/moduleFilter";
 
+const MODULE_CACHE_KEY = "blaban_cached_modules";
+const MODULE_CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours
+
 const getModule = async () => {
+  if (typeof window !== "undefined") {
+    try {
+      const cached = localStorage.getItem(MODULE_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.timestamp && Date.now() - parsed.timestamp < MODULE_CACHE_TTL && Array.isArray(parsed.data) && parsed.data.length > 0) {
+          // Revalidate in background if older than 1 hour
+          if (Date.now() - parsed.timestamp > 60 * 60 * 1000) {
+            MainApi.get(moduleList).then(({ data }) => {
+              if (Array.isArray(data) && data.length > 0) {
+                localStorage.setItem(MODULE_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+              }
+            }).catch(() => {});
+          }
+          return parsed.data;
+        }
+      }
+    } catch (e) {}
+  }
+
   const { data } = await MainApi.get(moduleList);
-  // return filterOutRiderShareModules(data);
+  if (typeof window !== "undefined" && Array.isArray(data) && data.length > 0) {
+    try {
+      localStorage.setItem(MODULE_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+    } catch (e) {}
+  }
   return data;
 };
 
@@ -74,6 +101,21 @@ export default function useGetModule() {
 
   const query = useQuery(["module-list", zoneIdsKey], getModule, {
     enabled: true,
+    staleTime: 12 * 60 * 60 * 1000, // 12 hours
+    cacheTime: 24 * 60 * 60 * 1000, // 24 hours
+    initialData: () => {
+      if (typeof window === "undefined") return undefined;
+      try {
+        const cached = localStorage.getItem(MODULE_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.timestamp && Date.now() - parsed.timestamp < MODULE_CACHE_TTL && Array.isArray(parsed.data)) {
+            return parsed.data;
+          }
+        }
+      } catch (e) {}
+      return undefined;
+    },
     onError: onErrorResponse,
   });
   const { refetch } = query;

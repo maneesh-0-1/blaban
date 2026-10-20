@@ -12,7 +12,6 @@ import noData from "../../../public/static/nodata.png";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useSelector } from "react-redux";
 import ProductCardShimmer from "../search/ProductCardShimmer";
-import GroupButtons from "../GroupButtons";
 import { getItemsOrFoods } from "helper-functions/getItemsOrFoods";
 import { getStoresOrRestaurants } from "helper-functions/getStoresOrRestaurants";
 import {
@@ -90,13 +89,7 @@ const CategoriesDetails = ({
             />
           )}
         </Grid>
-        {selectedModule?.module_type === "food" && (
-          <Grid item xs={12} sm={12} md={12} align="center">
-            <CustomStackFullWidth alignItems="center" justifyContent="center">
-              <GroupButtons setType={setType} type={type} />
-            </CustomStackFullWidth>
-          </Grid>
-        )}
+        
         <Grid container item xs={12} sm={12} md={12} spacing={1}>
           {currentTab === getItemsOrFoods() &&
             (!isRefetching && !itemIsLoading ? (

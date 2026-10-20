@@ -24,78 +24,7 @@ const CustomGroupCheckbox = ({ handleChangeFilter }) => {
   return (
     <div>
       <FormControl component="fieldset" variant="standard">
-        {selectedModule?.module_type === "food" && (
-          <>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="veg"
-                  checked={state.veg}
-                  onChange={handleChange}
-                  checkedIcon={
-                    <Stack
-                      sx={{
-                        width: "25px",
-                        height: "25px",
-                        border: `3px solid ${theme.palette.primary.main}`,
-                        borderRadius: "4px",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <CheckIcon style={{ width: "20px", height: "20px" }} />
-                    </Stack>
-                  }
-                  icon={
-                    <Stack
-                      sx={{
-                        width: "25px",
-                        height: "25px",
-                        border: `2px solid ${theme.palette.neutral[1100]}`,
-                        borderRadius: "5px",
-                      }}
-                    ></Stack>
-                  }
-                />
-              }
-              label={t("Veg")}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.nonVeg}
-                  onChange={handleChange}
-                  name="nonVeg"
-                  checkedIcon={
-                    <Stack
-                      sx={{
-                        width: "25px",
-                        height: "25px",
-                        border: `3px solid ${theme.palette.primary.main}`,
-                        borderRadius: "4px",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <CheckIcon style={{ width: "20px", height: "20px" }} />
-                    </Stack>
-                  }
-                  icon={
-                    <Stack
-                      sx={{
-                        width: "25px",
-                        height: "25px",
-                        border: `2px solid ${theme.palette.neutral[1100]}`,
-                        borderRadius: "5px",
-                      }}
-                    ></Stack>
-                  }
-                />
-              }
-              label={t("Non-Veg")}
-            />
-          </>
-        )}
+        
         <FormGroup>
           <FormControlLabel
             control={

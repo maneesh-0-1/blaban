@@ -45,8 +45,6 @@ const FILTER_BY_OPTIONS = [
 
 const TYPE_OPTIONS = [
   { value: "halal", label: "Halal" },
-  { value: "veg", label: "Veg" },
-  { value: "non_veg", label: "Non - Veg" },
 ];
 
 const RATING_OPTIONS = [

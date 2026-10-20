@@ -21,6 +21,12 @@ const NAV_ITEMS = [
     path: "/home/offers",
   },
   {
+    key: "cart",
+    label: t("Cart"),
+    icon: "fi fi-rr-shopping-cart",
+    openCart: true,
+  },
+  {
     key: "orders",
     label: t("Orders"),
     icon: "fi fi-rr-receipt",
@@ -46,6 +52,8 @@ const BottomNav = () => {
   const router = useRouter();
   const theme = useTheme();
   const { profileInfo } = useSelector((state) => state.profileInfo);
+  const { cartList } = useSelector((state) => state.cart);
+  const cartItemCount = cartList?.length || 0;
   const [wishListOpen, setWishListOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -75,6 +83,12 @@ const BottomNav = () => {
   };
 
   const handleClick = (item) => {
+    if (item.openCart) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("open-cart-drawer"));
+      }
+      return;
+    }
     if (item.openProfile) {
       if (getToken()) {
         router.push("/profile");
@@ -111,7 +125,7 @@ const BottomNav = () => {
           backgroundColor: theme.palette.background.paper,
           boxShadow:
             "0px -1px 2px rgba(0,0,0,0.10), 0px -1px 2px rgba(0,0,0,0.05)",
-          zIndex: 1082,
+          zIndex: 1250,
           display: { xs: "flex", md: "none" },
         }}
       >
@@ -196,6 +210,7 @@ const BottomNav = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      position: "relative",
                     }}
                   >
                     <i
@@ -207,6 +222,29 @@ const BottomNav = () => {
                         color,
                       }}
                     />
+                    {item.key === "cart" && cartItemCount > 0 && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: -6,
+                          right: -10,
+                          backgroundColor: theme.palette.error.main || "#EF4444",
+                          color: "#ffffff",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          borderRadius: "10px",
+                          minWidth: "16px",
+                          height: "16px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          px: "4px",
+                          lineHeight: 1,
+                        }}
+                      >
+                        {cartItemCount}
+                      </Box>
+                    )}
                   </Box>
                 )}
                 <Typography

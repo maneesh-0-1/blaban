@@ -1,3 +1,4 @@
+import { notifyItemAddedToCart } from "utils/cartFeedback";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import StarIcon from "@mui/icons-material/Star";
@@ -552,29 +553,7 @@ const ImageOverlay = ({
             </Box>
           </BadgeWithTooltip>
         )}
-        {!!showVeg && (
-          <BadgeWithTooltip title={item?.veg ? t("Veg") : t("Non Veg")}>
-            <Box
-              sx={{
-                width: badgeSize,
-                height: badgeSize,
-                borderRadius: "50%",
-                backgroundColor: "background.paper",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                padding: "3px",
-              }}
-            >
-              {item?.veg ? (
-                <ProductVegSvg color={theme.palette.customColor.vegIcon} />
-              ) : (
-                <ProductNonVegSvg />
-              )}
-            </Box>
-          </BadgeWithTooltip>
-        )}
+        
       </Box>
       <WishlistBtn
         variant={isHorizontal ? "horizontal" : "vertical"}
@@ -1424,6 +1403,7 @@ const NewProductCard = ({
     });
     reduxDispatch(setCart(product));
     toast.success(t("Item added to cart"));
+    notifyItemAddedToCart(item?.name);
     dispatch({ type: ACTION.setClearCartModal, payload: false });
   };
 

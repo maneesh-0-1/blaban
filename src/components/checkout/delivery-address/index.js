@@ -249,7 +249,7 @@ const DeliveryAddress = ({
             {address.address}
           </Typography>
         )}
-        {(address?.house || address?.road || address?.floor) && (
+        {(address?.block || address?.house || address?.road || address?.floor) && (
           <Stack
             direction="row"
             spacing={1}
@@ -262,7 +262,12 @@ const DeliveryAddress = ({
               lineHeight: 1.3,
             }}
           >
-            {address?.house && (
+            {address?.block && (
+              <Typography variant="inherit">
+                {t("Block")}: {address.block}
+              </Typography>
+            )}
+          {address?.house && (
               <Typography variant="inherit">
                 {t("House")}: {address.house}
               </Typography>

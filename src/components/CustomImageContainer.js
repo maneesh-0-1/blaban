@@ -75,6 +75,7 @@ const CustomImageContainer = ({
             setState(placeholder?.src);
           }}
           loading={effectiveLoading}
+          decoding="async"
           {...(effectiveFetchPriority ? { fetchPriority: effectiveFetchPriority } : {})}
         />
       )}

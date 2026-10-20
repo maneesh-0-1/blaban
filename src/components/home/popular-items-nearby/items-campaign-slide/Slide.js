@@ -14,7 +14,6 @@ import AmountWithDiscountedAmount from "../../../AmountWithDiscountedAmount";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { ModuleTypes } from "helper-functions/moduleTypes";
 import H4 from "../../../typographies/H4";
-import { FoodVegNonVegFlag } from "../../../cards/SpecialCard";
 import { t } from "i18next";
 import CustomBadge from "../../../cards/CustomBadge";
 import { getAmountWithSign } from "helper-functions/CardHelpers";
@@ -31,8 +30,7 @@ const Slide = ({ item }) => {
       return (
         <Stack direction="row" alignItems="center" spacing={0.8}>
           <H4 text={item?.item?.name} />
-          <FoodVegNonVegFlag veg={item?.item?.veg == 0 ? false : true} />
-        </Stack>
+                  </Stack>
       );
     } else {
       return (

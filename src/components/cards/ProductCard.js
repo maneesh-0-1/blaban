@@ -1,3 +1,4 @@
+import { notifyItemAddedToCart } from "utils/cartFeedback";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   alpha,
@@ -363,13 +364,16 @@ const ProductCard = (props) => {
         product = {
           ...item?.item,
           cartItemId: item?.id,
+          store_id: item?.store_id ?? item?.item?.store_id ?? state?.modalData[0]?.store_id ?? item?.store?.id,
+          module_id: item?.module_id ?? item?.item?.module_id ?? 2,
+          module_type: item?.item?.module_type ?? "food",
           quantity: item?.quantity,
           totalPrice: item?.price,
           selectedOption: [],
         };
       });
       reduxDispatch(setCart(product));
-      toast.success(t("Item added to cart"));
+      notifyItemAddedToCart(product?.name);
       dispatch({ type: ACTION.setClearCartModal, payload: false });
     }
   };
@@ -872,9 +876,7 @@ const ProductCard = (props) => {
               {item?.name}
             </Typography>
           )}
-          {configData?.toggle_veg_non_veg ? (
-            <FoodVegNonVegFlag veg={item?.veg === 0 ? "false" : "true"} />
-          ) : null}
+          
         </CustomStackFullWidth>
         <Stack direction="row" alignItems="center" spacing={0.5}>
           <Typography

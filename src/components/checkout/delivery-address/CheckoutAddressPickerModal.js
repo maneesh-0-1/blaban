@@ -65,6 +65,9 @@ const CheckoutAddressPickerModal = ({
     setGeoEnabled(false);
     setGeoLocation(null);
     onClose();
+    if (typeof onAddNewAddress === "function") {
+      onAddNewAddress();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geoCodeResults]);
 
@@ -91,6 +94,9 @@ const CheckoutAddressPickerModal = ({
     });
     setOpenMapModal(false);
     onClose();
+    if (typeof onAddNewAddress === "function") {
+      onAddNewAddress();
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+import { notifyItemAddedToCart } from "utils/cartFeedback";
 import { Skeleton, Typography, useTheme } from "@mui/material";
 import { getAmountWithSign } from "helper-functions/CardHelpers";
 import { Stack } from "@mui/system";
@@ -250,6 +251,9 @@ const ProductInformation = ({
         product = {
           ...item?.item,
           cartItemId: item?.id,
+          store_id: item?.store_id ?? item?.item?.store_id ?? productDetailsData?.store_id ?? productDetailsData?.store?.id,
+          module_id: item?.module_id ?? item?.item?.module_id ?? 2,
+          module_type: item?.item?.module_type ?? "food",
           quantity: item?.quantity,
           totalPrice: item?.price,
           selectedOption: item?.variation,
@@ -265,6 +269,7 @@ const ProductInformation = ({
       //alert("Item added to cart");
       // dispatchRedux(setCartSidebarOpen(true));
       toast.success(t("Item added to cart"));
+      notifyItemAddedToCart(product?.name || productDetailsData?.name);
       handleModalClose?.();
       setClearCartModal(false);
     }
@@ -723,32 +728,7 @@ const ProductInformation = ({
                   </Box>
                 </BadgeWithTooltip>
               )}
-              {showVeg && (
-                <BadgeWithTooltip title={item?.veg ? t("Veg") : t("Non Veg")}>
-                  <Box
-                    sx={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      backgroundColor: "background.paper",
-                      border: `1px solid ${theme.palette.divider}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      padding: "3px",
-                    }}
-                  >
-                    {item?.veg ? (
-                      <ProductVegSvg
-                        color={theme.palette.customColor?.vegIcon}
-                      />
-                    ) : (
-                      <ProductNonVegSvg />
-                    )}
-                  </Box>
-                </BadgeWithTooltip>
-              )}
+              
             </Stack>
           );
         })()}

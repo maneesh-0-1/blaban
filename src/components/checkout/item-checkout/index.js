@@ -481,6 +481,7 @@ const ItemCheckout = (props) => {
         "is_buy_now",
         page === "buy_now" || page === "campaign" ? 1 : 0
       );
+      formData.append("block", token ? (address?.block || "") : (address?.block || guestUserInfo?.block || ""));
       formData.append("house", token ? address?.house : guestUserInfo?.house);
       formData.append("floor", token ? address?.floor : guestUserInfo?.floor);
       formData.append("road", token ? address?.road : guestUserInfo?.road);
@@ -579,6 +580,7 @@ const ItemCheckout = (props) => {
             : `${guestUserInfo?.contact_person_number}`
         ),
         contact_person_email: guestUserInfo?.contact_person_email,
+        block: token ? (address?.block || "") : (address?.block || guestUserInfo?.block || ""),
         house: token ? address?.house : guestUserInfo?.house,
         floor: token ? address?.floor : guestUserInfo?.floor,
         road: token ? address?.road : guestUserInfo?.road,
@@ -624,6 +626,33 @@ const ItemCheckout = (props) => {
   }, [cartList, campaignItemList, couponDiscount, storeData]);
 
   const handlePlaceOrder = () => {
+    if (orderType !== "take_away") {
+      const activeAddress = address;
+      const activePhone = token
+        ? (activeAddress?.contact_person_number || profileInfo?.phone)
+        : (activeAddress?.contact_person_number || guestUserInfo?.contact_person_number);
+      const activeRoad = token
+        ? activeAddress?.road
+        : (activeAddress?.road || guestUserInfo?.road);
+      const activeHouse = token
+        ? activeAddress?.house
+        : (activeAddress?.house || guestUserInfo?.house);
+      const activeBlock = token ? activeAddress?.block : (activeAddress?.block || guestUserInfo?.block);
+      const activeFloor = token ? activeAddress?.floor : (activeAddress?.floor || guestUserInfo?.floor);
+
+      if (!activeAddress || !activeAddress?.address) {
+        toast.error(t("Please select a delivery address"), { id: "checkout-addr" });
+        return;
+      }
+      if (!activePhone) {
+        toast.error(t("Please provide a contact phone number"), { id: "checkout-phone" });
+        return;
+      }
+      if (!activeBlock || !activeRoad || !activeHouse || !activeFloor) {
+        toast.error(t("Please complete your address details (Block, Street, Building/House, Floor/Apartment)"), { id: "checkout-details" });
+        return;
+      }
+    }
     const itemsList = page === "campaign" ? campaignItemList : cartList;
     const isAvailable =
       storeData?.schedule_order && getCurrentModuleType() === ModuleTypes.FOOD

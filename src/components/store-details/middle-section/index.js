@@ -32,7 +32,6 @@ import { ACTION, initialState, reducer } from "./states";
 import CustomEmptyResult from "../../custom-empty-result";
 import notFoundImage from "../../../../public/static/empty.png";
 import { useTranslation } from "react-i18next";
-import VegNonVegCheckBox from "../../group-buttons/OutlinedGroupButtons";
 import { getModuleId } from "helper-functions/getModuleId";
 import HighToLow from "../../../sort/HighToLow";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
@@ -753,112 +752,55 @@ const MiddleSection = (props) => {
                         >
                           <MenuOpenIcon />
                         </IconButton>
-                        {getCurrentModuleType() === "food" && !isSmall && (
-                          <VegNonVegCheckBox
-                            selected={state.type}
-                            handleSelection={handleSelection}
-                            checkState={checkState}
-                            setCheckState={setCheckState}
-                          />
-                        )}
+                        
                       </CustomStackFullWidth>
                     </Grid>
                   ) : (
                     <>
-                      <Grid item xs={7} md={getCurrentModuleType() === ModuleTypes.FOOD?4:6} >
-                        {getCurrentModuleType() === ModuleTypes.FOOD ? (
-                          <VegNonVegCheckBox
-                            selected={state.type}
-                            handleSelection={handleSelection}
-                            checkState={checkState}
-                            setCheckState={setCheckState}
-                          />
-                        ) : (
-                          <CustomSearch
-                            label={t("Search for items...")}
-                            selectedValue={state.searchKey}
-                            handleSearchResult={handleSearchResult}
-                            type2
-                          />
-                        )}
+                      <Grid item xs={7} md={6}>
+                        <CustomSearch
+                          label={t("Search for items...")}
+                          selectedValue={state.searchKey}
+                          handleSearchResult={handleSearchResult}
+                          type2
+                        />
                       </Grid>
-                      <Grid item xs={7}  md={getCurrentModuleType() === ModuleTypes.FOOD?8:6}  align="right">
-                        {getCurrentModuleType() === ModuleTypes.FOOD ? (
-                          <Stack direction="row" spacing={1} alignItems="center" justifyContent="right">
-                            <CustomSearch
-                              label={t("Search for items...")}
-                              selectedValue={state.searchKey}
-                              handleSearchResult={handleSearchResult}
-                              type2
-                            />
-                            <StoreFilter
-                              key={storeId}
-                              setRatingCount={setRatingCount}
-                              ratingCount={ratingCount}
-                              filterTypeItems={checkModuleWiseFilterItem()}
-                              setFilterData={setFilterData}
-                              minMax={state.minMax}
-                              setMinMax={(v) =>
-                                dispatch({
-                                  type: ACTION.setMinMax,
-                                  payload: v,
-                                })
-                              }
-                              sortBy={state.sortBy}
-                              setSortBy={(v) =>
-                                dispatch({
-                                  type: ACTION.setSortBy,
-                                  payload: v,
-                                })
-                              }
-                              type={state.type}
-                              setType={(v) =>
-                                dispatch({
-                                  type: ACTION.setType,
-                                  payload: v,
-                                })
-                              }
-                            />
-                          </Stack>
-                        ) : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <HighToLow
-                              handleSortBy={handleSortBy}
-                              sortBy={state.sortBy}
-                            />
-                            <StoreFilter
-                              key={storeId}
-                              setRatingCount={setRatingCount}
-                              ratingCount={ratingCount}
-                              filterTypeItems={checkModuleWiseFilterItem()}
-                              setFilterData={setFilterData}
-                              minMax={state.minMax}
-                              setMinMax={(v) =>
-                                dispatch({
-                                  type: ACTION.setMinMax,
-                                  payload: v,
-                                })
-                              }
-                              sortBy={state.sortBy}
-                              setSortBy={(v) =>
-                                dispatch({
-                                  type: ACTION.setSortBy,
-                                  payload: v,
-                                })
-                              }
-                              type={state.type}
-                              setType={(v) =>
-                                dispatch({
-                                  type: ACTION.setType,
-                                  payload: v,
-                                })
-                              }
-                            />
-                          </Stack>
-
-                        )}
-
-                      </Grid>{" "}
+                      <Grid item xs={5} md={6} align="right">
+                        <Stack direction="row" spacing={1} alignItems="center" justifyContent="right">
+                          <HighToLow
+                            handleSortBy={handleSortBy}
+                            sortBy={state.sortBy}
+                          />
+                          <StoreFilter
+                            key={storeId}
+                            setRatingCount={setRatingCount}
+                            ratingCount={ratingCount}
+                            filterTypeItems={checkModuleWiseFilterItem()}
+                            setFilterData={setFilterData}
+                            minMax={state.minMax}
+                            setMinMax={(v) =>
+                              dispatch({
+                                type: ACTION.setMinMax,
+                                payload: v,
+                              })
+                            }
+                            sortBy={state.sortBy}
+                            setSortBy={(v) =>
+                              dispatch({
+                                type: ACTION.setSortBy,
+                                payload: v,
+                              })
+                            }
+                            type={state.type}
+                            setType={(v) =>
+                              dispatch({
+                                type: ACTION.setType,
+                                payload: v,
+                              })
+                            }
+                          />
+                        </Stack>
+                      </Grid>
                     </>
                   )}
                 </Grid>

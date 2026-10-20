@@ -1,5 +1,7 @@
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
   devIndicators: false,
   experimental: {
     swcPlugins: [],
@@ -14,8 +16,30 @@ const nextConfig = {
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'], // Keep error and warn, remove log, info, debug, etc.
+      exclude: ['error', 'warn'],
     } : false,
+  },
+  async headers() {
+    return [
+      {
+        source: '/:all*(svg|jpg|jpeg|png|webp|avif|ico|woff|woff2)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
   },
   async rewrites() {
     return [
@@ -30,16 +54,17 @@ const nextConfig = {
     ];
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     unoptimized: false,
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: '**', // allows all https domains
+        hostname: '**',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: '**', // allows all https domains
+        hostname: '**',
         pathname: '/**',
       },
     ],
@@ -50,20 +75,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
-
-
-// /** @type {import('next').NextConfig} */
-// const nextConfig = {
-//   reactStrictMode: true,
-//   images: {
-//     domains: [
-//       "bjorn66.com",
-//       "6ammart-test.6amdev.xyz",
-//       "192.168.50.168",
-//       "6ammart-dev.6amdev.xyz",
-//     ], // Add the domain here
-//   },
-// };
-//
-// module.exports = nextConfig;

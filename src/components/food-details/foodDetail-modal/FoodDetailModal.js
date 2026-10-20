@@ -1,3 +1,4 @@
+import { notifyItemAddedToCart } from "utils/cartFeedback";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
@@ -240,6 +241,9 @@ const FoodDetailModal = ({
         product = {
           ...item?.item,
           cartItemId: item?.id,
+          store_id: item?.store_id ?? item?.item?.store_id ?? product?.store_id ?? modalData?.[0]?.store_id,
+          module_id: item?.module_id ?? item?.item?.module_id ?? 2,
+          module_type: item?.item?.module_type ?? "food",
           totalPrice: item?.price,
           quantity: item?.quantity,
           food_variations: item?.item?.food_variations,
@@ -249,6 +253,7 @@ const FoodDetailModal = ({
         };
       });
       dispatch(setCart(product));
+      notifyItemAddedToCart(product?.name);
       toast.success(t("Item added to cart successfully"));
       handleClose();
     }

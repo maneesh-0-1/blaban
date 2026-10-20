@@ -87,6 +87,13 @@ const parseZoneIdsFromStorageValue = (rawZoneIds) => {
 };
 
 const StoreDetails = ({ storeDetails, configData }) => {
+  useEffect(() => {
+    const handleOpen = () => setCartDrawerOpen(true);
+    if (typeof window !== "undefined") {
+      window.addEventListener("open-cart-drawer", handleOpen);
+      return () => window.removeEventListener("open-cart-drawer", handleOpen);
+    }
+  }, []);
   useScrollToTop();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
@@ -245,15 +252,17 @@ const StoreDetails = ({ storeDetails, configData }) => {
   const moduleCartList = getCartListModuleWise(cartList);
   const storeScopedCartList = (moduleCartList || []).filter((item) => {
     const itemStoreId = item?.store_id ?? item?.store?.id;
+    if (!itemStoreId) return true;
     return (
       storeDetails?.id != null &&
-      itemStoreId != null &&
       String(itemStoreId) === String(storeDetails.id)
     );
   });
-  const cartCount = storeScopedCartList.length || 0;
-  const cartSubtotal = cartItemsTotalAmount(storeScopedCartList);
-  const cartOriginalSubtotal = storeScopedCartList?.reduce((sum, item) => {
+  const effectiveCartList =
+    storeScopedCartList.length > 0 ? storeScopedCartList : (moduleCartList || []);
+  const cartCount = effectiveCartList.length || 0;
+  const cartSubtotal = cartItemsTotalAmount(effectiveCartList);
+  const cartOriginalSubtotal = effectiveCartList?.reduce((sum, item) => {
     const itemQty = item?.quantity || 1;
     const itemPrice = item?.price || 0;
     return sum + itemPrice * itemQty;
@@ -733,7 +742,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
             bottom: 0,
             left: 0,
             right: 0,
-            zIndex: 1000,
+            zIndex: 1250,
             backgroundColor: (theme) => theme.palette.background.paper,
             borderTop: (theme) => `1px solid ${theme.palette.divider}`,
             boxShadow: "0px -2px 12px rgba(0, 0, 0, 0.06)",
