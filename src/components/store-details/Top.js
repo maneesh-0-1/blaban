@@ -795,77 +795,7 @@ const Top = (props) => {
                     />
                   </FloatingIconButton>
                 </Box>
-                {/* Floating action buttons over banner */}
-                <Stack
-                  direction="row"
-                  sx={{
-                    position: "absolute",
-                    top: 10,
-                    right: 10,
-                    zIndex: 2,
-                    flexDirection: { xs: "row-reverse", md: "row" },
-                    alignItems: "center",
-                    gap: { xs: 1, md: 0.75 },
-                  }}
-                >
-                  <AccountLanguageButton
-                    size="small"
-                    sx={{
-                      display: { xs: "inline-flex", md: "none" },
-                      backgroundColor: alpha(theme.palette.background.paper, 0.92),
-                      backdropFilter: "blur(4px)",
-                      boxShadow: "0px 2px 6px rgba(0,0,0,0.12)",
-                      borderRadius: "16px",
-                      height: "32px",
-                      px: "10px",
-                    }}
-                  />
-                  {!isInWishList() ? (
-                    <Tooltip title={t("Add to wishlist")} arrow>
-                      <FloatingIconButton onClick={addToFavorite}>
-                        <FavoriteBorderIcon
-                          sx={{
-                            fontSize: "16px",
-                            color: theme.palette.primary.main,
-                          }}
-                        />
-                      </FloatingIconButton>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title={t("Remove from wishlist")} arrow>
-                      <FloatingIconButton
-                        onClick={() => deleteWishlistStore(storeDetails?.id)}
-                      >
-                        <FavoriteIcon
-                          sx={{
-                            fontSize: "16px",
-                            color: theme.palette.primary.main,
-                          }}
-                        />
-                      </FloatingIconButton>
-                    </Tooltip>
-                  )}
-                  <Tooltip title={t("Location")} arrow>
-                    <FloatingIconButton onClick={openMapHandler}>
-                      <DirectionsIcon
-                        sx={{
-                          fontSize: "16px",
-                          color: theme.palette.primary.main,
-                        }}
-                      />
-                    </FloatingIconButton>
-                  </Tooltip>
-                  <Tooltip title={t("Share")} arrow>
-                    <FloatingIconButton onClick={() => setOpenShareModel(true)}>
-                      <ShareOutlinedIcon
-                        sx={{
-                          fontSize: "16px",
-                          color: theme.palette.primary.main,
-                        }}
-                      />
-                    </FloatingIconButton>
-                  </Tooltip>
-                </Stack>
+                
 
                 {/* Announcement button â€” only shown when store has announcement */}
                 {storeDetails?.announcement === 1 && (

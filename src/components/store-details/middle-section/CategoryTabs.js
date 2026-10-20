@@ -181,34 +181,7 @@ const CategoryTabs = ({
                       gap: 0.85,
                     }}
                   >
-                    {(() => {
-                      const catObj = (categories || []).find(
-                        (c) => String(c?.id) === String(tab.id)
-                      );
-                      const img =
-                        catObj?.image_full_url ||
-                        (catObj?.image
-                          ? `https://admin.blabankw.com/storage/app/public/category/${catObj.image}`
-                          : null);
-                      if (!img) return null;
-                      return (
-                        <Box
-                          component="img"
-                          src={img}
-                          alt={tab.name}
-                          sx={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: "50%",
-                            objectFit: "cover",
-                            border: active
-                              ? `1.5px solid ${theme.palette.primary.main}`
-                              : "1px solid rgba(0,0,0,0.12)",
-                            flexShrink: 0,
-                          }}
-                        />
-                      );
-                    })()}
+                    
                     <Typography
                       sx={{
                         whiteSpace: "nowrap",

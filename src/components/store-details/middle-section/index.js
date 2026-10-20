@@ -1,5 +1,4 @@
 import HotBanner from "components/common/HotBanner";
-import CategoryShowcase from "./CategoryShowcase";
 import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import CustomSearch from "../../custom-search/CustomSearch";
 import {
@@ -164,6 +163,13 @@ const MiddleSection = (props) => {
   const sectionRefs = useRef({});
   const [selectedCategoryTabId, setSelectedCategoryTabId] = useState(null);
   const [viewAllProducts, setViewAllProducts] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState({});
+  const toggleCategoryExpand = (catKey) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [catKey]: !prev[catKey],
+    }));
+  };
 
   // Detect when the toolbar is "stuck" (pinned to top) so we can show a shadow.
   const stickySentinelRef = useRef(null);
@@ -687,23 +693,7 @@ const MiddleSection = (props) => {
               <HotBanner />
             </Grid>
 
-            {/* Scrollable Categories Showcase With Images */}
-            <Grid item xs={12} sx={{ mb: { xs: 1.5, md: 2 } }}>
-              <CategoryShowcase
-                categories={categoryList}
-                selectedId={selectedCategoryTabId}
-                onSelect={(catId) => {
-                  setViewAllProducts(false);
-                  handleSelectCategoryTab(catId);
-                }}
-                isLoading={categoriesLoading && categoryList.length === 0}
-                viewAllProducts={viewAllProducts}
-                onToggleAllProducts={() => {
-                  setViewAllProducts((prev) => !prev);
-                  setSelectedCategoryTabId(null);
-                }}
-              />
-            </Grid>
+            
             
             <Box
               ref={stickySentinelRef}
@@ -972,214 +962,179 @@ const MiddleSection = (props) => {
                     popularItems = getLowToHigh([...popularSource]);
                   }
 
-                  const sections = categoryList.map((cat) => ({
-                    key: String(cat?.id),
-                    title: cat?.name,
-                    items: productsByCategory[String(cat?.id)] || [],
-                  })).filter((s) => s.items?.length > 0);
+                  const rawSections = categoryList.map((cat) => {
+                    const items = productsByCategory[String(cat?.id)] || [];
+                    return {
+                      key: String(cat?.id),
+                      title: cat?.name,
+                      image:
+                        cat?.image_full_url ||
+                        (cat?.image
+                          ? `${configData?.base_urls?.category_image_url || "https://admin.blabankw.com/storage/app/public/category"}/${cat.image}`
+                          : null),
+                      items,
+                    };
+                  }).filter((s) => s.items?.length > 0);
 
-                  const popularSliderSettings = {
-                    dots: false,
-                    arrows: false,
-                    infinite: false,
-                    speed: 400,
-                    slidesToShow: 4.5,
-                    slidesToScroll: 4,
-                    swipeToSlide: true,
-                    responsive: [
-                      {
-                        breakpoint: 1200,
-                        settings: {
-                          slidesToShow: 3.2,
-                          slidesToScroll: 3,
-                          swipeToSlide: true,
-                        },
-                      },
-                      {
-                        breakpoint: 900,
-                        settings: {
-                          slidesToShow: 2.5,
-                          slidesToScroll: 2,
-                          swipeToSlide: true,
-                        },
-                      },
-                      {
-                        breakpoint: 600,
-                        settings: {
-                          slidesToShow: 2.8,
-                          slidesToScroll: 2,
-                          swipeToSlide: true,
-                        },
-                      },
-                      {
-                        breakpoint: 500,
-                        settings: {
-                          slidesToShow: 2.8,
-                          slidesToScroll: 2,
-                          swipeToSlide: true,
-                        },
-                      },
-                      {
-                        breakpoint: 450,
-                        settings: {
-                          slidesToShow: 2.3,
-                          slidesToScroll: 2,
-                          swipeToSlide: true,
-                        },
-                      },
-                      {
-                        breakpoint: 400,
-                        settings: {
-                          slidesToShow: 2.1,
-                          slidesToScroll: 1,
-                          swipeToSlide: true,
-                        },
-                      },
-                      {
-                        breakpoint: 370,
-                        settings: {
-                          slidesToShow: 2,
-                          slidesToScroll: 1,
-                          swipeToSlide: true,
-                        },
-                      },
-                      {
-                        breakpoint: 340,
-                        settings: {
-                          slidesToShow: 1.8,
-                          slidesToScroll: 1,
-                          swipeToSlide: true,
-                        },
-                      },
-                    ],
-                  };
+                  const specificSections = rawSections.filter(
+                    (s) => String(s?.title || "").trim().toLowerCase() !== "all products"
+                  );
+
+                  const sections = specificSections.length > 0 ? specificSections : rawSections;
 
                   return (
-                    <Stack spacing={{ xs: 2, md: 4 }}>
+                    <Stack spacing={{ xs: 3, md: 5 }}>
                       {sections.map((section) => {
-                        const isPopular = section.key === "popular";
+                        const isExpanded = !!expandedCategories[section.key];
+                        const bannerImage =
+                          section.image ||
+                          section.items?.[0]?.image_full_url ||
+                          (section.items?.[0]?.image
+                            ? `https://admin.blabankw.com/storage/app/public/product/${section.items[0].image}`
+                            : null);
+
                         return (
                           <Stack
                             key={section.key}
                             ref={(el) => {
                               sectionRefs.current[section.key] = el;
                             }}
+                            spacing={1.5}
                           >
-                            {isPopular ? (
-                              <>
-                                <SliderSectionHeader
-                                  sliderRef={popularSliderRef}
-                                  currentSlide={popularCurrentSlide}
-                                  totalSlides={section.items.length}
-                                  slidesToShow={
-                                    popularSliderSettings.slidesToShow
-                                  }
-                                  sx={{ mb: 2, mt: { xs: "0rem", md: "1rem" } }}
-                                  heading={
-                                    <Typography
-                                      sx={{
-                                        fontSize: { xs: "16px", md: "18px" },
-                                        fontWeight: 700,
-                                        lineHeight: 1.2,
-                                        color: theme.palette.text.primary,
-                                      }}
-                                    >
-                                      {section.title}
-                                    </Typography>
-                                  }
+                            {/* ── Category Image Banner (matching labanxlaban reference) ── */}
+                            {bannerImage && (
+                              <Box
+                                sx={{
+                                  width: "100%",
+                                  height: { xs: "170px", sm: "230px", md: "300px" },
+                                  borderRadius: { xs: "16px", md: "20px" },
+                                  overflow: "hidden",
+                                  position: "relative",
+                                  backgroundColor: "#f5f7fa",
+                                  boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                                }}
+                              >
+                                <Box
+                                  component="img"
+                                  src={bannerImage}
+                                  alt={section.title}
+                                  loading="lazy"
+                                  sx={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    display: "block",
+                                  }}
                                 />
-                                <Box
-                                  sx={{
-                                    position: "relative",
-                                    "& .slick-list": {
-                                      py: 0.5,
-                                      overflow: "hidden",
-                                      maskImage:
-                                        "linear-gradient(to right, black 0, black 88%, transparent 100%)",
-                                      WebkitMaskImage:
-                                        "linear-gradient(to right, black 0, black 88%, transparent 100%)",
-                                    },
-                                    "& .slick-slide": { px: 0 },
-                                    "& .slick-slide > div": { px: 1 },
-                                    "& .slick-track": {
-                                      display: "flex",
-                                      alignItems: "stretch",
-                                      ml: 0,
-                                    },
-                                  }}
-                                >
-                                  <Slider
-                                    // react-slick caches its rendered tree
-                                    // and won't reorder when the children
-                                    // change to a different order (only
-                                    // when count changes). Keying the
-                                    // Slider on the active sort forces a
-                                    // remount so the popular section
-                                    // visibly reorders for high/low.
-                                    key={`popular-${state.sortBy}`}
-                                    ref={popularSliderRef}
-                                    afterChange={(i) =>
-                                      setPopularCurrentSlide(i)
-                                    }
-                                    {...popularSliderSettings}
+                              </Box>
+                            )}
+
+                            {/* ── Category Title ── */}
+                            <Typography
+                              component="h2"
+                              sx={{
+                                fontSize: { xs: "18px", sm: "20px", md: "24px" },
+                                fontWeight: 800,
+                                color: "#002D62",
+                                letterSpacing: "-0.3px",
+                                textAlign: "start",
+                                px: 0.5,
+                                mt: bannerImage ? { xs: 0.5, md: 1 } : 0,
+                              }}
+                            >
+                              {section.title}
+                            </Typography>
+
+                            {/* ── Products: Horizontal swipeable row (default) or Multi-col grid (expanded) ── */}
+                            {!isExpanded ? (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  gap: { xs: 1.5, sm: 2, md: 2.5 },
+                                  overflowX: "auto",
+                                  scrollSnapType: "x mandatory",
+                                  py: 1,
+                                  px: 0.5,
+                                  mx: { xs: -0.5, md: 0 },
+                                  scrollbarWidth: "none",
+                                  "&::-webkit-scrollbar": { display: "none" },
+                                }}
+                              >
+                                {section.items.map((item) => (
+                                  <Box
+                                    key={`${section.key}-${item?.id}`}
+                                    sx={{
+                                      scrollSnapAlign: "start",
+                                      flexShrink: 0,
+                                    }}
                                   >
-                                    {section.items.map((item) => (
-                                      <Box key={`${section.key}-${item?.id}`}>
-                                        <NewProductCard
-                                          item={item}
-                                          variant="vertical"
-                                          isStore
-                                        />
-                                      </Box>
-                                    ))}
-                                  </Slider>
-                                </Box>
-                              </>
+                                    <NewProductCard
+                                      item={item}
+                                      variant="vertical"
+                                      isStore
+                                      cardWidth={{ xs: "155px", sm: "175px", md: "205px" }}
+                                    />
+                                  </Box>
+                                ))}
+                              </Box>
                             ) : (
-                              <>
-                                <Typography
+                              <Box
+                                sx={{
+                                  display: "grid",
+                                  gap: { xs: 1.5, sm: 2, md: 2.5 },
+                                  gridTemplateColumns: {
+                                    xs: "repeat(2, 1fr)",
+                                    sm: "repeat(3, 1fr)",
+                                    md: "repeat(4, 1fr)",
+                                    lg: "repeat(5, 1fr)",
+                                  },
+                                  py: 1,
+                                  px: 0.5,
+                                }}
+                              >
+                                {section.items.map((item) => (
+                                  <NewProductCard
+                                    key={`${section.key}-${item?.id}`}
+                                    item={item}
+                                    variant="vertical"
+                                    isStore
+                                    cardWidth="100%"
+                                  />
+                                ))}
+                              </Box>
+                            )}
+
+                            {/* ── "View all" Pill Button (matching labanxlaban reference) ── */}
+                            {section.items.length > 2 && (
+                              <Box sx={{ display: "flex", justifyContent: "center", pt: 1, pb: 0.5 }}>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => toggleCategoryExpand(section.key)}
                                   sx={{
-                                    fontSize: { xs: "16px", md: "18px" },
+                                    borderRadius: "50px",
+                                    borderColor: "#0099cc",
+                                    borderWidth: "1.5px",
+                                    color: "#0099cc",
                                     fontWeight: 700,
-                                    lineHeight: 1.2,
-                                    color: theme.palette.text.primary,
-                                    mb: 2,
-                                  }}
-                                >
-                                  {section.title}
-                                </Typography>
-                                <Box
-                                  sx={{
-                                    display: "grid",
-                                    gap: 2,
-                                    gridTemplateColumns: {
-                                      xs: "1fr",
-                                      sm: "repeat(2, 1fr)",
+                                    textTransform: "none",
+                                    fontSize: { xs: "13px", md: "14px" },
+                                    px: { xs: 3.5, md: 4.5 },
+                                    py: 0.7,
+                                    backgroundColor: "transparent",
+                                    "&:hover": {
+                                      borderColor: "#007ea8",
+                                      borderWidth: "1.5px",
+                                      backgroundColor: alpha("#0099cc", 0.08),
                                     },
                                   }}
                                 >
-                                  {section.items.map((item) => (
-                                    <NewProductCard
-                                      key={`${section.key}-${item?.id}`}
-                                      item={item}
-                                      variant="horizontal"
-                                      isStore
-                                      max_width="100%"
-                                    />
-                                  ))}
-                                </Box>
-                              </>
+                                  {isExpanded ? t("Show less") : t("View all")}
+                                </Button>
+                              </Box>
                             )}
                           </Stack>
                         );
                       })}
-
-                      {/* Inline DotSpin removed — the overlay loader at
-                          the top of this Grid item now handles the
-                          "applying filter" indicator. */}
-
-                      {/* Infinite-scroll sentinel removed — see `limit`
-                          and the disabled inView effect above. */}
                     </Stack>
                   );
                 })()
