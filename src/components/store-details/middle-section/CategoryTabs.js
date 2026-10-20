@@ -174,23 +174,59 @@ const CategoryTabs = ({
                     transition: "border-color 120ms ease, color 120ms ease",
                   }}
                 >
-                  <Typography
+                  <Box
                     sx={{
-                      whiteSpace: "nowrap",
-                      fontSize: { xs: "15px", md: "16px" },
-                      fontWeight: active ? 700 : 400,
-                      letterSpacing: active ? "-0.48px" : "-0.32px",
-                      lineHeight: 1.2,
-                      color: active
-                        ? theme.palette.primary.main
-                        : theme.palette.text.primary,
-                      "&:hover": {
-                        color: theme.palette.primary.main,
-                      },
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.85,
                     }}
                   >
-                    {tab.name}
-                  </Typography>
+                    {(() => {
+                      const catObj = (categories || []).find(
+                        (c) => String(c?.id) === String(tab.id)
+                      );
+                      const img =
+                        catObj?.image_full_url ||
+                        (catObj?.image
+                          ? `https://admin.blabankw.com/storage/app/public/category/${catObj.image}`
+                          : null);
+                      if (!img) return null;
+                      return (
+                        <Box
+                          component="img"
+                          src={img}
+                          alt={tab.name}
+                          sx={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: active
+                              ? `1.5px solid ${theme.palette.primary.main}`
+                              : "1px solid rgba(0,0,0,0.12)",
+                            flexShrink: 0,
+                          }}
+                        />
+                      );
+                    })()}
+                    <Typography
+                      sx={{
+                        whiteSpace: "nowrap",
+                        fontSize: { xs: "14px", md: "15px" },
+                        fontWeight: active ? 700 : 500,
+                        letterSpacing: active ? "-0.3px" : "-0.2px",
+                        lineHeight: 1.2,
+                        color: active
+                          ? theme.palette.primary.main
+                          : theme.palette.text.primary,
+                        "&:hover": {
+                          color: theme.palette.primary.main,
+                        },
+                      }}
+                    >
+                      {tab.name}
+                    </Typography>
+                  </Box>
                 </Box>
               );
             })}

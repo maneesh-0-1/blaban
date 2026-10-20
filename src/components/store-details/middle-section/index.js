@@ -1,4 +1,5 @@
 import HotBanner from "components/common/HotBanner";
+import CategoryShowcase from "./CategoryShowcase";
 import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import CustomSearch from "../../custom-search/CustomSearch";
 import {
@@ -681,6 +682,28 @@ const MiddleSection = (props) => {
       <CustomStackFullWidth>
         {Boolean(storeId || moduleId) && (
           <Grid container gap={{ xs: 0, md: 0 }} sx={{ position: "relative" }}>
+            {/* Hot Promotional Banner */}
+            <Grid item xs={12} sx={{ mb: { xs: 2, md: 2.5 } }}>
+              <HotBanner />
+            </Grid>
+
+            {/* Scrollable Categories Showcase With Images */}
+            <Grid item xs={12} sx={{ mb: { xs: 1.5, md: 2 } }}>
+              <CategoryShowcase
+                categories={categoryList}
+                selectedId={selectedCategoryTabId}
+                onSelect={(catId) => {
+                  setViewAllProducts(false);
+                  handleSelectCategoryTab(catId);
+                }}
+                isLoading={categoriesLoading && categoryList.length === 0}
+                viewAllProducts={viewAllProducts}
+                onToggleAllProducts={() => {
+                  setViewAllProducts((prev) => !prev);
+                  setSelectedCategoryTabId(null);
+                }}
+              />
+            </Grid>
             
             <Box
               ref={stickySentinelRef}
