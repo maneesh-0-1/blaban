@@ -55,7 +55,7 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
-    unoptimized: false,
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'http',
