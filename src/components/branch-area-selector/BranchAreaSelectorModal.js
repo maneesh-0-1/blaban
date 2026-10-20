@@ -22,100 +22,17 @@ import StorefrontIcon from "@mui/icons-material/Storefront";
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
 import { useTranslation } from "react-i18next";
 import useGetDeliveryAreas from "../../api-manage/hooks/react-query/delivery-areas/useGetDeliveryAreas";
+import deliveryBranchesData from "./deliveryBranchesData.json";
 
-// Fallback data in case of initial load / offline
+// Fallback data aligned with 4 Kuwait B.Laban Branches and Excel delivery schedule
 const FALLBACK_BRANCHES = [
-  { id: 1, name: "alsalmya", name_ar: "السالمية", address: "Salem Al Mubarak St, Salmiya, Kuwait", phone: "+965 2222 0001" },
-  { id: 2, name: "Midan Hawalli", name_ar: "ميدان حولي", address: "Midan Hawalli, Block 11, Kuwait", phone: "+965 2222 0002" },
-  { id: 3, name: "AlFarwaniya", name_ar: "الفروانية", address: "Habib Munawir St, Farwaniya, Kuwait", phone: "+965 2222 0003" },
-  { id: 4, name: "alFahaheel", name_ar: "الفحيحيل", address: "Dabbous St, Fahaheel, Kuwait", phone: "+965 2222 0004" },
+  { id: 4, name: "Salmiya Branch", name_ar: "فرع السالمية", address: "Salem Al Mubarak St, Salmiya, Kuwait", phone: "+965 60609079", slug: "salmiya-branch" },
+  { id: 5, name: "Hawally Branch", name_ar: "فرع حولي", address: "Baghdad St, Midan Hawalli, Kuwait", phone: "+965 60609079", slug: "hawally-branch" },
+  { id: 7, name: "Farwaniya Branch", name_ar: "فرع الفروانية", address: "Habib Munawir St, Farwaniya, Kuwait", phone: "+965 60609079", slug: "farwaniya-branch" },
+  { id: 6, name: "Fahaheel Branch", name_ar: "فرع الفحيحيل", address: "Dabbous St, Fahaheel, Kuwait", phone: "+965 60609079", slug: "fahaheel-branch" },
 ];
 
-const FALLBACK_GOVERNORATES = [
-  {
-    id: 1,
-    name: "Hawalli",
-    name_ar: "حولي",
-    active_areas: [
-      { id: 1, name: "Salmiya", name_ar: "السالمية", delivery_charge: 0.5, branch_id: 1, branch: { id: 1, name: "alsalmya" } },
-      { id: 2, name: "Hawalli", name_ar: "حولي", delivery_charge: 0.5, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 3, name: "Jabriya", name_ar: "الجابرية", delivery_charge: 0.75, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 4, name: "Rumaithiya", name_ar: "الرميثية", delivery_charge: 0.75, branch_id: 1, branch: { id: 1, name: "alsalmya" } },
-      { id: 5, name: "Bayan", name_ar: "بيان", delivery_charge: 0.75, branch_id: 1, branch: { id: 1, name: "alsalmya" } },
-      { id: 6, name: "Mishref", name_ar: "مشرف", delivery_charge: 0.75, branch_id: 1, branch: { id: 1, name: "alsalmya" } },
-      { id: 7, name: "Salwa", name_ar: "سلوى", delivery_charge: 0.75, branch_id: 1, branch: { id: 1, name: "alsalmya" } },
-      { id: 8, name: "Shaab", name_ar: "الشعب", delivery_charge: 0.75, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-    ],
-  },
-  {
-    id: 2,
-    name: "Kuwait City",
-    name_ar: "العاصمة",
-    active_areas: [
-      { id: 9, name: "Sharq", name_ar: "شرق", delivery_charge: 1.0, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 10, name: "Mirqab", name_ar: "المرقاب", delivery_charge: 1.0, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 11, name: "Qibla", name_ar: "القبلة", delivery_charge: 1.0, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 12, name: "Salhiya", name_ar: "الصالحية", delivery_charge: 1.0, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 13, name: "Dasman", name_ar: "دسمان", delivery_charge: 1.0, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 14, name: "Bneid Al-Qar", name_ar: "بنيد القار", delivery_charge: 1.0, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-      { id: 15, name: "Shamiya", name_ar: "الشامية", delivery_charge: 1.25, branch_id: 2, branch: { id: 2, name: "Midan Hawalli" } },
-    ],
-  },
-  {
-    id: 3,
-    name: "Farwaniya",
-    name_ar: "الفروانية",
-    active_areas: [
-      { id: 16, name: "Farwaniya", name_ar: "الفروانية", delivery_charge: 0.5, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 17, name: "Khaitan", name_ar: "خيطان", delivery_charge: 0.75, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 18, name: "Ishbilya", name_ar: "إشبيلية", delivery_charge: 1.0, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 19, name: "Ardiya", name_ar: "العارضية", delivery_charge: 1.0, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 20, name: "Sabah Al-Nasser", name_ar: "صباح الناصر", delivery_charge: 1.0, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 21, name: "Rehab", name_ar: "الرحاب", delivery_charge: 1.0, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 22, name: "Rabiya", name_ar: "الرابية", delivery_charge: 1.0, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-    ],
-  },
-  {
-    id: 4,
-    name: "Mubarak Al Kabir",
-    name_ar: "مبارك الكبير",
-    active_areas: [
-      { id: 23, name: "Abu Futairah", name_ar: "أبو فطيرة", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 24, name: "Sabah Al-Salem", name_ar: "صباح السالم", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 25, name: "Messila", name_ar: "المسيلة", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 26, name: "Al-Qurain", name_ar: "القرين", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 27, name: "Al-Qusoor", name_ar: "القصور", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 28, name: "Adan", name_ar: "العدان", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 29, name: "Funaitees", name_ar: "الفنيطيس", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-    ],
-  },
-  {
-    id: 5,
-    name: "Ahmadi",
-    name_ar: "الأحمدي",
-    active_areas: [
-      { id: 30, name: "Fahaheel", name_ar: "الفحيحيل", delivery_charge: 0.5, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 31, name: "Mangaf", name_ar: "المنقف", delivery_charge: 0.75, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 32, name: "Mahboula", name_ar: "المهبولة", delivery_charge: 0.75, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 33, name: "Abu Halifa", name_ar: "أبو حليفة", delivery_charge: 0.75, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 34, name: "Egaila", name_ar: "العقيلة", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 35, name: "Ahmadi", name_ar: "الأحمدي", delivery_charge: 1.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-      { id: 36, name: "Sabah Al-Ahmad", name_ar: "صباح الأحمد", delivery_charge: 2.0, branch_id: 4, branch: { id: 4, name: "alFahaheel" } },
-    ],
-  },
-  {
-    id: 6,
-    name: "Jahra",
-    name_ar: "الجهراء",
-    active_areas: [
-      { id: 37, name: "Jahra", name_ar: "الجهراء", delivery_charge: 1.5, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 38, name: "Saad Al-Abdullah", name_ar: "سعد العبدالله", delivery_charge: 1.5, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 39, name: "Qasr", name_ar: "القصر", delivery_charge: 1.5, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 40, name: "Naseem", name_ar: "النسيم", delivery_charge: 1.5, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-      { id: 41, name: "Oyoun", name_ar: "العيون", delivery_charge: 1.5, branch_id: 3, branch: { id: 3, name: "AlFarwaniya" } },
-    ],
-  },
-];
+const FALLBACK_GOVERNORATES = deliveryBranchesData;
 
 const BranchAreaSelectorModal = ({ open, onClose, onSelect, initialTab = "delivery" }) => {
   const theme = useTheme();
@@ -155,7 +72,11 @@ const BranchAreaSelectorModal = ({ open, onClose, onSelect, initialTab = "delive
     return FALLBACK_BRANCHES;
   }, [apiData]);
 
+  // Primary delivery areas grouped under the 4 branches as defined in Blabban_Delivery_Areas_English.xlsx
   const governorates = useMemo(() => {
+    if (deliveryBranchesData && deliveryBranchesData.length > 0) {
+      return deliveryBranchesData;
+    }
     if (apiData?.governorates && apiData.governorates.length > 0) {
       return apiData.governorates;
     }
@@ -453,15 +374,30 @@ const BranchAreaSelectorModal = ({ open, onClose, onSelect, initialTab = "delive
                         "&:hover": { backgroundColor: "#F8FAFC" },
                       }}
                     >
-                      <Typography
-                        sx={{
-                          fontSize: "15px",
-                          fontWeight: 600,
-                          color: "#0284C7", // Cyan-blue matching reference screenshot
-                        }}
-                      >
-                        {isArabic && gov.name_ar ? gov.name_ar : gov.name}
-                      </Typography>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography
+                          sx={{
+                            fontSize: "15px",
+                            fontWeight: 700,
+                            color: "#0284C7",
+                          }}
+                        >
+                          {isArabic && gov.name_ar ? gov.name_ar : gov.name}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: "11px",
+                            fontWeight: 600,
+                            color: "#64748B",
+                            backgroundColor: "#F1F5F9",
+                            px: 1,
+                            py: 0.2,
+                            borderRadius: "10px",
+                          }}
+                        >
+                          {areas.length} {isArabic ? "منطقة" : "areas"}
+                        </Typography>
+                      </Stack>
                       {isExpanded ? (
                         <KeyboardArrowUpIcon sx={{ color: "#64748B", fontSize: "20px" }} />
                       ) : (
@@ -507,11 +443,11 @@ const BranchAreaSelectorModal = ({ open, onClose, onSelect, initialTab = "delive
                                 >
                                   {isArabic && area.name_ar ? area.name_ar : area.name}
                                 </Typography>
-                                {area.branch && (
-                                  <Typography sx={{ fontSize: "11px", color: "#64748B" }}>
-                                    {t("Branch")}: {isArabic && area.branch.name_ar ? area.branch.name_ar : area.branch.name}
-                                  </Typography>
-                                )}
+                                <Typography sx={{ fontSize: "11px", color: "#64748B" }}>
+                                  {isArabic
+                                    ? (area.delivery_time === "Within 30 minutes" ? "خلال 30 دقيقة" : "خلال 60 دقيقة")
+                                    : (area.delivery_time || (area.category === "Nearby" ? "Within 30 minutes" : "Within 60 minutes"))}
+                                </Typography>
                               </Box>
 
                               <Stack direction="row" alignItems="center" spacing={1}>

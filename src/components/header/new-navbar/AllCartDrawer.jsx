@@ -180,7 +180,10 @@ const AllCartDrawer = ({ open, onClose, cartData = [], refetch }) => {
 
   const handleViewCart = (store) => {
     onClose();
-    handleStoreRedirect(store, router);
+    router.push({
+      pathname: "/checkout",
+      query: { page: "cart", store_id: store?.id },
+    });
   };
 
   return (

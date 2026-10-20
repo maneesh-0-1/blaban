@@ -1,0 +1,1186 @@
+[
+  {
+    "id": 1,
+    "name": "Salmiya Branch",
+    "name_ar": "فرع السالمية",
+    "branch_id": 4,
+    "active_areas": [
+      {
+        "id": 1,
+        "name": "Al Bidaa",
+        "name_ar": "البدع",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 2,
+        "name": "Rumaithiya",
+        "name_ar": "الرميثية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 3,
+        "name": "Zahra",
+        "name_ar": "الزهراء",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 4,
+        "name": "Salmiya",
+        "name_ar": "السالمية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 5,
+        "name": "Shaab",
+        "name_ar": "الشعب",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 6,
+        "name": "Shuhada",
+        "name_ar": "الشهداء",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 7,
+        "name": "Siddiq",
+        "name_ar": "الصديق",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 8,
+        "name": "Messila",
+        "name_ar": "المسيلة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 9,
+        "name": "Bayan",
+        "name_ar": "بيان",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 10,
+        "name": "Hittin",
+        "name_ar": "حطين",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 11,
+        "name": "Salwa",
+        "name_ar": "سلوى",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 12,
+        "name": "Mishref",
+        "name_ar": "مشرف",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 13,
+        "name": "Abu Al Hasaniya",
+        "name_ar": "أبو الحصانية",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 14,
+        "name": "Abu Fatira",
+        "name_ar": "أبو فطيرة",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      },
+      {
+        "id": 15,
+        "name": "Masayel",
+        "name_ar": "المسايل",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 4,
+        "branch": {
+          "id": 4,
+          "name": "Salmiya Branch",
+          "name_ar": "فرع السالمية"
+        }
+      }
+    ],
+    "areas_count": 15
+  },
+  {
+    "id": 2,
+    "name": "Hawally Branch",
+    "name_ar": "فرع حولي",
+    "branch_id": 5,
+    "active_areas": [
+      {
+        "id": 16,
+        "name": "Jabriya",
+        "name_ar": "الجابرية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 17,
+        "name": "Khaldiya",
+        "name_ar": "الخالدية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 18,
+        "name": "Dasma",
+        "name_ar": "الدسمة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 19,
+        "name": "Daiya",
+        "name_ar": "الدعية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 20,
+        "name": "Rawda",
+        "name_ar": "الروضة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 21,
+        "name": "Surra",
+        "name_ar": "السرة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 22,
+        "name": "Salam",
+        "name_ar": "السلام",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 23,
+        "name": "Shamiya",
+        "name_ar": "الشامية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 24,
+        "name": "Sharq",
+        "name_ar": "شرق",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 25,
+        "name": "Shuwaikh Residential",
+        "name_ar": "الشويخ السكنية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 26,
+        "name": "Shuwaikh Industrial",
+        "name_ar": "الشويخ الصناعية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 27,
+        "name": "Qadsiya",
+        "name_ar": "القادسية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 28,
+        "name": "Qibla",
+        "name_ar": "القبلة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 29,
+        "name": "Mirqab",
+        "name_ar": "المرقاب",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 30,
+        "name": "Mansouriya",
+        "name_ar": "المنصورية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 31,
+        "name": "Nuzha",
+        "name_ar": "النزهة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 32,
+        "name": "Yarmouk",
+        "name_ar": "اليرموك",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 33,
+        "name": "hawally",
+        "name_ar": "حولي",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 34,
+        "name": "Qurtuba",
+        "name_ar": "قرطبة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 35,
+        "name": "Kaifan",
+        "name_ar": "كيفان",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      },
+      {
+        "id": 36,
+        "name": "Hawally Square",
+        "name_ar": "ميدان حولي",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 5,
+        "branch": {
+          "id": 5,
+          "name": "Hawally Branch",
+          "name_ar": "فرع حولي"
+        }
+      }
+    ],
+    "areas_count": 21
+  },
+  {
+    "id": 3,
+    "name": "Farwaniya Branch",
+    "name_ar": "فرع الفروانية",
+    "branch_id": 7,
+    "active_areas": [
+      {
+        "id": 37,
+        "name": "Ishbiliya",
+        "name_ar": "إشبيلية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 38,
+        "name": "Andalus",
+        "name_ar": "الأندلس",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 39,
+        "name": "Rabia",
+        "name_ar": "الرابية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 40,
+        "name": "Regee",
+        "name_ar": "الرقعي",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 41,
+        "name": "Dajeej",
+        "name_ar": "الضجيج",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 42,
+        "name": "Ardiya",
+        "name_ar": "العارضية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 43,
+        "name": "Omariya",
+        "name_ar": "العمرية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 44,
+        "name": "Firdous",
+        "name_ar": "الفردوس",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 45,
+        "name": "Farwaniya",
+        "name_ar": "الفروانية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 46,
+        "name": "Jleeb Al Shuyoukh",
+        "name_ar": "جليب الشيوخ",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 47,
+        "name": "Khaitan",
+        "name_ar": "خيطان",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 48,
+        "name": "Rehab",
+        "name_ar": "الرحاب",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 49,
+        "name": "Al Rai",
+        "name_ar": "الري",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 50,
+        "name": "Sulaibikhat",
+        "name_ar": "الصليبيخات",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 51,
+        "name": "Al Oyoun",
+        "name_ar": "العيون",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 52,
+        "name": "Airport Area",
+        "name_ar": "منطقة المطار",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 53,
+        "name": "Naseem",
+        "name_ar": "النسيم",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 54,
+        "name": "Nahda",
+        "name_ar": "النهضة",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 55,
+        "name": "Taimaa",
+        "name_ar": "تيماء",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 56,
+        "name": "Jaber Al Ahmad",
+        "name_ar": "جابر الأحمد",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 57,
+        "name": "Saad Al Abdullah",
+        "name_ar": "سعد العبدالله",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 58,
+        "name": "Sabah Al Nasser",
+        "name_ar": "صباح الناصر",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 59,
+        "name": "Subhan",
+        "name_ar": "صبحان",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 60,
+        "name": "Abdullah Al Mubarak",
+        "name_ar": "عبدالله المبارك",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      },
+      {
+        "id": 61,
+        "name": "Grnata",
+        "name_ar": "غرناطة",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 7,
+        "branch": {
+          "id": 7,
+          "name": "Farwaniya Branch",
+          "name_ar": "فرع الفروانية"
+        }
+      }
+    ],
+    "areas_count": 25
+  },
+  {
+    "id": 4,
+    "name": "Fahaheel Branch",
+    "name_ar": "فرع الفحيحيل",
+    "branch_id": 6,
+    "active_areas": [
+      {
+        "id": 62,
+        "name": "Abu Halifa",
+        "name_ar": "أبو حليفة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 63,
+        "name": "Riqqa",
+        "name_ar": "الرقة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 64,
+        "name": "Adan",
+        "name_ar": "العدان",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 65,
+        "name": "Eqaila",
+        "name_ar": "العقيلة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 66,
+        "name": "Fahaheel",
+        "name_ar": "الفحيحيل",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 67,
+        "name": "Fintas",
+        "name_ar": "الفنطاس",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 68,
+        "name": "Funaitis",
+        "name_ar": "الفنيطيس",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 69,
+        "name": "Qurain",
+        "name_ar": "القرين",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 70,
+        "name": "Qusour",
+        "name_ar": "القصور",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 71,
+        "name": "Mangaf",
+        "name_ar": "المنقف",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 72,
+        "name": "Mahboula",
+        "name_ar": "المهبولة",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 73,
+        "name": "Jaber Al Ali",
+        "name_ar": "جابر العلي",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 74,
+        "name": "Sabah Al Salem",
+        "name_ar": "صباح السالم",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 75,
+        "name": "Fahad Al Ahmad",
+        "name_ar": "فهد الأحمد",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 76,
+        "name": "Hadiya",
+        "name_ar": "هدية",
+        "category": "Nearby",
+        "delivery_time": "Within 30 minutes",
+        "delivery_charge": 0.5,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 77,
+        "name": "Al Ahmadi",
+        "name_ar": "الأحمدي",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 78,
+        "name": "Sabahiya",
+        "name_ar": "الصباحية",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 79,
+        "name": "Dhaher",
+        "name_ar": "الظهر",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 80,
+        "name": "Ali Sabah Al Salem",
+        "name_ar": "علي صباح السالم",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 81,
+        "name": "Mubarak Al Kabeer",
+        "name_ar": "مبارك الكبير",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      },
+      {
+        "id": 82,
+        "name": "Mina Abdullah",
+        "name_ar": "ميناء عبدالله",
+        "category": "Farther",
+        "delivery_time": "Within 60 minutes",
+        "delivery_charge": 1.0,
+        "branch_id": 6,
+        "branch": {
+          "id": 6,
+          "name": "Fahaheel Branch",
+          "name_ar": "فرع الفحيحيل"
+        }
+      }
+    ],
+    "areas_count": 21
+  }
+]

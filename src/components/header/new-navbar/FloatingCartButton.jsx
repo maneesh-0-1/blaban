@@ -115,7 +115,8 @@ const FloatingCartButton = () => {
 
   const isStoreDetailPage = router.pathname === "/store/[id]";
   const showMobileBar = itemCount > 0 && !isBlockedPage && !isStoreDetailPage;
-  const showDesktopPill = itemCount > 0 && !isBlockedPage;
+  // Desktop duplicate cart removed per request; desktop uses embedded StoreCartSidebar
+  const showDesktopPill = false;
 
   // Bottom position: sits right above BottomNav (65px + 10px margin = 75px) on normal pages,
   // or 16px from bottom on pages where BottomNav is absent (e.g. store or product page).
@@ -226,7 +227,7 @@ const FloatingCartButton = () => {
       <Box
         onClick={() => setOpen(true)}
         role="button"
-        aria-label={t("View Cart")}
+        aria-label={t("Checkout")}
         sx={{
           position: "fixed",
           bottom: mobileBottomPos,
@@ -304,7 +305,7 @@ const FloatingCartButton = () => {
 
         <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#ffffff" }}>
-            {t("View Cart")}
+            {t("Checkout")}
           </Typography>
           <i
             className="fi fi-rr-arrow-small-right"

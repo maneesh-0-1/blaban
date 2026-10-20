@@ -821,7 +821,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
                 },
               }}
             >
-              {t("View Cart List")} ({cartCount})
+              {t("Checkout")} ({cartCount})
             </Button>
           </Stack>
         </Box>

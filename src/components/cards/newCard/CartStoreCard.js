@@ -485,7 +485,7 @@ const CartStoreCard = ({
               onViewCart?.();
             }}
           >
-            {t("View Cart")}
+            {t("Checkout")}
           </ViewCartBtn>
         </Stack>
       </Body>
