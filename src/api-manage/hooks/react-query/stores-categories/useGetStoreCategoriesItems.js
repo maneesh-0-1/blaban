@@ -1,3 +1,4 @@
+import { sortCategories } from "../../../../utils/categoryOrder";
 import { useInfiniteQuery } from "react-query";
 import MainApi from "../../../MainApi";
 import { store_categories_items_api } from "../../../ApiRoutes";
@@ -64,6 +65,9 @@ const buildUrl = (params) => {
 };
 
 const normalizeResponse = (data) => {
+  if (Array.isArray(data?.categories)) {
+    data.categories = sortCategories(data.categories, false);
+  }
   if (data && data?.category_wise_items) {
     const seen = new Set();
     const flat = [];

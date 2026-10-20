@@ -1,3 +1,4 @@
+import { sortCategories } from "utils/categoryOrder";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
@@ -63,7 +64,8 @@ const CategoryTabs = ({
     el.scrollBy({ left: dir * 200, behavior: "smooth" });
   };
 
-  const tabs = (categories || []).map((c) => ({
+  const cleanCategories = sortCategories(categories, false);
+  const tabs = cleanCategories.map((c) => ({
     id: String(c?.id),
     name: c?.name,
   }));

@@ -1,3 +1,4 @@
+import { sortCategories } from "utils/categoryOrder";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
@@ -266,7 +267,7 @@ const CategoryShowcase = ({
               </Typography>
             </Stack>
 
-            {categories.map((cat) => {
+            {sortCategories(categories, false).map((cat) => {
               const active =
                 !viewAllProducts && String(selectedId) === String(cat?.id);
               const imageUrl =

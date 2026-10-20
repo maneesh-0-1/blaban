@@ -1,3 +1,4 @@
+import { sortCategories } from "../../../../utils/categoryOrder";
 import { useQuery } from "react-query";
 
 import { categories_api } from "../../../ApiRoutes";
@@ -6,11 +7,16 @@ import { onErrorResponse } from "../../../api-error-response/ErrorResponses";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 
 const getData = async (searchKey) => {
+  let res;
   if (searchKey && searchKey !== "") {
-    return await MainApi.get(`${categories_api}?search=${searchKey}`);
+    res = await MainApi.get(`${categories_api}?search=${searchKey}`);
   } else {
-    return await MainApi.get(`${categories_api}`);
+    res = await MainApi.get(`${categories_api}`);
   }
+  if (Array.isArray(res?.data)) {
+    res.data = sortCategories(res.data, true);
+  }
+  return res;
 };
 export const useGetCategories = (
   searchKey,
@@ -32,7 +38,11 @@ export const useGetCategories = (
 };
 
 const getFeaturedData = async () => {
-  return await MainApi.get(`${categories_api}`);
+  const res = await MainApi.get(`${categories_api}`);
+  if (Array.isArray(res?.data)) {
+    res.data = sortCategories(res.data, true);
+  }
+  return res;
 };
 export const useGetFeaturedCategories = (handleSuccess) => {
   const moduleType = getCurrentModuleType();

@@ -1,3 +1,4 @@
+import { sortCategories } from "utils/categoryOrder";
 import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import CustomSearch from "../../custom-search/CustomSearch";
 import {
