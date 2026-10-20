@@ -316,7 +316,7 @@ const MiddleSection = (props) => {
   // large page instead of paging by offset. The search endpoint still uses
   // the same `offset` state but the inView-driven bump effect below is
   // also disabled, so neither path keeps requesting more.
-  const limit = 500;
+  const limit = 40;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {

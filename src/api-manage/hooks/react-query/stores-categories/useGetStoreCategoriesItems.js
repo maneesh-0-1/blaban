@@ -13,7 +13,7 @@ const buildUrl = (params) => {
     storeId,
     categoryId = [],
     offset = 1,
-    limit = 500,
+    limit = 40,
     type,
     minMax = [0, 1],
     filterData = [],
@@ -133,7 +133,7 @@ const fetchPage = async (params) => {
 export default function useGetStoreCategoriesItems(pageParams) {
   const zoneid =
     typeof window !== "undefined" ? localStorage.getItem("zoneid") : null;
-  const effectiveLimit = pageParams?.limit || 500;
+  const effectiveLimit = pageParams?.limit || 40;
   return useInfiniteQuery(
     [
       "store-categories-items-v5",
