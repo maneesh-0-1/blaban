@@ -590,6 +590,31 @@ const ItemCheckout = (props) => {
         password: formik.values.password,
         is_guest: token ? 0 : 1,
         bring_change_amount: changeAmount,
+        ...(() => {
+          let sBranch = null;
+          let sArea = null;
+          try {
+            if (typeof window !== "undefined") {
+              const b = localStorage.getItem("selectedBranch");
+              const a = localStorage.getItem("selectedArea");
+              if (b) sBranch = JSON.parse(b);
+              if (a) sArea = JSON.parse(a);
+            }
+          } catch (e) {}
+          return {
+            ...(sBranch?.id && {
+              branch_id: sBranch.id,
+              branch_name: sBranch.name,
+            }),
+            ...(sArea?.id && {
+              delivery_area_id: sArea.id,
+              delivery_area_name: sArea.name,
+            }),
+          };
+        })(),
+        latitude: address?.latitude || "29.3759",
+        longitude: address?.longitude || "47.9774",
+        address: address?.address || (typeof window !== "undefined" ? localStorage.getItem("location") : "") || "Kuwait",
         // Delivery-speed selection (express / standard / slightly_delay).
         // Spread conditionally so free-delivery coupons skip the surcharge
         // fields entirely and the backend uses base delivery only.

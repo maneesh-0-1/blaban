@@ -1,134 +1,49 @@
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import RoomIcon from "@mui/icons-material/Room";
-import { alpha, ClickAwayListener, Grid, Stack, Tooltip, Typography, useTheme } from "@mui/material";
+import { ClickAwayListener, Grid, Stack, Tooltip, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { CustomStackFullWidth } from "../../../../styled-components/CustomStyles.style";
-import AddressReselectPopover from "./AddressReselectPopover";
-import { getModule } from "helper-functions/getLanguage";
 import { AddressTypographyGray } from "../TopNavBar";
-import {
-  DEFAULT_BRANCHES,
-  findNearestBranch,
-  persistBranchSelection,
-  parseZoneIds,
-} from "../../../../utils/branchHelper";
+import BranchAreaSelectorModal from "../../../branch-area-selector/BranchAreaSelectorModal";
 
 const AddressReselect = ({ location, setOpenDrawer }) => {
   const theme = useTheme();
   const router = useRouter();
-  const [openReselectModal, setOpenReselectModal] = useState(false);
-  const [tooltipOpen, setTooltipOpen] = useState(true);
-
-  const [openPopover, setOpenPopover] = useState(false);
-  const [address, setAddress] = useState(null);
   const { t } = useTranslation();
-  let token = undefined;
-  if (typeof window !== "undefined") {
-    token = localStorage.getItem("token");
-  }
+  const [openBranchModal, setOpenBranchModal] = useState(false);
+  const [currentLocationName, setCurrentLocationName] = useState(location || "");
 
-  let currentLatLngForMar;
-  if (typeof localStorage.getItem("currentLatLng") !== undefined) {
-    currentLatLngForMar = JSON.parse(localStorage.getItem("currentLatLng"));
-  }
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window !== "undefined") {
+      const storedLocation = localStorage.getItem("location");
+      if (storedLocation) {
+        setCurrentLocationName(storedLocation);
+      }
+    }
+  }, [location]);
 
-    let lastScrollY = window.scrollY;
-    let openTimerId = null;
-    const SCROLL_THRESHOLD_PX = 10;
-    const OPEN_DELAY_MS = 180;
-
-    const clearOpenTimer = () => {
-      if (openTimerId) {
-        window.clearTimeout(openTimerId);
-        openTimerId = null;
+  useEffect(() => {
+    const handleLocationChange = (e) => {
+      if (e?.detail?.displayName) {
+        setCurrentLocationName(e.detail.displayName);
       }
     };
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const delta = currentScrollY - lastScrollY;
-
-      // Ignore tiny scroll movements to prevent tooltip blinking on mobile.
-      if (Math.abs(delta) < SCROLL_THRESHOLD_PX) return;
-      lastScrollY = currentScrollY;
-
-      // Close immediately while scrolling down.
-      if (delta > 0) {
-        clearOpenTimer();
-        setTooltipOpen(false);
-        return;
-      }
-
-      // Debounce re-open while scrolling up (wait for scroll to settle).
-      clearOpenTimer();
-      openTimerId = window.setTimeout(() => {
-        setTooltipOpen(true);
-      }, OPEN_DELAY_MS);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clearOpenTimer();
-    };
-  }, []);
-  let currentLatLng;
-  useEffect(() => {
-    let currentLatLng;
-    if (typeof localStorage.getItem("currentLatLng") !== undefined) {
-      currentLatLng = JSON.parse(localStorage.getItem("currentLatLng"));
-      const location = localStorage.getItem("location");
+    if (typeof window !== "undefined") {
+      window.addEventListener("deliveryAreaChanged", handleLocationChange);
+      return () => {
+        window.removeEventListener("deliveryAreaChanged", handleLocationChange);
+      };
     }
   }, []);
 
-  useEffect(() => {
-    if (address) {
-      localStorage.setItem("location", address?.address);
-      const values = { lat: address?.lat, lng: address?.lng };
-      localStorage.setItem("currentLatLng", JSON.stringify(values));
-      const zoneIds = address.zone_ids || [];
-      if (zoneIds.length > 0) {
-        localStorage.setItem("zoneid", JSON.stringify(zoneIds));
-        toast.success(t(`New ${getModule()?.module_type === "rental" ? "Pickup" : "Delivery"} address selected.`));
-      }
-
-      if (address?.lat != null && address?.lng != null) {
-        const nearest = findNearestBranch(
-          DEFAULT_BRANCHES,
-          address.lat,
-          address.lng,
-          zoneIds
-        );
-        if (nearest?.slug) {
-          persistBranchSelection(nearest.slug, address.lat, address.lng, zoneIds.length > 0 ? JSON.stringify(zoneIds) : null);
-          if (router.pathname.startsWith("/store")) {
-            router.push({
-              pathname: `/store/${nearest.slug}`,
-              query: { module: "blaban" },
-            });
-          }
-        }
-      }
-      setOpenPopover(false);
-    }
-  }, [address, t, router]);
-  const handleClickToLandingPage = () => {
-    setOpenPopover(true);
+  const handleClick = () => {
+    setOpenBranchModal(true);
     setOpenDrawer?.(false);
   };
 
-  const anchorRef = useRef(null);
-  const handleClosePopover = () => {
-    setOpenPopover(false);
-  };
-  const handleTooltipClose = () => {
-    setTooltipOpen(false);
-  };
+  const activeDisplay = currentLocationName || location;
+
   return (
     <>
       <Grid
@@ -140,77 +55,28 @@ const AddressReselect = ({ location, setOpenDrawer }) => {
           color: (theme) => theme.palette.neutral[1000],
           maxWidth: { xs: "230px", sm: "280px" },
         }}
-        ref={anchorRef}
-        onClick={handleClickToLandingPage}
+        onClick={handleClick}
       >
         <Grid item xs={11} align="left">
-          {!location ? (
-            router.pathname !== "/" ? (
-              <>
-                <ClickAwayListener onClickAway={handleTooltipClose}>
-                  <Tooltip
-                    title={t("Sharing your location improves search accuracy and delivery estimates for smoother order delivery.")}
-                    arrow
-                    placement="bottom-start"
-                    open={tooltipOpen}
-                    disableHoverListener
-                    disableFocusListener
-                    disableTouchListener
-                    TransitionProps={{ timeout: 0 }}
-                    slotProps={{
-                      popper: {
-                        sx: { zIndex: 9999 },
-                        modifiers: [
-                          { name: "offset", options: { offset: [0, 4] } },
-                        ],
-                      },
-                      tooltip: {
-                        sx: {
-                          bgcolor: (t) => t.palette.mode === "dark" ? t.palette.neutral[700] : "#303030",
-                          color: "#f3f3f3",
-                          textTransform: "none",
-                          fontSize: "14px",
-                          fontWeight: 400,
-                          lineHeight: 1.3,
-                          padding: "8px 12px",
-                          borderRadius: "8px",
-                          maxWidth: "320px",
-                          textAlign: "left",
-                          boxShadow: "0px 4px 8px rgba(0,0,0,0.1), 0px 16px 16px rgba(0,0,0,0.05)",
-                          "& .MuiTooltip-arrow": {
-                            color: (t) => t.palette.mode === "dark" ? t.palette.neutral[700] : "#303030",
-                            left: "8px !important",
-                            transform: "none !important",
-                          },
-                        },
-                      },
-                    }}
-                  >
-                    <Stack
-                      direction="row"
-                      onClick={() => setTooltipOpen(false)}
-                      alignItems="center"
-                      gap="5px"
-                      sx={{
-                        cursor: 'pointer',
-                        color: (theme) => theme.palette.neutral[1000],
-                        minWidth: "174px"
-                      }}
-                    >
-                      <i
-                        className="fi fi-rs-marker"
-                        style={{ fontSize: "16px", display: "flex", lineHeight: 1, color: "inherit" }}
-                      />
-                      <AddressTypographyGray align="left">
-                        {t('Select your location')}
-                      </AddressTypographyGray>
-                    </Stack>
-                  </Tooltip>
-                </ClickAwayListener>
-              </>
-            ) : (
-              null
-            )
+          {!activeDisplay ? (
+            <Stack
+              direction="row"
+              alignItems="center"
+              gap="5px"
+              sx={{
+                cursor: "pointer",
+                color: (theme) => theme.palette.neutral[1000],
+                minWidth: "174px",
+              }}
+            >
+              <i
+                className="fi fi-rs-marker"
+                style={{ fontSize: "16px", display: "flex", lineHeight: 1, color: "inherit" }}
+              />
+              <AddressTypographyGray align="left">
+                {t("Select delivery area or branch")}
+              </AddressTypographyGray>
+            </Stack>
           ) : (
             <CustomStackFullWidth direction="row" alignItems="center" spacing={1}>
               <i
@@ -233,40 +99,35 @@ const AddressReselect = ({ location, setOpenDrawer }) => {
                   "&:hover": {
                     color: theme.palette.primary.main,
                   },
-                  // width: "210px",
                 }}
               >
-                {location}
+                {activeDisplay}
               </Typography>
             </CustomStackFullWidth>
           )}
         </Grid>
-        {router.pathname !== "/" && (
-          <Grid item xs={1}>
-            <CustomStackFullWidth>
-              <KeyboardArrowDownIcon
-                sx={{
-                  fontSize: { xs: "16px", sm: "20px" },
-                }}
-              />
-            </CustomStackFullWidth>
-          </Grid>
-        )}
+        <Grid item xs={1}>
+          <CustomStackFullWidth>
+            <KeyboardArrowDownIcon
+              sx={{
+                fontSize: { xs: "16px", sm: "20px" },
+              }}
+            />
+          </CustomStackFullWidth>
+        </Grid>
       </Grid>
-      <AddressReselectPopover
-        anchorEl={anchorRef.current}
-        onClose={handleClosePopover}
-        open={openPopover}
-        t={t}
-        address={address}
-        setAddress={setAddress}
-        token={token}
-        currentLatLngForMar={currentLatLngForMar}
+
+      <BranchAreaSelectorModal
+        open={openBranchModal}
+        onClose={() => setOpenBranchModal(false)}
+        onSelect={(selection) => {
+          if (selection?.displayName) {
+            setCurrentLocationName(selection.displayName);
+          }
+        }}
       />
     </>
   );
 };
-
-AddressReselect.propTypes = {};
 
 export default AddressReselect;

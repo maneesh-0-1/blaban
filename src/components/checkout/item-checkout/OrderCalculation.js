@@ -337,20 +337,34 @@ const OrderCalculation = (props) => {
   };
 
   const handleDeliveryFee = () => {
-    let price = getDeliveryFees(
-      storeData,
-      configData,
-      cartList,
-      distanceData?.data,
-      couponDiscount,
-      couponType,
-      orderType,
-      zoneData,
-      origin,
-      destination,
-      tempExtraCharge,
-      surgePrice
-    );
+    let areaCharge = props.areaDeliveryFee;
+    if (areaCharge === undefined && typeof window !== "undefined") {
+      const stored = localStorage.getItem("areaDeliveryCharge");
+      if (stored !== null && stored !== "") {
+        areaCharge = Number(stored);
+      }
+    }
+
+    let price = (areaCharge !== undefined && areaCharge !== null && !isNaN(areaCharge))
+      ? Number(areaCharge)
+      : getDeliveryFees(
+          storeData,
+          configData,
+          cartList,
+          distanceData?.data,
+          couponDiscount,
+          couponType,
+          orderType,
+          zoneData,
+          origin,
+          destination,
+          tempExtraCharge,
+          surgePrice
+        );
+
+    if (orderType !== "delivery") {
+      price = 0;
+    }
 
     const proDiscount = computeProDeliveryDiscount(price);
     const billedPrice = Math.max(0, Number(price) - proDiscount);
