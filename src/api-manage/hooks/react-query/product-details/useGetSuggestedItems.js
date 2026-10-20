@@ -8,7 +8,7 @@ const fetchSuggestedItems = async ({
   type,
   recommended = 1,
   offset = 1,
-  limit = 50,
+  limit = 12,
 }) => {
   const params = new URLSearchParams();
   params.set("recommended", String(recommended));
@@ -27,7 +27,7 @@ export default function useGetSuggestedItems({
   type,
   recommended = 1,
   offset = 1,
-  limit = 50,
+  limit = 12,
   enabled = true,
 } = {}) {
   return useQuery(
