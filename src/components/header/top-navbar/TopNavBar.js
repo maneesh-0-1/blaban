@@ -104,7 +104,7 @@ const TopNavBar = () => {
 										alignItems="center"
 									>
 										<ThemeSwitches />
-										{configData?.phone && (<CallToAdmin configData={configData} />)}
+										{/* Contact phone number removed */}
 
 										<CustomLanguage
 											countryCode={countryCode}

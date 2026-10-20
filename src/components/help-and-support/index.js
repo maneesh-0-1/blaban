@@ -92,7 +92,7 @@ const HelpAndSupport = (props) => {
           </Link>
         </Grid>
         <Grid item md={4} xs={12}>
-          <Link href={`tel:${configData?.phone}`}>
+          <a href="https://wa.me/96560609079" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
             <VisitBox>
               <HelpImgBox>
                 <img src={img3.src} alt={t("help")} />
@@ -104,12 +104,12 @@ const HelpAndSupport = (props) => {
                     fontWeight: "700",
                   }}
                 >
-                  {t("CALL US")}
+                  {t("WHATSAPP US")}
                 </Typography>
-                <Typography>{configData?.phone}</Typography>
+                <Typography>+965 60609079</Typography>
               </Box>
             </VisitBox>
-          </Link>
+          </a>
         </Grid>
       </HelpGrid>
       {open && (

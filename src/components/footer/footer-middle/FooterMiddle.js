@@ -106,16 +106,7 @@ const FooterMiddle = ({ configData, landingPageData }) => {
               href={`mailto:${configData?.email || "clientservices@blabankw.com"}`}
             />
           </Box>
-          <Box sx={{ flex: "1 0 0", minWidth: "140px" }}>
-            <SomeInfo
-              image={phone}
-              alt="phone"
-              title="Contact us"
-              info={configData?.phone}
-              t={t}
-              href={`tel:${configData?.phone}`}
-            />
-          </Box>
+{/* Contact phone removed */}
           <Box sx={{ flex: "1 0 0", minWidth: "140px" }} onClick={() => setOpen(true)}>
             <SomeInfo
               image={magnifying}
@@ -205,16 +196,7 @@ const FooterMiddle = ({ configData, landingPageData }) => {
               href={`mailto:${configData?.email || "clientservices@blabankw.com"}`}
             />
           </Box>
-          <Box sx={{ minWidth: "130px", flex: "1 1 130px" }}>
-            <SomeInfo
-              image={phone}
-              alt="phone"
-              title="Contact us"
-              info={configData?.phone}
-              t={t}
-              href={`tel:${configData?.phone}`}
-            />
-          </Box>
+{/* Contact phone removed */}
           {/* Location map removed from footer */}
         </Box>
       </Box>
