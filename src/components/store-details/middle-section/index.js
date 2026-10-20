@@ -689,7 +689,6 @@ const MiddleSection = (props) => {
       <CustomStackFullWidth>
         {Boolean(storeId || moduleId) && (
           <Grid container gap={{ xs: 0, md: 0 }} sx={{ position: "relative" }}>
-            /* HotBanner removed per client request - replaced with hero banner slider */
 
             
             
