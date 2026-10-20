@@ -83,27 +83,7 @@ const ModuleWiseNav = (props) => {
 		</CustomStackFullWidth>
 	);
 	const handleIconClick = () => {
-		let targetSlug = "blaban";
-		if (typeof window !== "undefined") {
-			const savedBranch = localStorage.getItem("selectedBranch");
-			if (savedBranch) {
-				targetSlug = savedBranch;
-			} else {
-				try {
-					const latLngRaw = localStorage.getItem("currentLatLng");
-					if (latLngRaw) {
-						const parsed = JSON.parse(latLngRaw);
-						if (parsed?.lat != null && parsed?.lng != null) {
-							const { DEFAULT_BRANCHES, findNearestBranch, parseZoneIds } = require("../../../utils/branchHelper");
-							const zoneIds = parseZoneIds(localStorage.getItem("zoneid"));
-							const nearest = findNearestBranch(DEFAULT_BRANCHES, parsed.lat, parsed.lng, zoneIds);
-							if (nearest?.slug) targetSlug = nearest.slug;
-						}
-					}
-				} catch {}
-			}
-		}
-		router.push({ pathname: `/store/${targetSlug}`, query: { module: "blaban" } });
+		router.push("/");
 	};
 	const getIcon = () => (
 		<Box
@@ -163,16 +143,7 @@ const ModuleWiseNav = (props) => {
 									align="left"
 									justifyItems="flex-start"
 								>
-									{router.pathname === "/home" &&
-										!router.query.search ? (
-										modules.length >= 2 ? (
-											<MobileModuleSelection />
-										) : (
-											getIcon()
-										)
-									) : (
-										getIcon()
-									)}
+									getIcon()
 								</Grid>
 								<Grid
 										item

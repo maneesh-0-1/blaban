@@ -569,14 +569,7 @@ const OtherModulePayment = (props) => {
           {/* Bring Change */}
           {isCodPaymentActive && !failed && (
             <Box sx={{ flex: "1 1 100%" }}>
-              <BringChangeAmount
-                changeAmount={changeAmount}
-                setChangeAmount={setChangeAmount}
-                theme={theme}
-                expanded={expanded}
-                setExpanded={setExpanded}
-                paymentMethod={paymentMethod}
-              />
+              {/* Bring Change Instruction removed */}
             </Box>
           )}
         </Stack>

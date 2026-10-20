@@ -441,22 +441,7 @@ const CartStoreCard = ({
       <Body>
         <Stack direction="row" alignItems="center" gap="10px">
           <ItemAvatars items={items} size={36} max={8} gap="-6px" />
-          <PlusBtn
-            onClick={(e) => {
-              e.stopPropagation();
-              onAdd?.();
-            }}
-          >
-            <i
-              className="fi fi-rr-plus"
-              style={{
-                fontSize: "16px",
-                lineHeight: 1,
-                display: "flex",
-                color: theme.palette.neutral[1050],
-              }}
-            />
-          </PlusBtn>
+          {/* Add new option removed from basket */}
         </Stack>
 
         <Stack

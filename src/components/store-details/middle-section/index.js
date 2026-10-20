@@ -1,3 +1,4 @@
+import HotBanner from "components/common/HotBanner";
 import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import CustomSearch from "../../custom-search/CustomSearch";
 import {
@@ -161,6 +162,7 @@ const MiddleSection = (props) => {
   const [popularCurrentSlide, setPopularCurrentSlide] = useState(0);
   const sectionRefs = useRef({});
   const [selectedCategoryTabId, setSelectedCategoryTabId] = useState(null);
+  const [viewAllProducts, setViewAllProducts] = useState(false);
 
   // Detect when the toolbar is "stuck" (pinned to top) so we can show a shadow.
   const stickySentinelRef = useRef(null);
@@ -188,7 +190,7 @@ const MiddleSection = (props) => {
   }, [categoryList]);
 
   const handleSelectCategoryTab = (categoryId) => {
-    const key = categoryId == null ? "popular" : categoryId;
+    const key = categoryId == null ? (categoryList[0]?.id ? String(categoryList[0].id) : "") : String(categoryId);
     setSelectedCategoryTabId(categoryId);
     const node = sectionRefs.current[key];
     if (node) {
@@ -679,143 +681,7 @@ const MiddleSection = (props) => {
       <CustomStackFullWidth>
         {Boolean(storeId || moduleId) && (
           <Grid container gap={{ xs: 0, md: 0 }} sx={{ position: "relative" }}>
-            {/* <Grid
-                item
-                xs={12}
-                container
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Grid item xs={3} md={5} align="left">
-                  {getCurrentModuleType() === "pharmacy" ? (
-                    <Typography
-                      fontSize={{ xs: "13px", md: "15px" }}
-                      textAlign="start"
-                      fontWeight="600"
-                    >
-                      {t("All Items")}
-                    </Typography>
-                  ) : (
-                    <Typography
-                      fontSize={{ xs: "13px", md: "15px" }}
-                      textAlign="start"
-                      fontWeight="600"
-                    >
-                      {t("All Products")}{data?.pages[0]?.total_size &&` (${data?.pages[0]?.total_size})`}
-                    </Typography>
-                  )}
-                </Grid>
-                <Grid item xs={9} md={7} container spacing={3}>
-                  {isSmall ? (
-                    <Grid item xs={12}>
-                      <CustomStackFullWidth
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="flex-end"
-                        // spacing={1}
-                      >
-                        {!open ? (
-                          <IconButton
-                            onClick={handleOpenSerach}
-                            sx={{
-                              color: "primary.main",
-                              display: { lg: "none" },
-                            }}
-                          >
-                            <SearchIcon />
-                          </IconButton>
-                        ) : (
-                          <CustomBoxFullWidth
-                            sx={{
-                              width: open ? "200px" : "0px",
-                              transition: "width 0.5s ease-in-out",
-                            }}
-                          >
-                            {open && (
-                              <CustomSearch
-                                label={t("Search for items...")}
-                                selectedValue={state.searchKey}
-                                handleSearchResult={handleSearchResult}
-                                type2
-                              />
-                            )}
-                          </CustomBoxFullWidth>
-                        )}
-                        <IconButton
-                          onClick={() =>
-                            dispatch({
-                              type: ACTION.setIsSidebarOpen,
-                              payload: true,
-                            })
-                          }
-                          sx={{ color: "primary.main", display: { lg: "none" } }}
-                        >
-                          <MenuOpenIcon />
-                        </IconButton>
-                        
-                      </CustomStackFullWidth>
-                    </Grid>
-                  ) : (
-                    <>
-                      <Grid item xs={7} md={6}>
-                        <CustomSearch
-                          label={t("Search for items...")}
-                          selectedValue={state.searchKey}
-                          handleSearchResult={handleSearchResult}
-                          type2
-                        />
-                      </Grid>
-                      <Grid item xs={5} md={6} align="right">
-                        <Stack direction="row" spacing={1} alignItems="center" justifyContent="right">
-                          <HighToLow
-                            handleSortBy={handleSortBy}
-                            sortBy={state.sortBy}
-                          />
-                          <StoreFilter
-                            key={storeId}
-                            setRatingCount={setRatingCount}
-                            ratingCount={ratingCount}
-                            filterTypeItems={checkModuleWiseFilterItem()}
-                            setFilterData={setFilterData}
-                            minMax={state.minMax}
-                            setMinMax={(v) =>
-                              dispatch({
-                                type: ACTION.setMinMax,
-                                payload: v,
-                              })
-                            }
-                            sortBy={state.sortBy}
-                            setSortBy={(v) =>
-                              dispatch({
-                                type: ACTION.setSortBy,
-                                payload: v,
-                              })
-                            }
-                            type={state.type}
-                            setType={(v) =>
-                              dispatch({
-                                type: ACTION.setType,
-                                payload: v,
-                              })
-                            }
-                          />
-                        </Stack>
-                      </Grid>
-                    </>
-                  )}
-                </Grid>
-              </Grid>
-              <Grid item xs={12}>
-                <Stack
-                  width="100%"
-                  sx={{
-                    mt: "20px",
-                    mb: "20px",
-                    borderBottom: (theme) =>
-                      `2px solid ${alpha(theme.palette.neutral[400], 0.2)}`,
-                  }}
-                ></Stack>
-              </Grid> */}
+            
             <Box
               ref={stickySentinelRef}
               sx={{
@@ -864,8 +730,16 @@ const MiddleSection = (props) => {
                   <CategoryTabs
                     categories={categoryList}
                     selectedId={selectedCategoryTabId}
-                    onSelect={handleSelectCategoryTab}
+                    onSelect={(catId) => {
+                      setViewAllProducts(false);
+                      handleSelectCategoryTab(catId);
+                    }}
                     isLoading={categoriesLoading && categoryList.length === 0}
+                    viewAllProducts={viewAllProducts}
+                    onToggleAllProducts={() => {
+                      setViewAllProducts((prev) => !prev);
+                      setSelectedCategoryTabId(null);
+                    }}
                   />
                 </Box>
                 <Stack
@@ -930,25 +804,7 @@ const MiddleSection = (props) => {
                       }}
                     />
                   </Box>
-                  <StoreFilter
-                    key={storeId}
-                    setRatingCount={setRatingCount}
-                    ratingCount={ratingCount}
-                    filterTypeItems={checkModuleWiseFilterItem()}
-                    setFilterData={setFilterData}
-                    minMax={state.minMax}
-                    setMinMax={(v) =>
-                      dispatch({ type: ACTION.setMinMax, payload: v })
-                    }
-                    sortBy={state.sortBy}
-                    setSortBy={(v) =>
-                      dispatch({ type: ACTION.setSortBy, payload: v })
-                    }
-                    type={state.type}
-                    setType={(v) =>
-                      dispatch({ type: ACTION.setType, payload: v })
-                    }
-                  />
+                  {/* StoreFilter removed */}
                 </Stack>
               </Stack>
             </Grid>
@@ -1093,18 +949,11 @@ const MiddleSection = (props) => {
                     popularItems = getLowToHigh([...popularSource]);
                   }
 
-                  const sections = [
-                    {
-                      key: "popular",
-                      title: t("Most Popular"),
-                      items: popularItems,
-                    },
-                    ...categoryList.map((cat) => ({
-                      key: String(cat?.id),
-                      title: cat?.name,
-                      items: productsByCategory[String(cat?.id)] || [],
-                    })),
-                  ].filter((s) => s.items?.length > 0);
+                  const sections = categoryList.map((cat) => ({
+                    key: String(cat?.id),
+                    title: cat?.name,
+                    items: productsByCategory[String(cat?.id)] || [],
+                  })).filter((s) => s.items?.length > 0);
 
                   const popularSliderSettings = {
                     dots: false,

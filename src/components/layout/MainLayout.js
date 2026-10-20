@@ -210,7 +210,7 @@ const MainLayout = ({ children, configData }) => {
         router.pathname !== "/product/[id]" && <BottomNav />}
       <SearchProductModal />
       <FloatingCartButton />
-      <FloatingLanguageButton />
+      {/* FloatingLanguageButton removed - header already provides language selector */}
     </MainLayoutRoot>
   );
 };

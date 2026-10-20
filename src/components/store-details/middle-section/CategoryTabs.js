@@ -1,13 +1,20 @@
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import { Box, IconButton, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const ALL_TAB_ID = "__all__";
+export const ALL_PRODUCTS_ID = "__all_products__";
 
-const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
+const CategoryTabs = ({
+  categories,
+  selectedId,
+  onSelect,
+  isLoading,
+  viewAllProducts,
+  onToggleAllProducts,
+}) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const scrollRef = useRef(null);
@@ -27,13 +34,10 @@ const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
     updateArrowVisibility();
   }, [categories]);
 
-  // Whenever the selected tab changes (via click OR scroll-spy), make sure
-  // it's visible inside the horizontal tabs strip.
   useEffect(() => {
     const container = scrollRef.current;
-    if (!container) return;
-    const activeKey = selectedId == null ? ALL_TAB_ID : selectedId;
-    const tabEl = tabRefs.current[activeKey];
+    if (!container || !selectedId) return;
+    const tabEl = tabRefs.current[String(selectedId)];
     if (!tabEl) return;
 
     const containerRect = container.getBoundingClientRect();
@@ -43,7 +47,6 @@ const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
       tabRect.right <= containerRect.right;
     if (fullyVisible) return;
 
-    // Center the tab in the container horizontally
     const tabCenter = tabEl.offsetLeft + tabEl.offsetWidth / 2;
     const target = tabCenter - container.clientWidth / 2;
     container.scrollTo({
@@ -60,10 +63,10 @@ const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
     el.scrollBy({ left: dir * 200, behavior: "smooth" });
   };
 
-  const tabs = [
-    { id: ALL_TAB_ID, name: t("Most Popular") },
-    ...(categories || []).map((c) => ({ id: c?.id, name: c?.name })),
-  ];
+  const tabs = (categories || []).map((c) => ({
+    id: String(c?.id),
+    name: c?.name,
+  }));
 
   return (
     <Box
@@ -73,8 +76,44 @@ const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
         minWidth: 0,
         display: "flex",
         alignItems: "center",
+        gap: 1.5,
       }}
     >
+      {/* Separate second button labeled "All Products" */}
+      <Button
+        variant={viewAllProducts ? "contained" : "outlined"}
+        size="small"
+        onClick={onToggleAllProducts}
+        sx={{
+          flexShrink: 0,
+          height: 34,
+          px: 1.75,
+          borderRadius: "8px",
+          textTransform: "none",
+          fontWeight: 700,
+          fontSize: { xs: "13px", md: "14px" },
+          whiteSpace: "nowrap",
+          backgroundColor: viewAllProducts
+            ? theme.palette.primary.main
+            : "transparent",
+          color: viewAllProducts
+            ? theme.palette.whiteContainer?.main || "#ffffff"
+            : theme.palette.text.primary,
+          borderColor: viewAllProducts
+            ? theme.palette.primary.main
+            : theme.palette.divider,
+          "&:hover": {
+            backgroundColor: viewAllProducts
+              ? theme.palette.primary.dark
+              : theme.palette.action.hover,
+            borderColor: theme.palette.primary.main,
+          },
+        }}
+      >
+        {t("All Products")}
+      </Button>
+
+      {/* Horizontal scrollable category tabs */}
       <Box
         ref={scrollRef}
         onScroll={handleScroll}
@@ -103,8 +142,7 @@ const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
               />
             ))
           : tabs.map((tab) => {
-              const active =
-                tab.id === ALL_TAB_ID ? !selectedId : selectedId === tab.id;
+              const active = !viewAllProducts && String(selectedId) === String(tab.id);
               return (
                 <Box
                   key={tab.id}
@@ -114,13 +152,11 @@ const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
                   }}
                   role="button"
                   tabIndex={0}
-                  onClick={() =>
-                    onSelect(tab.id === ALL_TAB_ID ? null : tab.id)
-                  }
+                  onClick={() => onSelect(tab.id)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      onSelect(tab.id === ALL_TAB_ID ? null : tab.id);
+                      onSelect(tab.id);
                     }
                   }}
                   sx={{
@@ -162,78 +198,50 @@ const CategoryTabs = ({ categories, selectedId, onSelect, isLoading }) => {
 
       {/* Left scroll arrow */}
       {showLeft && (
-        <>
-          <Box
-            sx={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 60,
-              pointerEvents: "none",
-              background: `linear-gradient(to left, rgba(247,247,247,0), ${theme.palette.background.default})`,
-              zIndex: 1,
-            }}
-          />
-          <IconButton
-            onClick={() => handleNudge(-1)}
-            size="small"
-            aria-label={t("Scroll categories left")}
-            sx={{
-              position: "absolute",
-              left: -4,
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              backgroundColor: "#fff",
-              boxShadow: "0px 1px 4px rgba(0,0,0,0.15)",
-              "&:hover": { backgroundColor: "#fff" },
-              zIndex: 2,
-            }}
-          >
-            <ChevronLeftIcon sx={{ fontSize: 18 }} />
-          </IconButton>
-        </>
+        <IconButton
+          onClick={() => handleNudge(-1)}
+          size="small"
+          aria-label={t("Scroll categories left")}
+          sx={{
+            position: "absolute",
+            left: -4,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            backgroundColor: "#fff",
+            boxShadow: "0px 1px 4px rgba(0,0,0,0.15)",
+            "&:hover": { backgroundColor: "#fff" },
+            zIndex: 2,
+          }}
+        >
+          <ChevronLeftIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       )}
 
-      {/* Right gradient fade + arrow */}
+      {/* Right scroll arrow */}
       {showRight && (
-        <>
-          <Box
-            sx={{
-              position: "absolute",
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: 60,
-              pointerEvents: "none",
-              background: `linear-gradient(to right, rgba(247,247,247,0), ${theme.palette.background.default})`,
-              zIndex: 1,
-            }}
-          />
-          <IconButton
-            onClick={() => handleNudge(1)}
-            size="small"
-            aria-label={t("Scroll categories right")}
-            sx={{
-              position: "absolute",
-              right: -4,
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              backgroundColor: "#fff",
-              boxShadow: "0px 1px 4px rgba(0,0,0,0.15)",
-              "&:hover": { backgroundColor: "#fff" },
-              zIndex: 2,
-            }}
-          >
-            <ChevronRightIcon sx={{ fontSize: 18 }} />
-          </IconButton>
-        </>
+        <IconButton
+          onClick={() => handleNudge(1)}
+          size="small"
+          aria-label={t("Scroll categories right")}
+          sx={{
+            position: "absolute",
+            right: -4,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            backgroundColor: "#fff",
+            boxShadow: "0px 1px 4px rgba(0,0,0,0.15)",
+            "&:hover": { backgroundColor: "#fff" },
+            zIndex: 2,
+          }}
+        >
+          <ChevronRightIcon sx={{ fontSize: 18 }} />
+        </IconButton>
       )}
     </Box>
   );

@@ -585,11 +585,6 @@ const Top = (props) => {
                     objectFit="cover"
                     borderRadius="12px"
                   />
-                  <ClosedNowScheduleWise
-                    active={storeDetails?.active}
-                    schedules={storeDetails?.schedules}
-                    borderRadius="12px"
-                  />
                 </LogoBox>
 
                 <Stack flex={1} spacing={0.5} sx={{ minWidth: 0 }}>
@@ -613,10 +608,7 @@ const Top = (props) => {
                     >
                       {storeDetails?.name}
                     </Typography>
-                    <VerifiedStoreBadge
-                      verified={storeDetails?.verified_seller}
-                      fontSize="20px"
-                    />
+                    
                   </Stack>
 
                   {storeDetails?.address && (

@@ -35,6 +35,10 @@ import toast from "react-hot-toast";
 import { onErrorResponse } from "../../../api-manage/api-error-response/ErrorResponses";
 import { useDispatch, useSelector } from "react-redux";
 import { setOpenAddressModal } from "../../../redux/slices/addAddress";
+import { setGuestUserInfo } from "../../../redux/slices/guestUserInfo";
+import TextField from "@mui/material/TextField";
+import { useGeolocated } from "react-geolocated";
+import useGetGeoCode from "../../../api-manage/hooks/react-query/google-api/useGetGeoCode";
 import { getToken } from "helper-functions/getToken";
 
 const getZoneWiseAddresses = (addresses, restaurantId) => {
@@ -170,6 +174,47 @@ const DeliveryAddress = ({
   };
   const handleCheckbox = (e) => {
     setCheck?.(e.target.checked);
+  };
+
+  
+  // Geolocation helper for immediate GPS auto-detection
+  const [autoGeoLocation, setAutoGeoLocation] = useState(null);
+  const [autoGeoEnabled, setAutoGeoEnabled] = useState(false);
+
+  const { coords: autoCoords } = useGeolocated({
+    positionOptions: { enableHighAccuracy: false },
+    userDecisionTimeout: 5000,
+    isGeolocationEnabled: true,
+  });
+
+  const { data: autoGeoResults } = useGetGeoCode(autoGeoLocation, autoGeoEnabled);
+
+  useEffect(() => {
+    if (!autoGeoResults?.results || !autoGeoLocation) return;
+    const formattedAddress = autoGeoResults.results[0]?.formatted_address;
+    if (formattedAddress) {
+      setAddress({
+        ...address,
+        latitude: autoGeoLocation.lat,
+        longitude: autoGeoLocation.lng,
+        lat: autoGeoLocation.lat,
+        lng: autoGeoLocation.lng,
+        address: formattedAddress,
+        address_type: "Current Location",
+      });
+      toast.success(t("Location detected successfully"));
+    }
+    setAutoGeoEnabled(false);
+    setAutoGeoLocation(null);
+  }, [autoGeoResults]);
+
+  const handleDetectGpsLocation = () => {
+    if (!autoCoords) {
+      toast.error(t("GPS location unavailable. Please allow location access or select on map."));
+      return;
+    }
+    setAutoGeoLocation({ lat: autoCoords.latitude, lng: autoCoords.longitude });
+    setAutoGeoEnabled(true);
   };
 
   const isCardWrapped = renderOnNavbar !== "true";
@@ -524,15 +569,221 @@ const DeliveryAddress = ({
         />
       ) : (
         <>
-          {orderType !== "take_away" && (
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              alignItems="stretch"
-              gap={{ xs: 1, md: 1.5 }}
+          {/* ─── Customer Details (Name & Phone Number - Mandatory) ─── */}
+          <Box
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: "12px",
+              p: { xs: 2, md: 2.5 },
+              border: `1px solid ${theme.palette.divider}`,
+              mb: 2,
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: "14px", md: "15px" },
+                color: theme.palette.text.primary,
+                mb: 1.5,
+              }}
             >
-              {AddressPill}
-              {hasContactInfo ? ContactInfoPill : AddContactInfoButton}
-            </Stack>
+              {t("Customer Information")} <span style={{ color: "red" }}>*</span>
+            </Typography>
+
+            <Grid container spacing={1.5}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label={t("Full Name")}
+                  required
+                  placeholder={t("Enter your name")}
+                  value={
+                    token
+                      ? profileFullName || profileInfo?.name || ""
+                      : (address?.contact_person_name || guestUserInfo?.contact_person_name || "")
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!token) {
+                      reduxDispatch(setGuestUserInfo({ ...guestUserInfo, contact_person_name: val }));
+                    }
+                    setAddress({ ...address, contact_person_name: val });
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label={t("Phone Number")}
+                  required
+                  placeholder={t("e.g. +965 12345678")}
+                  value={
+                    token
+                      ? profileInfo?.phone || ""
+                      : (address?.contact_person_number || guestUserInfo?.contact_person_number || "")
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!token) {
+                      reduxDispatch(setGuestUserInfo({ ...guestUserInfo, contact_person_number: val }));
+                    }
+                    setAddress({ ...address, contact_person_number: val });
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* ─── Delivery Address Details (Only for Delivery, not Pickup) ─── */}
+          {orderType !== "take_away" && (
+            <Box
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: "12px",
+                p: { xs: 2, md: 2.5 },
+                border: `1px solid ${theme.palette.divider}`,
+                mb: 2,
+              }}
+            >
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                justifyContent="space-between"
+                spacing={1}
+                sx={{ mb: 1.5 }}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: { xs: "14px", md: "15px" },
+                    color: theme.palette.text.primary,
+                  }}
+                >
+                  {t("Delivery Address & Location")} <span style={{ color: "red" }}>*</span>
+                </Typography>
+
+                {/* Manual & Automatic location buttons */}
+                <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={handleDetectGpsLocation}
+                    sx={{
+                      borderRadius: "8px",
+                      textTransform: "none",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      flex: { xs: 1, sm: "none" },
+                    }}
+                  >
+                    📍 {t("Use GPS Location")}
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setOpenAddressPicker(true)}
+                    sx={{
+                      borderRadius: "8px",
+                      textTransform: "none",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      flex: { xs: 1, sm: "none" },
+                    }}
+                  >
+                    🗺️ {t("Pick on Map")}
+                  </Button>
+                </Stack>
+              </Stack>
+
+              {/* Current address pill */}
+              <Box sx={{ mb: 2 }}>{AddressPill}</Box>
+
+              {/* Detailed Address inputs: Block, Street, House/Building, Floor */}
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  color: theme.palette.text.secondary,
+                  mb: 1,
+                }}
+              >
+                {t("Address Details (Mandatory)")}
+              </Typography>
+              <Grid container spacing={1.5}>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("Block")}
+                    required
+                    placeholder={t("Block")}
+                    value={token ? address?.block || "" : address?.block || guestUserInfo?.block || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, block: val }));
+                      setAddress({ ...address, block: val });
+                    }}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+                  />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("Street / Road")}
+                    required
+                    placeholder={t("Street")}
+                    value={token ? address?.road || "" : address?.road || guestUserInfo?.road || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, road: val }));
+                      setAddress({ ...address, road: val });
+                    }}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+                  />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("Building / House")}
+                    required
+                    placeholder={t("House")}
+                    value={token ? address?.house || "" : address?.house || guestUserInfo?.house || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, house: val }));
+                      setAddress({ ...address, house: val });
+                    }}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+                  />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t("Floor / Apt")}
+                    required
+                    placeholder={t("Floor")}
+                    value={token ? address?.floor || "" : address?.floor || guestUserInfo?.floor || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, floor: val }));
+                      setAddress({ ...address, floor: val });
+                    }}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
           )}
 
           {orderType !== "take_away" && InstructionField}

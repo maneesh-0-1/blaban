@@ -83,25 +83,7 @@ const FooterMiddle = ({ configData, landingPageData }) => {
 
         <HorizontalDivider />
 
-        {/* Quick Links */}
-        <Stack gap="0px" alignItems="center" sx={{ width: "100%" }}>
-          <Box sx={{ py: "8px", height: "36px", display: "flex", alignItems: "center" }}>
-            <Typography
-              sx={{
-                fontSize: "18px",
-                fontWeight: 700,
-                color: "neutral.500",
-                letterSpacing: "-0.54px",
-                lineHeight: 1.1,
-              }}
-            >
-              {t("Quick Links")}
-            </Typography>
-          </Box>
-          <RouteLinks configData={configData} centered />
-        </Stack>
-
-        <HorizontalDivider />
+        {/* Quick Links removed */}
 
         {/* Contact Info — flex-wrap 2+1 */}
         <Box
@@ -119,9 +101,9 @@ const FooterMiddle = ({ configData, landingPageData }) => {
               image={ractangle}
               alt="mail"
               title="Send us mails"
-              info={configData?.email}
+              info={configData?.email || "clientservices@blabankw.com"}
               t={t}
-              href={`mailto:${configData?.email}`}
+              href={`mailto:${configData?.email || "clientservices@blabankw.com"}`}
             />
           </Box>
           <Box sx={{ flex: "1 0 0", minWidth: "140px" }}>
@@ -199,26 +181,7 @@ const FooterMiddle = ({ configData, landingPageData }) => {
 
         <VerticalDivider />
 
-        {/* Column 2: Quick Links */}
-        <Stack gap="0px" sx={{ flexShrink: 0 }}>
-          <Box sx={{ py: "8px", height: "36px", display: "flex", alignItems: "center" }}>
-            <Typography
-              sx={{
-                fontSize: "18px",
-                fontWeight: 700,
-                color: "neutral.500",
-                letterSpacing: "-0.54px",
-                lineHeight: 1.1,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {t("Quick Links")}
-            </Typography>
-          </Box>
-          <RouteLinks configData={configData} />
-        </Stack>
-
-        <VerticalDivider />
+        {/* Quick Links removed */}
 
         {/* Column 3: Contact Info */}
         <Box
@@ -237,9 +200,9 @@ const FooterMiddle = ({ configData, landingPageData }) => {
               image={ractangle}
               alt="mail"
               title="Send us mails"
-              info={configData?.email}
+              info={configData?.email || "clientservices@blabankw.com"}
               t={t}
-              href={`mailto:${configData?.email}`}
+              href={`mailto:${configData?.email || "clientservices@blabankw.com"}`}
             />
           </Box>
           <Box sx={{ minWidth: "130px", flex: "1 1 130px" }}>
@@ -252,29 +215,11 @@ const FooterMiddle = ({ configData, landingPageData }) => {
               href={`tel:${configData?.phone}`}
             />
           </Box>
-          <Box onClick={() => setOpen(true)} sx={{ minWidth: "130px", flex: "1 1 130px", cursor: "pointer" }}>
-            <SomeInfo
-              image={magnifying}
-              alt="location"
-              title="Find us here"
-              info={configData?.address}
-              t={t}
-              href={false}
-            />
-          </Box>
+          {/* Location map removed from footer */}
         </Box>
       </Box>
 
-      {open && (
-        <LocationViewOnMap
-          open={open}
-          handleClose={() => setOpen(false)}
-          latitude={configData?.default_location?.lat}
-          longitude={configData?.default_location?.lng}
-          address={configData?.address}
-          isFooter
-        />
-      )}
+      
     </Box>
   );
 };

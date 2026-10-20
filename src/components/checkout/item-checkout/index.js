@@ -626,6 +626,23 @@ const ItemCheckout = (props) => {
   }, [cartList, campaignItemList, couponDiscount, storeData]);
 
   const handlePlaceOrder = () => {
+    // ── Check mandatory contact details for all order types ──
+    const activeName = token
+      ? ([profileInfo?.f_name, profileInfo?.l_name].filter(Boolean).join(" ").trim() || profileInfo?.name)
+      : (address?.contact_person_name || guestUserInfo?.contact_person_name);
+    const activePhone = token
+      ? (profileInfo?.phone || address?.contact_person_number)
+      : (address?.contact_person_number || guestUserInfo?.contact_person_number);
+
+    if (!activeName || activeName.trim() === "") {
+      toast.error(t("Please enter your name"), { id: "checkout-name" });
+      return;
+    }
+    if (!activePhone || activePhone.trim() === "") {
+      toast.error(t("Please enter your contact phone number"), { id: "checkout-phone" });
+      return;
+    }
+
     if (orderType !== "take_away") {
       const activeAddress = address;
       const activePhone = token

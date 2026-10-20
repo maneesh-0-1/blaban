@@ -99,6 +99,8 @@ const DeliveryDetails = (props) => {
   const handleCheckbox = (e) => {
     setCheck(e.target.checked);
   };
+  const [pickupTiming, setPickupTiming] = React.useState("asap");
+
   const orderTypeOptions = [
     !isTakeawayOnly &&
       isHomeDelivery && {
@@ -110,16 +112,8 @@ const DeliveryDetails = (props) => {
       (isTakeawayOnly ||
         (configData?.takeaway_status === 1 && storeData?.take_away)) && {
         value: "take_away",
-        label: t("Takeaway / In-Store Pickup"),
+        label: t("Pickup"),
         onClick: () => handleOrderType("take_away"),
-      },
-    !isTakeawayOnly &&
-      !forprescription &&
-      storeData?.schedule_order &&
-      getToken() && {
-        value: "schedule_order",
-        label: t("Schedule Delivery"),
-        onClick: handleClick,
       },
   ].filter(Boolean);
 
@@ -229,26 +223,127 @@ const DeliveryDetails = (props) => {
           )}
         </Box>
       )}
-      {orderType === "schedule_order" && (
-				<RestaurantScheduleTime
-					storeData={storeData}
-					handleChange={handleChange}
-					today={today}
-					tomorrow={tomorrow}
-					numberOfDay={numberOfDay}
-					configData={configData}
-					setScheduleAt={setScheduleAt}
-				/>
-			)}
-      <DeliverySpeedOptions
-        storeData={storeData}
-        zoneData={zoneData}
-        orderType={orderType}
-        deliveryFee={deliveryFee}
-        couponDiscount={couponDiscount}
-        selectedDeliveryOption={selectedDeliveryOption}
-        setSelectedDeliveryOption={setSelectedDeliveryOption}
-      />
+      {orderType === "take_away" && (
+        <Box
+          sx={{
+            width: "100%",
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: { xs: "10px", md: "14px" },
+            boxShadow: `0 1px 4px ${alpha("#000", 0.06)}`,
+            px: { xs: 2, md: 3 },
+            py: { xs: 2, md: 2.5 },
+          }}
+        >
+          <Typography
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "14px", md: "16px" },
+              color: theme.palette.text.primary,
+              mb: 1.5,
+            }}
+          >
+            {t("Pickup Timing")}
+          </Typography>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+            <Button
+              variant={pickupTiming === "asap" ? "contained" : "outlined"}
+              disableElevation
+              onClick={() => {
+                setPickupTiming("asap");
+                setScheduleAt(null);
+              }}
+              sx={{
+                flex: 1,
+                py: 1.2,
+                borderRadius: "10px",
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: { xs: "13px", md: "14px" },
+                backgroundColor:
+                  pickupTiming === "asap"
+                    ? theme.palette.primary.main
+                    : "transparent",
+                color:
+                  pickupTiming === "asap"
+                    ? "#ffffff"
+                    : theme.palette.text.primary,
+                borderColor:
+                  pickupTiming === "asap"
+                    ? theme.palette.primary.main
+                    : theme.palette.divider,
+                "&:hover": {
+                  backgroundColor:
+                    pickupTiming === "asap"
+                      ? theme.palette.primary.dark
+                      : alpha(theme.palette.primary.main, 0.08),
+                  borderColor: theme.palette.primary.main,
+                },
+              }}
+            >
+              ⚡ {t("As soon as possible")}
+            </Button>
+            <Button
+              variant={pickupTiming === "schedule" ? "contained" : "outlined"}
+              disableElevation
+              onClick={() => setPickupTiming("schedule")}
+              sx={{
+                flex: 1,
+                py: 1.2,
+                borderRadius: "10px",
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: { xs: "13px", md: "14px" },
+                backgroundColor:
+                  pickupTiming === "schedule"
+                    ? theme.palette.primary.main
+                    : "transparent",
+                color:
+                  pickupTiming === "schedule"
+                    ? "#ffffff"
+                    : theme.palette.text.primary,
+                borderColor:
+                  pickupTiming === "schedule"
+                    ? theme.palette.primary.main
+                    : theme.palette.divider,
+                "&:hover": {
+                  backgroundColor:
+                    pickupTiming === "schedule"
+                      ? theme.palette.primary.dark
+                      : alpha(theme.palette.primary.main, 0.08),
+                  borderColor: theme.palette.primary.main,
+                },
+              }}
+            >
+              📅 {t("Schedule the pickup with date and time")}
+            </Button>
+          </Stack>
+
+          {pickupTiming === "schedule" && (
+            <Box sx={{ mt: 2 }}>
+              <RestaurantScheduleTime
+                storeData={storeData}
+                handleChange={handleChange}
+                today={today}
+                tomorrow={tomorrow}
+                numberOfDay={numberOfDay}
+                configData={configData}
+                setScheduleAt={setScheduleAt}
+              />
+            </Box>
+          )}
+        </Box>
+      )}
+      {orderType !== "take_away" && (
+        <DeliverySpeedOptions
+          storeData={storeData}
+          zoneData={zoneData}
+          orderType={orderType}
+          deliveryFee={deliveryFee}
+          couponDiscount={couponDiscount}
+          selectedDeliveryOption={selectedDeliveryOption}
+          setSelectedDeliveryOption={setSelectedDeliveryOption}
+        />
+      )}
 
       <DeliveryAddress
         setAddress={setAddress}

@@ -79,18 +79,45 @@ const SuccessCard = ({ configData, total, order_id }) => {
             `Your order is placed Successfully. We start our delivery process and you will receive your ${handleText()} soon.`
           )}
         </Typography>
-        <Typography align="center" sx={{ mb: 1.5 }}>
-          {t(`Your order is`)}
-          <span
-            style={{
-              color: theme.palette.primary.main,
-              marginLeft: "3px",
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "480px",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
+            border: (theme) => `2px dashed ${theme.palette.primary.main}`,
+            borderRadius: "14px",
+            py: 2.5,
+            px: 3,
+            my: 2,
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "text.secondary",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
             }}
           >
-            {order_id}
-          </span>
-          {t(`. You can use this ID to track your order later`)}
-        </Typography>
+            {t("Your Pickup / Order ID")}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: { xs: "28px", sm: "34px" },
+              fontWeight: 800,
+              color: "primary.main",
+              my: 0.5,
+              letterSpacing: "1px",
+            }}
+          >
+            #{order_id}
+          </Typography>
+          <Typography sx={{ fontSize: "12px", color: "text.secondary" }}>
+            {t("Please present or reference this Order ID when receiving or picking up your order.")}
+          </Typography>
+        </Box>
         {configData?.loyalty_point_status === 1 && (
           <CustomStackFullWidth
             alignItems="center"
