@@ -1769,7 +1769,7 @@ const NewProductCard = ({
 
       {/* Location alert */}
       <CustomModal
-        openModal={openLocationAlert}
+        openModal={false}
         handleClose={() => setOpenLocationAlert(false)}
       >
         <GetLocationAlert setOpenAlert={setOpenLocationAlert} />

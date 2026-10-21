@@ -316,7 +316,7 @@ const MiddleSection = (props) => {
   // large page instead of paging by offset. The search endpoint still uses
   // the same `offset` state but the inView-driven bump effect below is
   // also disabled, so neither path keeps requesting more.
-  const limit = 40;
+  const limit = 100;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {
@@ -822,29 +822,20 @@ const MiddleSection = (props) => {
               {/* Overlay loader while a filter / sort / category change is
                   fetching new items. Shown only when there's already data on
                   screen (we use the full shimmer for the first load). */}
-              {(isRefetching ||
-                isRefetchingSearch ||
-                isFetchingNextPage ||
-                isLoadingMore) &&
-                state.data?.products?.length > 0 && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      inset: 0,
-                      zIndex: 5,
-                      display: "flex",
-                      alignItems: "flex-start",
-                      justifyContent: "center",
-                      pt: { xs: "30vh", md: "20vh" },
-                      backgroundColor: (theme) =>
-                        alpha(theme.palette.background.default, 0.55),
-                      backdropFilter: "blur(2px)",
-                      borderRadius: 1,
-                    }}
-                  >
-                    <DotSpin />
-                  </Box>
-                )}
+              {/* Non-blocking background loading indicator */}
+              {(isRefetching || isRefetchingSearch) && state.data?.products?.length > 0 && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    zIndex: 5,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <DotSpin />
+                </Box>
+              )}
               {(isLoading || !state.data) && !state.data?.products?.length ? (
                 <Stack gap={4}>{handleShimmerProducts()}</Stack>
               ) : state.data?.products?.length === 0 &&

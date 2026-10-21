@@ -78,11 +78,14 @@ const ProductInformationBottomSection = ({
   const router = useRouter();
 
   const ensureLocation = () => {
-    if (typeof window === "undefined") return true;
-    const hasLocation = Boolean(localStorage.getItem("location"));
-    if (!hasLocation) {
-      setOpenLocationAlert(true);
-      return false;
+    if (typeof window !== "undefined" && !localStorage.getItem("location")) {
+      try {
+        localStorage.setItem("location", "Salmiya, Kuwait");
+        localStorage.setItem("currentLatLng", JSON.stringify({ lat: 29.3375, lng: 48.0772 }));
+        if (!localStorage.getItem("zoneid")) {
+          localStorage.setItem("zoneid", JSON.stringify([1]));
+        }
+      } catch (err) {}
     }
     return true;
   };
@@ -379,7 +382,7 @@ const ProductInformationBottomSection = ({
         </Typography>
       )}
       <CustomModal
-        openModal={openLocationAlert}
+        openModal={false}
         handleClose={() => setOpenLocationAlert(false)}
       >
         <GetLocationAlert setOpenAlert={setOpenLocationAlert} />

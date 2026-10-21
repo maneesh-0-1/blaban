@@ -13,7 +13,7 @@ const buildUrl = (params) => {
     storeId,
     categoryId = [],
     offset = 1,
-    limit = 40,
+    limit = 100,
     type,
     minMax = [0, 1],
     filterData = [],
@@ -133,7 +133,7 @@ const fetchPage = async (params) => {
 export default function useGetStoreCategoriesItems(pageParams) {
   const zoneid =
     typeof window !== "undefined" ? localStorage.getItem("zoneid") : null;
-  const effectiveLimit = pageParams?.limit || 40;
+  const effectiveLimit = pageParams?.limit || 100;
   return useInfiniteQuery(
     [
       "store-categories-items-v5",
@@ -157,7 +157,7 @@ export default function useGetStoreCategoriesItems(pageParams) {
       enabled: Boolean(pageParams?.storeId),
       retry: 2,
       cacheTime: 1000 * 60 * 5,
-      staleTime: 1000 * 60,
+      staleTime: 1000 * 60 * 10,
       onError: onSingleErrorResponse,
       getNextPageParam: (lastPage, allPages) => {
         const totalSize = lastPage?.total_size || 0;

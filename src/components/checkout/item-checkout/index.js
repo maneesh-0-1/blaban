@@ -928,28 +928,24 @@ const ItemCheckout = (props) => {
   };
 
   const isSchedules = () => {
-    if (storeData?.schedules.length > 0) {
-      const todayInNumber = moment().weekday();
-      let isOpen = false;
-      let filteredSchedules = storeData?.schedules.filter(
-        (item) => item.day === todayInNumber
-      );
-      let isAvailableNow = [];
+    // If placing a scheduled order or takeaway, or if schedules not defined, allow placing order
+    if (orderType === "schedule_order" || orderType === "take_away") return true;
+    if (!storeData?.schedules || storeData?.schedules?.length === 0) return true;
 
-      filteredSchedules.forEach((item) => {
-        if (isAvailable(item?.opening_time, item?.closing_time)) {
-          isAvailableNow.push(item);
-        }
-      });
+    const todayInNumber = moment().weekday();
+    let filteredSchedules = storeData?.schedules.filter(
+      (item) => item.day === todayInNumber
+    );
+    if (!filteredSchedules || filteredSchedules.length === 0) return true;
 
-      if (isAvailableNow.length > 0) {
-        isOpen = true;
-      } else {
-        isOpen = false;
+    let isAvailableNow = [];
+    filteredSchedules.forEach((item) => {
+      if (isAvailable(item?.opening_time, item?.closing_time)) {
+        isAvailableNow.push(item);
       }
+    });
 
-      return isOpen; // Add this line to return true or false based on whether the store is open.
-    }
+    return isAvailableNow.length > 0;
   };
   const placeOrder = () => {
     if (storeData?.active) {
@@ -1292,6 +1288,7 @@ const ItemCheckout = (props) => {
           spacing={3}
           mb="2rem"
           paddingTop={{ xs: "1.5rem", md: "1rem" }}
+          sx={{ pb: { xs: "110px", md: "2rem" } }}
         >
           <Grid item xs={12} md={7}>
             <Stack
@@ -1487,6 +1484,7 @@ const ItemCheckout = (props) => {
                     page={page}
                     isLoading={isLoading}
                     totalAmount={totalAmount}
+                    paymentMethod={paymentMethod}
                   />
                 </Stack>
               </CustomPaperBigCard>

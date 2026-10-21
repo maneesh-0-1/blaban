@@ -208,7 +208,8 @@ const MainLayout = ({ children, configData }) => {
       {isSmall &&
         page !== "parcel" &&
         router.pathname !== "/store/[id]" &&
-        router.pathname !== "/product/[id]" && <BottomNav />}
+        router.pathname !== "/product/[id]" &&
+        !router.pathname?.startsWith("/checkout") && <BottomNav />}
       <SearchProductModal />
       <FloatingCartButton />
       <FloatingWhatsAppButton />

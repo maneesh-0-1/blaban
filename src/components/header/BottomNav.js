@@ -50,6 +50,9 @@ const NAV_ITEMS = [
 
 const BottomNav = () => {
   const router = useRouter();
+  if (router.pathname?.startsWith("/checkout")) {
+    return null;
+  }
   const theme = useTheme();
   const { profileInfo } = useSelector((state) => state.profileInfo);
   const { cartList } = useSelector((state) => state.cart);

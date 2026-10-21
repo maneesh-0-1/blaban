@@ -599,31 +599,18 @@ const FoodDetailModal = ({
       handleProductAddUpdate(checkingFor);
     }
   };
-  const addToCard = (status) => {
-    if (location) {
-      let checkingFor = status ? status : "cart";
-      if (cartList?.length > 0) {
-        //checking same restaurant items already exist or not
-        // Multi-store carts allowed — always proceed with add.
-        const isRestaurantExist = true;
-        if (isRestaurantExist) {
-          if (productUpdate) {
-            handleAddToCartOnDispatch(checkingFor);
-          } else {
-            //add the same product based on variations
-            handleAddToCartOnDispatch(checkingFor);
-          }
-        } else {
-          if (cartList.length !== 0) {
-            handleClearCartModalOpen();
-          }
+    const addToCard = (status) => {
+    let checkingFor = status ? status : "cart";
+    if (typeof window !== "undefined" && !localStorage.getItem("location")) {
+      try {
+        localStorage.setItem("location", "Salmiya, Kuwait");
+        localStorage.setItem("currentLatLng", JSON.stringify({ lat: 29.3375, lng: 48.0772 }));
+        if (!localStorage.getItem("zoneid")) {
+          localStorage.setItem("zoneid", JSON.stringify([1]));
         }
-      } else {
-        handleAddToCartOnDispatch(checkingFor);
-      }
-    } else {
-      setOpenLocationAlert?.(true);
+      } catch (e) {}
     }
+    handleAddToCartOnDispatch(checkingFor);
   };
   const clearCartAlert = () => {
     dispatch(setClearCart());

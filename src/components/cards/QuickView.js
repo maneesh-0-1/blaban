@@ -86,14 +86,18 @@ const QuickView = ({
   }
 
   const cartAddToCartClick = (e) => {
-    if (location) {
-      e.stopPropagation();
-      addToCartHandler?.(e);
-      handleCart?.(e);
-    } else {
-      e.stopPropagation();
-      setOpenLocationAlert(true);
+    e.stopPropagation();
+    if (typeof window !== "undefined" && !localStorage.getItem("location")) {
+      try {
+        localStorage.setItem("location", "Salmiya, Kuwait");
+        localStorage.setItem("currentLatLng", JSON.stringify({ lat: 29.3375, lng: 48.0772 }));
+        if (!localStorage.getItem("zoneid")) {
+          localStorage.setItem("zoneid", JSON.stringify([1]));
+        }
+      } catch (err) {}
     }
+    addToCartHandler?.(e);
+    handleCart?.(e);
   };
 
   return (

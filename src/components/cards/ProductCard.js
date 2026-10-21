@@ -1395,7 +1395,7 @@ const ProductCard = (props) => {
           onSuccess={() => deleteWishlistItem(item?.id)}
         />
         <CustomModal
-          openModal={openLocationAlert}
+          openModal={false}
           handleClose={() => setOpenLocationAlert(false)}
         >
           <GetLocationAlert setOpenAlert={setOpenLocationAlert} />
