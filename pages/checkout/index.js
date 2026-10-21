@@ -69,6 +69,8 @@ const CheckoutMobileHeader = () => {
         </Stack>
         <AccountLanguageButton
           size="small"
+          compact={true}
+          showGlobeIcon={true}
           sx={{
             backgroundColor: (t) =>
               t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",

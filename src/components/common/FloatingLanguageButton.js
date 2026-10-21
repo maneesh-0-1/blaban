@@ -8,13 +8,16 @@ const FloatingLanguageButton = () => {
   const router = useRouter();
   // Mobile / small screens (<= 1180px) where the desktop header is replaced by the mobile layout
   const isSmallScreen = useMediaQuery("(max-width:1180px)");
-  const isStorePage = router.pathname === "/store/[id]";
+  const isPageWithoutBottomNav =
+    router.pathname === "/store/[id]" ||
+    router.pathname === "/product/[id]" ||
+    router.pathname?.startsWith("/checkout");
 
   // Only render on mobile / small screens where the desktop header language switch isn't shown
   if (!isSmallScreen) return null;
 
-  // On store page, there is no bottom nav bar (offset: 20px). On pages with bottom nav, clear it (offset: 76px).
-  const bottomOffset = isStorePage ? { xs: 20, sm: 24 } : { xs: 76, sm: 80 };
+  // On pages without bottom nav (checkout/store/product), offset 20px. On pages with bottom nav, clear it (offset: 76px).
+  const bottomOffset = isPageWithoutBottomNav ? { xs: 20, sm: 24 } : { xs: 76, sm: 80 };
 
   return (
     <Box

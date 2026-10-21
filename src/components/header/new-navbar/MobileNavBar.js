@@ -390,8 +390,10 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
             </Typography>
           </Stack>
           <AccountLanguageButton
-            size="small"
-            sx={{
+                  size="small"
+                  compact={true}
+                  showGlobeIcon={true}
+                  sx={{
               backgroundColor: (t) =>
                 t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#fff",
               boxShadow: "0px 1px 3px rgba(0,0,0,0.08)",
@@ -509,6 +511,8 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
               <Stack direction="row" alignItems="center" spacing={1} sx={{ flexShrink: 0 }}>
                 <AccountLanguageButton
                   size="small"
+                  compact={true}
+                  showGlobeIcon={true}
                   sx={{
                     backgroundColor: (t) =>
                       t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#fff",

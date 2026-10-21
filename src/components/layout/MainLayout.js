@@ -213,7 +213,7 @@ const MainLayout = ({ children, configData }) => {
       <SearchProductModal />
       <FloatingCartButton />
       <FloatingWhatsAppButton />
-      {/* FloatingLanguageButton removed - header already provides language selector */}
+      <FloatingLanguageButton />
     </MainLayoutRoot>
   );
 };

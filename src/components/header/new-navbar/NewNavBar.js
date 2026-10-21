@@ -425,69 +425,8 @@ const NewNavBar = ({ configData }) => {
       )}
       {moduleType !== "parcel" &&
         moduleType !== "rental" &&
-        (getCartListModuleWise(cartList)?.length > 0 || (cartList && cartList.length > 0) ? (
-          <Button
-            onClick={() => {
-              const checkoutStoreId =
-                cartList?.[0]?.store_id ??
-                cartList?.[0]?.store?.id ??
-                cartList?.[0]?.item?.store_id ??
-                (typeof window !== "undefined"
-                  ? JSON.parse(localStorage.getItem("selectedBranch") || "null")?.id
-                  : null);
-              router.push({
-                pathname: "/checkout",
-                query: {
-                  page: "cart",
-                  ...(checkoutStoreId ? { store_id: checkoutStoreId } : {}),
-                },
-              });
-            }}
-            variant="contained"
-            sx={{
-              backgroundColor: "#039D55",
-              color: "#ffffff",
-              fontWeight: 700,
-              fontSize: "14px",
-              borderRadius: "8px",
-              px: "14px",
-              py: "7px",
-              height: "36px",
-              textTransform: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              flexShrink: 0,
-              boxShadow: "0 2px 8px rgba(3,157,85,0.25)",
-              "&:hover": {
-                backgroundColor: "#028747",
-                boxShadow: "0 4px 12px rgba(3,157,85,0.35)",
-              },
-            }}
-          >
-            <i
-              className="fi fi-rr-shopping-bag"
-              style={{ fontSize: "16px", lineHeight: 1, display: "flex" }}
-            />
-            <span>{t("Checkout")}</span>
-            <Box
-              component="span"
-              sx={{
-                backgroundColor: "rgba(255,255,255,0.3)",
-                borderRadius: "999px",
-                px: "6px",
-                py: "1px",
-                fontSize: "11px",
-                fontWeight: 800,
-              }}
-            >
-              {getCartListModuleWise(cartList)?.length || cartList.length}
-            </Box>
-          </Button>
-        ) : (
-          (location || cartList?.length !== 0) &&
-          zoneId && <CartIcon refetch={cartListRefetch} cartData={cartData} />
-        ))}
+        (location || cartList?.length !== 0) &&
+        zoneId && <CartIcon refetch={cartListRefetch} cartData={cartData} />}
       {moduleType === "rental" && (
         <TaxiIcon isLoading={bookingLoading} configData={configData} />
       )}
