@@ -10,38 +10,6 @@ export const DEFAULT_BRANCHES = [
     longitude: 48.06918282455973,
     is_main: true,
   },
-  {
-    id: 4,
-    name: "Salmiya Branch",
-    slug: "salmiya-branch",
-    zone_id: 7,
-    latitude: 29.3396875,
-    longitude: 48.0691875,
-  },
-  {
-    id: 5,
-    name: "Hawally Branch",
-    slug: "hawally-branch",
-    zone_id: 8,
-    latitude: 29.3367563,
-    longitude: 48.0221881,
-  },
-  {
-    id: 6,
-    name: "Fahaheel Branch",
-    slug: "fahaheel-branch",
-    zone_id: 9,
-    latitude: 29.08094073269123,
-    longitude: 48.139992063367394,
-  },
-  {
-    id: 7,
-    name: "Farwaniya Branch",
-    slug: "farwaniya-branch",
-    zone_id: 10,
-    latitude: 29.2734797,
-    longitude: 47.96469320000001,
-  },
 ];
 
 /**
@@ -78,7 +46,7 @@ export function parseZoneIds(rawZoneIds) {
       .filter((item) => Number.isFinite(item));
   } catch {
     return normalized
-      .replace(/^\[|\]$/g, "")
+      .replace(/^[\[\]]/g, "")
       .split(",")
       .map((item) => Number(item.trim()))
       .filter((item) => Number.isFinite(item));
@@ -86,53 +54,10 @@ export function parseZoneIds(rawZoneIds) {
 }
 
 /**
- * Finds the nearest branch given customer coordinates and/or zone IDs.
- * Priority:
- * 1. Specific zone match (zones 7, 8, 9, 10).
- * 2. Smallest geographic distance (in km).
- * 3. Fallback to main branch (B.Laban, id: 2).
+ * Single store application: always resolves to main B.Laban store.
  */
-export function findNearestBranch(
-  branches = DEFAULT_BRANCHES,
-  userLat,
-  userLng,
-  userZoneIds = []
-) {
-  const branchList = Array.isArray(branches) && branches.length > 0 ? branches : DEFAULT_BRANCHES;
-  const mainBranch = branchList.find((b) => b.id === 2 || b.slug === "blaban") || branchList[0];
-
-  // If no coordinates provided, fallback to main branch
-  if (userLat == null || userLng == null || isNaN(Number(userLat)) || isNaN(Number(userLng))) {
-    return mainBranch;
-  }
-
-  const uLat = Number(userLat);
-  const uLng = Number(userLng);
-  const parsedZones = Array.isArray(userZoneIds) ? userZoneIds : parseZoneIds(userZoneIds);
-
-  // Check for a specific branch zone match first (prefer specific branches over generic Kuwait zone 6)
-  if (parsedZones.length > 0) {
-    const specificBranch = branchList.find(
-      (b) => b.zone_id && b.id !== 2 && parsedZones.includes(Number(b.zone_id))
-    );
-    if (specificBranch) return specificBranch;
-  }
-
-  // Calculate distance to all branches with coordinates
-  let minDistance = Infinity;
-  let nearestBranch = mainBranch;
-
-  for (const branch of branchList) {
-    if (branch.latitude != null && branch.longitude != null) {
-      const dist = calculateDistanceKm(uLat, uLng, branch.latitude, branch.longitude);
-      if (dist < minDistance) {
-        minDistance = dist;
-        nearestBranch = branch;
-      }
-    }
-  }
-
-  return nearestBranch;
+export function findNearestBranch() {
+  return DEFAULT_BRANCHES[0];
 }
 
 /**
@@ -143,18 +68,17 @@ export function persistBranchSelection(branchSlug, lat, lng, zoneId) {
   if (typeof window === "undefined") return;
 
   try {
-    if (branchSlug) {
-      document.cookie = `selectedBranch=${branchSlug}; path=/; max-age=604800; SameSite=Lax`;
-      localStorage.setItem("selectedBranch", branchSlug);
-    }
+    const slug = "blaban";
+    document.cookie = "selectedBranch=" + slug + "; path=/; max-age=604800; SameSite=Lax";
+    localStorage.setItem("selectedBranch", slug);
     if (lat != null && lng != null) {
       const coords = { lat: Number(lat), lng: Number(lng) };
       localStorage.setItem("currentLatLng", JSON.stringify(coords));
-      document.cookie = `currentLatLng=${JSON.stringify(coords)}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = "currentLatLng=" + JSON.stringify(coords) + "; path=/; max-age=604800; SameSite=Lax";
     }
     if (zoneId) {
       localStorage.setItem("zoneid", String(zoneId));
-      document.cookie = `zoneid=${String(zoneId)}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = "zoneid=" + String(zoneId) + "; path=/; max-age=604800; SameSite=Lax";
     }
   } catch (err) {
     console.warn("Could not persist branch selection:", err);

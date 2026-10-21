@@ -132,6 +132,14 @@ export const getServerSideProps = async (context) => {
       "X-localization": language,
     };
 
+    if (storeId && storeId !== "blaban") {
+      return {
+        redirect: {
+          destination: "/store/blaban?module=blaban",
+          permanent: false,
+        },
+      };
+    }
     const moduleId = module || legacyModuleId;
 
     const [configRes, storeDetailsRes] = await Promise.all([

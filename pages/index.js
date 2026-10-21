@@ -28,17 +28,9 @@ const Root = () => {
 export default Root;
 
 export const getServerSideProps = async (context) => {
-  const { req } = context;
-  let branch = "blaban";
-  try {
-    if (req?.cookies?.selectedBranch) {
-      branch = req.cookies.selectedBranch;
-    }
-  } catch {}
-
   return {
     redirect: {
-      destination: `/store/${branch}?module=blaban`,
+      destination: "/store/blaban?module=blaban",
       permanent: false,
     },
   };

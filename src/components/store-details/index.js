@@ -380,40 +380,10 @@ const StoreDetails = ({ storeDetails, configData }) => {
   const zoneid =
     typeof window !== "undefined" ? localStorage.getItem("zoneid") : undefined;
 
-  const isStoreZoneMismatch = useMemo(() => {
-    if (!hasCurrentLatLng || !zoneid || storeZoneId == null) return false;
-
-    const zoneIds = parseZoneIdsFromStorageValue(zoneid);
-    if (zoneIds.length === 0) return false;
-
-    return !zoneIds.includes(storeZoneId);
-  }, [hasCurrentLatLng, storeZoneId, zoneid]);
+  const isStoreZoneMismatch = false;
   useEffect(() => {
-    if (!hasCurrentLatLng || !zoneid) {
-      setOpenStoreZoneModal(false);
-      return;
-    }
-    if (isStoreZoneMismatch && currentLatLng?.lat != null && currentLatLng?.lng != null) {
-      const zoneIds = parseZoneIdsFromStorageValue(zoneid);
-      const nearest = findNearestBranch(
-        DEFAULT_BRANCHES,
-        currentLatLng.lat,
-        currentLatLng.lng,
-        zoneIds
-      );
-      if (nearest?.slug && nearest.slug !== storeDetails?.slug) {
-        persistBranchSelection(nearest.slug, currentLatLng.lat, currentLatLng.lng, zoneid);
-        router.replace(
-          { pathname: `/store/${nearest.slug}`, query: { module: "blaban" } },
-          undefined,
-          { shallow: true }
-        );
-        setOpenStoreZoneModal(false);
-        return;
-      }
-    }
-    setOpenStoreZoneModal(isStoreZoneMismatch);
-  }, [hasCurrentLatLng, isStoreZoneMismatch, zoneid, storeDetails?.slug, currentLatLng, router]);
+    setOpenStoreZoneModal(false);
+  }, []);
 
   // When openStoreZoneModal is open, keep modal open for user to pick location from map
 
@@ -660,70 +630,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
           variant="drawer"
         />
       </Drawer>
-      <CustomModal
-        openModal={openStoreZoneModal}
-        handleClose={() => setOpenStoreZoneModal(false)}
-        maxWidth="650px"
-      >
-        <CustomStackFullWidth
-          p={{ xs: "24px", sm: "32px" }}
-          justifyContent="center"
-          alignItems="center"
-          spacing={1}
-          sx={{ textAlign: "center", position: "relative" }}
-        >
-          <IconButton
-            onClick={() => setOpenStoreZoneModal(false)}
-            sx={{
-              position: "absolute",
-              top: 12,
-              right: 12,
-              backgroundColor: (theme) => theme.palette.neutral[100],
-              "&:hover": {
-                backgroundColor: (theme) => theme.palette.neutral[200],
-              },
-            }}
-          >
-            <CloseIcon sx={{ fontSize: "18px" }} />
-          </IconButton>
-
-          <CustomImageContainer
-            src={locationImage?.src}
-            width="70px"
-            height="70px"
-          />
-          <Typography fontSize="18px" fontWeight="500">
-            {t("Sorry !")}
-          </Typography>
-          <Typography fontSize="18px" fontWeight="500">
-            {t("This store is not available in your location")}
-          </Typography>
-          <Typography
-            variant="subtitle2"
-            color={theme.palette.neutral[400]}
-            maxWidth="420px"
-          >
-            {t(
-              "Please select another delivery location so we can check whether the store delivers to your area."
-            )}
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={handleOpenPickFromMap}
-            sx={{
-              mt: "1rem !important",
-              px: 6,
-              py: 1.6,
-              borderRadius: "12px",
-              fontSize: { xs: "14px", sm: "16px" },
-              textTransform: "capitalize",
-              width: { xs: "100%", sm: "auto" },
-            }}
-          >
-            {t("Pick from Map")}
-          </Button>
-        </CustomStackFullWidth>
-      </CustomModal>
+      {null}
       {openMapModal && (
         <MapModal
           open={openMapModal}

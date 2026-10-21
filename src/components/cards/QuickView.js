@@ -89,10 +89,10 @@ const QuickView = ({
     e.stopPropagation();
     if (typeof window !== "undefined" && !localStorage.getItem("location")) {
       try {
-        localStorage.setItem("location", "Salmiya, Kuwait");
-        localStorage.setItem("currentLatLng", JSON.stringify({ lat: 29.3375, lng: 48.0772 }));
+        localStorage.setItem("location", "Kuwait");
+        localStorage.setItem("currentLatLng", JSON.stringify({ lat: 29.33969, lng: 48.06918 }));
         if (!localStorage.getItem("zoneid")) {
-          localStorage.setItem("zoneid", JSON.stringify([1]));
+          localStorage.setItem("zoneid", JSON.stringify([6]));
         }
       } catch (err) {}
     }
