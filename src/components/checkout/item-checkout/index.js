@@ -604,7 +604,19 @@ const ItemCheckout = (props) => {
         // order_time: scheduleAt,
         payment_method: isDigital,
         order_type: orderType === "schedule_order" ? "delivery" : orderType,
-        store_id: storeId,
+        store_id: (() => {
+          let sBranch = null;
+          let sArea = null;
+          try {
+            if (typeof window !== "undefined") {
+              const b = localStorage.getItem("selectedBranch");
+              const a = localStorage.getItem("selectedArea");
+              if (b) sBranch = JSON.parse(b);
+              if (a) sArea = JSON.parse(a);
+            }
+          } catch (e) {}
+          return sBranch?.store_id || sArea?.branch?.store_id || sArea?.store_id || storeId;
+        })(),
         coupon_code: couponDiscount?.code,
         coupon_discount_amount: couponDiscount?.discount,
         coupon_discount_title: couponDiscount?.title,
@@ -660,6 +672,10 @@ const ItemCheckout = (props) => {
             ...(sArea?.id && {
               delivery_area_id: sArea.id,
               delivery_area_name: sArea.name,
+              ...(!sBranch?.id && sArea?.branch_id && {
+                branch_id: sArea.branch_id,
+                branch_name: sArea.branch?.name || null,
+              }),
             }),
           };
         })(),
