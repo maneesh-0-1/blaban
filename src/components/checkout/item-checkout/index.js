@@ -292,11 +292,13 @@ const ItemCheckout = (props) => {
   }, [storeId]);
 
   const currentLatLng = useMemo(() => {
-    if (typeof window === "undefined") return null;
+    if (typeof window === "undefined") return { lat: "29.3759", lng: "47.9774" };
     try {
-      return JSON.parse(window.localStorage.getItem("currentLatLng") || "null");
+      const stored = JSON.parse(window.localStorage.getItem("currentLatLng") || "null");
+      if (stored?.lat && stored?.lng) return stored;
+      return { lat: "29.3759", lng: "47.9774" };
     } catch (error) {
-      return null;
+      return { lat: "29.3759", lng: "47.9774" };
     }
   }, []);
   const { data: zoneData } = useQuery(
@@ -1459,11 +1461,23 @@ const ItemCheckout = (props) => {
                 />
               )}
 
-              {zoneData && (
+              {(zoneData || storeData || configData) && (
                 <AddPaymentMethod
                   setPaymentMethod={setPaymentMethod}
                   paymentMethod={paymentMethod}
-                  zoneData={zoneData}
+                  zoneData={
+                    zoneData || {
+                      data: {
+                        zone_data: [
+                          {
+                            id: storeData?.zone_id || 1,
+                            cash_on_delivery: 1,
+                            digital_payment: 1,
+                          },
+                        ],
+                      },
+                    }
+                  }
                   configData={configData}
                   orderType={orderType}
                   usePartialPayment={usePartialPayment}

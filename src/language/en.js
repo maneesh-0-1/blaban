@@ -1,4 +1,14 @@
 export const english = {
+  "Include extra napkins and spoons": "Include extra napkins and spoons",
+
+  "Please pack items separately": "Please pack items separately",
+
+  "Call me when order is ready": "Call me when order is ready",
+
+  "I will pick up myself": "I will pick up myself",
+
+  "Pickup Instructions": "Pickup Instructions",
+
   "Self Pickup Branch": "Self Pickup Branch",
   "Delivery Area & Fee": "Delivery Area & Fee",
   "Change Branch": "Change Branch",

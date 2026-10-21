@@ -56,6 +56,13 @@ const DEFAULT_INSTRUCTIONS = [
   "Hand it to me",
 ];
 
+const DEFAULT_PICKUP_INSTRUCTIONS = [
+  "I will pick up myself",
+  "Call me when order is ready",
+  "Please pack items separately",
+  "Include extra napkins and spoons",
+];
+
 const DeliveryAddress = ({
   setAddress,
   address,
@@ -227,7 +234,9 @@ const DeliveryAddress = ({
     if (setDeliveryInstruction) setDeliveryInstruction(v);
     else setLocalInstruction(v);
   };
-  const instructionList = instructionOptions || DEFAULT_INSTRUCTIONS;
+  const instructionList =
+    instructionOptions ||
+    (orderType === "take_away" ? DEFAULT_PICKUP_INSTRUCTIONS : DEFAULT_INSTRUCTIONS);
 
   const addressTitle =
     address?.address_type && address?.address_type !== "Selected Address"
@@ -472,7 +481,9 @@ const DeliveryAddress = ({
           component="span"
           sx={{ fontWeight: 600, color: theme.palette.text.primary }}
         >
-          {t("Delivery Instruction")}
+          {orderType === "take_away"
+            ? t("Pickup Instructions")
+            : t("Delivery Instruction")}
         </Box>{" "}
         <Box component="span" sx={{ color: theme.palette.text.secondary }}>
           ({t("Optional")})
@@ -811,7 +822,7 @@ const DeliveryAddress = ({
             </Box>
           )}
 
-          {orderType !== "take_away" && InstructionField}
+          {InstructionField}
         </>
       )}
       {!getToken() &&

@@ -1,4 +1,14 @@
 export const arabic = {
+  "Include extra napkins and spoons": "يرجى إضافة ملاعق ومناديل إضافية",
+
+  "Please pack items separately": "يرجى تعبئة الأصناف بشكل منفصل",
+
+  "Call me when order is ready": "اتصل بي عند جاهزية الطلب",
+
+  "I will pick up myself": "سأستلم بنفسي",
+
+  "Pickup Instructions": "تعليمات الاستلام",
+
   "Self Pickup Branch": "فرع الاستلام",
   "Delivery Area & Fee": "منطقة ورسوم التوصيل",
   "Change Branch": "تغيير الفرع",
