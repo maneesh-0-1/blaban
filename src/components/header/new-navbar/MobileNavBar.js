@@ -425,8 +425,8 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
           <Box
             sx={{
               overflow: "hidden",
-              maxHeight: isCollapsed ? "0px" : "60px",
-              opacity: isCollapsed ? 0 : 1,
+              maxHeight: "60px",
+              opacity: 1,
               transition: "max-height 0.25s ease, opacity 0.2s ease",
             }}
           >

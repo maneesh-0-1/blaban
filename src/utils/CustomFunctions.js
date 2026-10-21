@@ -1335,9 +1335,11 @@ export const handleFailedOrderPlace = ({
     const payment_platform = "web";
     const page = "my-orders";
     const callBackUrl = `${window.location.origin}/profile?page=${page}`;
-    const url = `${baseUrl}/payment-mobile?order_id=${orderId}&customer_id=${profileInfo?.id}&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
+    const paymentBaseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
+    const url = `${paymentBaseUrl}/payment-mobile?order_id=${orderId}&customer_id=${profileInfo?.id}&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
 
-    router.push(url, undefined, { shallow: true });
+    window.location.href = url;
   }
 };
 

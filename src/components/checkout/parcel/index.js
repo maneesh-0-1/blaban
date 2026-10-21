@@ -498,12 +498,15 @@ const ParcelCheckout = () => {
             const callBackUrl = token
               ? `${window.location.origin}/profile?page=${page}`
               : `${window.location.origin}/home`;
-            const url = `${baseUrl}/payment-mobile?order_id=${
+            const paymentBaseUrl =
+              process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
+            const resolvedCustomerId =
+              res?.user_id || profileInfo?.id || guest_id;
+            const url = `${paymentBaseUrl}/payment-mobile?order_id=${
               res?.order_id
-            }&customer_id=${
-              profileInfo?.id ?? res?.user_id ? res?.user_id : guest_id
-            }&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
-            router.push(url, undefined, { shallow: true });
+            }&customer_id=${resolvedCustomerId}&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
+            window.location.href = url;
+            return;
           } else if (paymentMethod === "wallet") {
             if (
               Number(profileInfo?.wallet_balance) <

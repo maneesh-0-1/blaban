@@ -24,6 +24,7 @@ import BodySection from "./BodySection";
 import useScrollToTop from "api-manage/hooks/custom-hooks/useScrollToTop";
 import ProfileIntro from "./ProfileIntro";
 import AccountMenuPanel from "components/header/second-navbar/account-popover/AccountMenuPanel";
+import AccountLanguageButton from "components/header/second-navbar/account-popover/AccountLanguageButton";
 
 // ── Page title map ────────────────────────────────────────────────────────────
 const PAGE_TITLES = {
@@ -213,6 +214,11 @@ const UserInformation = ({ page, configData, orderId }) => {
                 color: "neutral.1050",
                 lineHeight: 1.1,
                 letterSpacing: "-0.54px",
+                flex: 1,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               {t(
@@ -223,6 +229,16 @@ const UserInformation = ({ page, configData, orderId }) => {
                   : "Profile",
               )}
             </Typography>
+            <AccountLanguageButton
+              size="small"
+              compact={true}
+              showGlobeIcon={true}
+              sx={{
+                flexShrink: 0,
+                backgroundColor: (t) =>
+                  t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",
+              }}
+            />
           </Box>
         )}
         {/* ── Profile intro ── */}

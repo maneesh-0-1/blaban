@@ -738,20 +738,24 @@ const ItemCheckout = (props) => {
               }
               if (paymentMethod === "digital_payment") {
                 toast.success(response?.data?.message);
-                const newBaseUrl = baseUrl;
+                const paymentBaseUrl =
+                  process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
                 const page = "my-orders";
                 const callBackUrl = token
                   ? `${window.location.origin}/profile?page=${page}`
-                  : `${window.location.origin}/order?order_id=${response?.data?.order_id}&total=${response?.data?.total_ammount}`;
-                const url = `${newBaseUrl}/payment-mobile?order_id=${
+                  : `${window.location.origin}/home`;
+                const resolvedCustomerId =
+                  response?.data?.user_id ||
+                  customerData?.data?.id ||
+                  guest_id;
+                const url = `${paymentBaseUrl}/payment-mobile?order_id=${
                   response?.data?.order_id
-                }&customer_id=${
-                  customerData?.data?.id ?? guest_id
-                }&callback=${callBackUrl},`;
+                }&customer_id=${resolvedCustomerId}&payment_platform=web&callback=${callBackUrl}&payment_method=${paymentMethod}`;
                 localStorage.setItem("totalAmount", totalAmount);
                 clearMonthlySubKey(storeId);
                 dispatch(setClearCart());
-                Router.push(url);
+                window.location.href = url;
+                return;
               } else if (paymentMethod === "wallet") {
                 toast.success(response?.data?.message);
                 setOrderId(response?.data?.order_id);
@@ -820,18 +824,21 @@ const ItemCheckout = (props) => {
               const callBackUrl = token
                 ? `${window.location.origin}/profile?page=${page}`
                 : `${window.location.origin}/home`;
-              const url = `${baseUrl}/payment-mobile?order_id=${
+              const paymentBaseUrl =
+                process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
+              const resolvedCustomerId =
+                response?.data?.user_id ||
+                customerData?.data?.id ||
+                guest_id;
+              const url = `${paymentBaseUrl}/payment-mobile?order_id=${
                 response?.data?.order_id
-              }&customer_id=${
-                customerData?.data?.id ?? response?.data?.user_id
-                  ? response?.data?.user_id
-                  : guest_id
-              }&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
+              }&customer_id=${resolvedCustomerId}&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
               localStorage.setItem("totalAmount", totalAmount);
               dispatch(setGuestUserInfo(null));
-              dispatch(setOrderDetailsModal(true));
-              //dispatch(setClearCart());
-              Router.push(url, undefined, { shallow: true });
+              clearMonthlySubKey(storeId);
+              dispatch(setClearCart());
+              window.location.href = url;
+              return;
             } else if (paymentMethod === "offline_payment") {
               toast.success(t("Order is successful placed"), {
                 id: paymentMethod,

@@ -18,7 +18,6 @@ import { ModuleTypes } from "helper-functions/moduleTypes";
 import SearchProductModal from "../home/search/SearchProductModal";
 import FloatingCartButton from "../header/new-navbar/FloatingCartButton";
 import FloatingWhatsAppButton from "../common/FloatingWhatsAppButton";
-import FloatingLanguageButton from "../common/FloatingLanguageButton";
 
 // Routes that own their own sticky/in-flow header on mobile (no extra mt needed).
 // Adding a route here removes the default mobile navbar offset on that page.
@@ -213,7 +212,6 @@ const MainLayout = ({ children, configData }) => {
       <SearchProductModal />
       <FloatingCartButton />
       <FloatingWhatsAppButton />
-      <FloatingLanguageButton />
     </MainLayoutRoot>
   );
 };

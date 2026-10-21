@@ -19,6 +19,7 @@ import {
   handleProductValueWithOutDiscount,
 } from "../../utils/CustomFunctions";
 import { getAmountWithSign } from "../../helper-functions/CardHelpers";
+import AccountLanguageButton from "components/header/second-navbar/account-popover/AccountLanguageButton";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getToken } from "helper-functions/getToken";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
@@ -514,6 +515,64 @@ const StoreDetails = ({ storeDetails, configData }) => {
 
   const mobileContent = (
     <CustomStackFullWidth spacing={0}>
+      {/* Mobile Sticky Header with Language Switcher */}
+      <Box
+        sx={{
+          display: { xs: "block", md: "none" },
+          position: "sticky",
+          top: 0,
+          zIndex: (theme) => theme.zIndex.appBar,
+          backgroundColor: (theme) => theme.palette.background.paper,
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+          px: 1.5,
+          py: 1,
+        }}
+      >
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={1}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ minWidth: 0, flex: 1 }}
+          >
+            <IconButton
+              onClick={() => router.push("/home")}
+              sx={{ p: "4px", color: "neutral.1050", flexShrink: 0 }}
+            >
+              <i
+                className="fi fi-rr-arrow-small-left"
+                style={{ fontSize: "22px", lineHeight: 1, display: "flex" }}
+              />
+            </IconButton>
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "neutral.1050",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {storeDetails?.name || t("Store")}
+            </Typography>
+          </Stack>
+          <AccountLanguageButton
+            size="small"
+            compact={true}
+            showGlobeIcon={true}
+            sx={{
+              backgroundColor: (t) =>
+                t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "#f2f2f2",
+            }}
+          />
+        </Stack>
+      </Box>
       {topSection}
       {proFeatureEnabled && hasToken && proOfferResolved && (
         <Box sx={{ px: 2, pt: {xs: 1, md: 4}, pb: {xs: 1.5, md: 4} }}>
