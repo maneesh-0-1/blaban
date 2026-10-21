@@ -202,10 +202,25 @@ const ItemCheckout = (props) => {
   console.log({ couponDiscount });
 
   const currentModuleType = getCurrentModuleType();
+  const storedBranchId = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const sb = localStorage.getItem("selectedBranch");
+      return sb ? JSON.parse(sb)?.id : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const storeId =
     page === "campaign"
-      ? campaignItemList?.[0]?.store_id
-      : cartList?.[0]?.store_id;
+      ? (campaignItemList?.[0]?.store_id ?? campaignItemList?.[0]?.store?.id)
+      : (cartList?.[0]?.store_id ??
+         cartList?.[0]?.store?.id ??
+         cartList?.[0]?.item?.store_id ??
+         (router?.query?.store_id ? Number(router.query.store_id) : null) ??
+         storedBranchId ??
+         4);
 
   const clearMonthlySubKey = (sid) => {
     if (typeof window === "undefined") return;

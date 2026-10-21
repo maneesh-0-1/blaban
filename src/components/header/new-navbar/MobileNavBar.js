@@ -1,4 +1,4 @@
-import { Box, IconButton, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Button, IconButton, Stack, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -515,69 +515,106 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
                     boxShadow: "0px 1px 3px rgba(0,0,0,0.08)",
                   }}
                 />
-                {/* Cart â€” monochrome stroke icon */}
+                {/* Cart / Checkout Button */}
                 {getCurrentModuleType() === ModuleTypes.PARCEL ? null : (
-                  <IconButton
-                    onClick={() => {
-                      if (getCurrentModuleType() === ModuleTypes.RENTAL) {
-                        setTaxiOpen(true);
-                        return;
-                      }
-                      setCartOpen(true);
-                    }}
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "8px",
-                      color: theme.palette.neutral[1050],
-                      position: "relative",
-                      flexShrink: 0,
-                      p: "8px",
-                    }}
-                    aria-label={t("Cart")}
-                  >
-                    {getCurrentModuleType() === ModuleTypes.RENTAL ? (
-                      <DirectionsCarOutlinedIcon
-                        sx={{
-                          fontSize: "20px",
-                          color: theme.palette.neutral[1050],
-                        }}
-                      />
-                    ) : (
+                  cartCount > 0 ? (
+                    <Button
+                      onClick={() => {
+                        const checkoutStoreId =
+                          cartList?.[0]?.store_id ??
+                          cartList?.[0]?.store?.id ??
+                          cartList?.[0]?.item?.store_id ??
+                          (typeof window !== "undefined"
+                            ? JSON.parse(localStorage.getItem("selectedBranch") || "null")?.id
+                            : null);
+                        router.push({
+                          pathname: "/checkout",
+                          query: {
+                            page: "cart",
+                            ...(checkoutStoreId ? { store_id: checkoutStoreId } : {}),
+                          },
+                        });
+                      }}
+                      variant="contained"
+                      size="small"
+                      sx={{
+                        backgroundColor: "#039D55",
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: "12px",
+                        borderRadius: "8px",
+                        px: 1.2,
+                        py: 0.5,
+                        height: "32px",
+                        minWidth: "auto",
+                        textTransform: "none",
+                        boxShadow: "0 2px 6px rgba(3,157,85,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        flexShrink: 0,
+                        "&:hover": { backgroundColor: "#028747" },
+                      }}
+                    >
                       <i
-                        className="fi fi-rr-shopping-cart"
-                        style={{
-                          fontSize: "16px",
-                          lineHeight: 1,
-                          display: "flex",
-                          color: theme.palette.neutral[1050],
-                        }}
+                        className="fi fi-rr-shopping-bag"
+                        style={{ fontSize: "14px", lineHeight: 1, display: "flex" }}
                       />
-                    )}
-                    {cartCount > 0 && (
+                      <span>{t("Checkout")}</span>
                       <Box
+                        component="span"
                         sx={{
-                          position: "absolute",
-                          top: 2,
-                          right: 2,
-                          minWidth: 16,
-                          height: 16,
-                          px: "4px",
-                          borderRadius: "8px",
-                          backgroundColor: "primary.main",
-                          color: "common.white",
+                          backgroundColor: "rgba(255,255,255,0.3)",
+                          borderRadius: "999px",
+                          px: "5px",
+                          py: "1px",
                           fontSize: "10px",
-                          fontWeight: 700,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          lineHeight: 1,
+                          fontWeight: 800,
                         }}
                       >
                         {cartCount}
                       </Box>
-                    )}
-                  </IconButton>
+                    </Button>
+                  ) : (
+                    <IconButton
+                      onClick={() => {
+                        if (getCurrentModuleType() === ModuleTypes.RENTAL) {
+                          setTaxiOpen(true);
+                          return;
+                        }
+                        setCartOpen(true);
+                      }}
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "8px",
+                        color: theme.palette.neutral[1050],
+                        position: "relative",
+                        flexShrink: 0,
+                        p: "8px",
+                      }}
+                      aria-label={t("Cart")}
+                    >
+                      {getCurrentModuleType() === ModuleTypes.RENTAL ? (
+                        <DirectionsCarOutlinedIcon
+                          sx={{
+                            fontSize: "20px",
+                            color: theme.palette.neutral[1050],
+                          }}
+                        />
+                      ) : (
+                        <i
+                          className="fi fi-rr-shopping-cart"
+                          style={{
+                            fontSize: "16px",
+                            lineHeight: 1,
+                            display: "flex",
+                            color: theme.palette.neutral[1050],
+                          }}
+                        />
+                      )}
+                    </IconButton>
+                  )
                 )}
               </Stack>
             </Stack>

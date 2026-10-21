@@ -182,7 +182,7 @@ const AllCartDrawer = ({ open, onClose, cartData = [], refetch }) => {
     onClose();
     router.push({
       pathname: "/checkout",
-      query: { page: "cart", store_id: store?.id },
+      query: { page: "cart", ...(store?.id ? { store_id: store.id } : {}) },
     });
   };
 
@@ -199,7 +199,7 @@ const AllCartDrawer = ({ open, onClose, cartData = [], refetch }) => {
       }}
       PaperProps={{
         sx: {
-          width: 420,
+          width: { xs: "100%", sm: 420 },
           maxWidth: "100vw",
           boxShadow: "0px 24px 48px -8px rgba(0,0,0,0.24)",
         },

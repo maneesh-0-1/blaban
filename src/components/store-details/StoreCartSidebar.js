@@ -1007,9 +1007,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
     }
     if (moduleCartList?.length > 0 && token) {
       router
-        .push({ pathname: "/checkout", query: checkoutQuery }, undefined, {
-          shallow: true,
-        })
+        .push({ pathname: "/checkout", query: checkoutQuery })
         .then(() => window.scrollTo({ top: 0, behavior: "smooth" }));
       return;
     }
@@ -1025,9 +1023,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
 
   const handleGuestRoute = () => {
     router
-      .push({ pathname: "/checkout", query: checkoutQuery }, undefined, {
-        shallow: true,
-      })
+      .push({ pathname: "/checkout", query: checkoutQuery })
       .then(() => window.scrollTo({ top: 0, behavior: "smooth" }));
   };
 

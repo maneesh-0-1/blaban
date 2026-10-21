@@ -125,107 +125,24 @@ const FloatingCartButton = () => {
 
   return (
     <>
-      {/* ── DESKTOP FLOATING PILL ── */}
-      <Box
-        onClick={() => setOpen(true)}
-        role="button"
-        aria-label={t("Cart")}
-        sx={{
-          position: "fixed",
-          top: "215px",
-          insetInlineEnd: 0,
-          zIndex: 1250,
-          display: showDesktopPill ? { xs: "none", md: "flex" } : "none",
-          flexDirection: "column",
-          alignItems: "stretch",
-          width: "80px",
-          height: "80px",
-          borderRadius: "10px 0 0 10px",
-          overflow: "hidden",
-          boxShadow: "-9px 0px 20px 0px rgba(0,0,0,0.14)",
-          cursor: "pointer",
-          userSelect: "none",
-          transition: "transform 0.2s ease",
-          "&:hover": {
-            transform: "translateX(-4px)",
-          },
-        }}
-      >
-        <Box
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flex: 1,
-            p: "8px",
-            position: "relative",
-          }}
-        >
-          <Box sx={{ position: "relative", display: "inline-flex" }}>
-            <i
-              className="fi fi-rr-shopping-cart"
-              style={{
-                fontSize: "20px",
-                display: "flex",
-                lineHeight: 1,
-                color: theme.palette.text.primary,
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                top: "-8px",
-                insetInlineEnd: "-8px",
-                borderRadius: "9999px",
-                backgroundColor: "#039d55",
-                color: "#fff",
-                fontSize: "10px",
-                fontWeight: 700,
-                minWidth: "18px",
-                height: "18px",
-                border: `2px solid ${theme.palette.background.paper}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                px: "4px",
-                animation: `${pulseAnimation} 0.5s ease-in-out`,
-              }}
-            >
-              {itemCount}
-            </Box>
-          </Box>
-        </Box>
-
-        <Box
-          sx={{
-            backgroundColor: "#f1f6fd",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            py: "10px",
-            width: "100%",
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: "13px",
-              fontWeight: 700,
-              color: theme.palette.text.primary,
-              lineHeight: 1.3,
-              textAlign: "center",
-              fontVariantNumeric: "tabular-nums",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {abbreviateAmount(grandTotal)}
-          </Typography>
-        </Box>
-      </Box>
-
       {/* ── MOBILE FLOATING CART BAR (HIGH Z-INDEX 1250) ── */}
       <Box
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          const checkoutStoreId =
+            cartList?.[0]?.store_id ??
+            cartList?.[0]?.store?.id ??
+            cartList?.[0]?.item?.store_id ??
+            (typeof window !== "undefined"
+              ? JSON.parse(localStorage.getItem("selectedBranch") || "null")?.id
+              : null);
+          router.push({
+            pathname: "/checkout",
+            query: {
+              page: "cart",
+              ...(checkoutStoreId ? { store_id: checkoutStoreId } : {}),
+            },
+          });
+        }}
         role="button"
         aria-label={t("Checkout")}
         sx={{

@@ -803,7 +803,16 @@ const StoreDetails = ({ storeDetails, configData }) => {
               </Stack>
             </Stack>
             <Button
-              onClick={() => setCartDrawerOpen(true)}
+              onClick={() => {
+                const sid = storeDetails?.id;
+                router.push({
+                  pathname: "/checkout",
+                  query: {
+                    page: "cart",
+                    ...(sid ? { store_id: sid } : {}),
+                  },
+                });
+              }}
               variant="contained"
               sx={{
                 backgroundColor: "#1E9657",

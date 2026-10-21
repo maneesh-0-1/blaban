@@ -86,7 +86,8 @@ const CheckOutPage = () => {
     (state) => state.configData
   );
   const router = useRouter();
-  const { page, store_id, id, incomplete_payment } = router.query;
+  const { page: queryPage, store_id, id, incomplete_payment } = router.query;
+  const page = queryPage || "cart";
   const {
     cartList: aliasCartList,
     campaignItemList,
@@ -103,12 +104,13 @@ const CheckOutPage = () => {
     (item) => item?.module_type !== "rental"
   );
   const moduleCartList = getCartListModuleWise(nonRentalCartList);
-  const cartList = store_id
+  const filteredCartList = store_id
     ? moduleCartList.filter((item) => {
         const itemStoreId = item?.store_id ?? item?.store?.id;
         return String(itemStoreId) === String(store_id);
       })
     : moduleCartList;
+  const cartList = (filteredCartList && filteredCartList.length > 0) ? filteredCartList : moduleCartList;
   const { data: dataConfig, refetch: configRefetch } = useGetConfigData();
   useEffect(() => {
     if (!configData) {
