@@ -45,11 +45,17 @@ const PlaceOrder = (props) => {
 				borderTop: `1px solid ${theme.palette.divider}`,
 		  };
 
+	const isDigitalPayment =
+		paymentMethod &&
+		paymentMethod !== "cash_on_delivery" &&
+		paymentMethod !== "offline_payment" &&
+		paymentMethod !== "wallet";
+
 	const getButtonLabel = () => {
 		if (paymentMethod === "cash_on_delivery") {
 			return t("Place Order (Cash on Delivery)");
 		}
-		if (paymentMethod === "digital_payment") {
+		if (paymentMethod === "digital_payment" || isDigitalPayment) {
 			return t("Pay & Place Order");
 		}
 		if (paymentMethod === "wallet") {
@@ -62,7 +68,7 @@ const PlaceOrder = (props) => {
 		if (paymentMethod === "cash_on_delivery") {
 			return <PaymentsIcon sx={{ fontSize: "20px" }} />;
 		}
-		if (paymentMethod === "digital_payment") {
+		if (paymentMethod === "digital_payment" || isDigitalPayment) {
 			return <CreditCardIcon sx={{ fontSize: "20px" }} />;
 		}
 		if (paymentMethod === "wallet") {

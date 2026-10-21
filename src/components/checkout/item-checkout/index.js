@@ -831,6 +831,35 @@ const ItemCheckout = (props) => {
         let carts = handleProductList(productList, totalQty);
         const handleSuccess = (response) => {
           if (response?.data) {
+            const isDigital =
+              paymentMethod !== "cash_on_delivery" &&
+              paymentMethod !== "offline_payment" &&
+              paymentMethod !== "wallet";
+
+            if (isDigital) {
+              toast.loading(t("Redirecting to payment gateway..."), { id: "payment-redirect" });
+              const payment_platform = "web";
+              const page = "my-orders";
+              const callBackUrl = token
+                ? `${window.location.origin}/profile?page=${page}`
+                : `${window.location.origin}/home`;
+              const paymentBaseUrl =
+                process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
+              const resolvedCustomerId =
+                response?.data?.user_id ||
+                customerData?.data?.id ||
+                guest_id;
+              const url = `${paymentBaseUrl}/payment-mobile?order_id=${
+                response?.data?.order_id
+              }&customer_id=${resolvedCustomerId}&payment_platform=${payment_platform}&callback=${encodeURIComponent(callBackUrl)}&payment_method=${paymentMethod}`;
+              localStorage.setItem("totalAmount", totalAmount);
+              dispatch(setGuestUserInfo(null));
+              clearMonthlySubKey(storeId);
+              dispatch(setClearCart());
+              window.location.assign(url);
+              return;
+            }
+
             if (token) {
               // dispatch(setOrderDetailsModal(true));
             } else {
@@ -850,6 +879,7 @@ const ItemCheckout = (props) => {
               dispatch(setOrderDetailsModalOpen(true));
               dispatch(setGuestUserInfo(null));
             }
+
             if (
               paymentMethod === "cash_on_delivery" ||
               paymentMethod === "offline_payment" ||
@@ -859,31 +889,8 @@ const ItemCheckout = (props) => {
                 id: paymentMethod,
               });
             }
-            if (
-              paymentMethod !== "cash_on_delivery" &&
-              paymentMethod !== "offline_payment"
-            ) {
-              const payment_platform = "web";
-              const page = "my-orders";
-              const callBackUrl = token
-                ? `${window.location.origin}/profile?page=${page}`
-                : `${window.location.origin}/home`;
-              const paymentBaseUrl =
-                process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
-              const resolvedCustomerId =
-                response?.data?.user_id ||
-                customerData?.data?.id ||
-                guest_id;
-              const url = `${paymentBaseUrl}/payment-mobile?order_id=${
-                response?.data?.order_id
-              }&customer_id=${resolvedCustomerId}&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
-              localStorage.setItem("totalAmount", totalAmount);
-              dispatch(setGuestUserInfo(null));
-              clearMonthlySubKey(storeId);
-              dispatch(setClearCart());
-              window.location.href = url;
-              return;
-            } else if (paymentMethod === "offline_payment") {
+
+            if (paymentMethod === "offline_payment") {
               toast.success(t("Order is successful placed"), {
                 id: paymentMethod,
               });
@@ -937,11 +944,23 @@ const ItemCheckout = (props) => {
           orderMutation(order, {
             onSuccess: handleSuccess,
             onError: (error) => {
-              error?.response?.data?.errors?.forEach((item) =>
-                toast.error(item.message, {
+              console.error("Order error:", error?.response?.data || error);
+              const data = error?.response?.data;
+              if (Array.isArray(data?.errors)) {
+                data.errors.forEach((item) =>
+                  toast.error(item.message || item.code || t("Failed to place order"), {
+                    position: "bottom-right",
+                  })
+                );
+              } else if (typeof data?.message === "string") {
+                toast.error(data.message, { position: "bottom-right" });
+              } else if (typeof data?.errors === "string") {
+                toast.error(data.errors, { position: "bottom-right" });
+              } else {
+                toast.error(t("Failed to place order. Please check your details and try again."), {
                   position: "bottom-right",
-                })
-              );
+                });
+              }
             },
           });
         }
