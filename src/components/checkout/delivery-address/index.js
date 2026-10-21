@@ -591,7 +591,7 @@ const DeliveryAddress = ({
             </Typography>
 
             <Grid container spacing={1.5}>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={4}>
                 <TextField
                   fullWidth
                   size="small"
@@ -615,7 +615,7 @@ const DeliveryAddress = ({
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={4}>
                 <TextField
                   fullWidth
                   size="small"
@@ -633,6 +633,30 @@ const DeliveryAddress = ({
                       reduxDispatch(setGuestUserInfo({ ...guestUserInfo, contact_person_number: val }));
                     }
                     setAddress({ ...address, contact_person_number: val });
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label={t("Email Address")}
+                  placeholder={t("Enter your email")}
+                  type="email"
+                  value={
+                    token
+                      ? profileInfo?.email || ""
+                      : (address?.contact_person_email || guestUserInfo?.contact_person_email || "")
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!token) {
+                      reduxDispatch(setGuestUserInfo({ ...guestUserInfo, contact_person_email: val }));
+                    }
+                    setAddress({ ...address, contact_person_email: val });
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": { borderRadius: "10px" },

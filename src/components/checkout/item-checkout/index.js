@@ -518,7 +518,9 @@ const ItemCheckout = (props) => {
       );
       formData.append(
         "contact_person_email",
-        guestUserInfo?.contact_person_email
+        token
+          ? profileInfo?.email || ""
+          : (address?.contact_person_email || guestUserInfo?.contact_person_email || "")
       );
       if (prescriptionImages?.length > 0) {
         const filterBinaryImages = prescriptionImages.filter(
@@ -594,7 +596,9 @@ const ItemCheckout = (props) => {
               : profileInfo?.phone
             : `${guestUserInfo?.contact_person_number}`
         ),
-        contact_person_email: guestUserInfo?.contact_person_email,
+        contact_person_email: token
+          ? profileInfo?.email || ""
+          : (address?.contact_person_email || guestUserInfo?.contact_person_email || ""),
         block: token ? (address?.block || "") : (address?.block || guestUserInfo?.block || ""),
         house: token ? address?.house : guestUserInfo?.house,
         floor: token ? address?.floor : guestUserInfo?.floor,
