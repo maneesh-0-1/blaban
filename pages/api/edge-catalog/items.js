@@ -7,13 +7,18 @@ export default async function handler(req) {
     const url = new URL(req.url);
     const backendUrl = new URL('https://admin.blabankw.com/api/v1/store-categories/items');
 
-    // Forward all query parameters (store_id, limit, offset, type, etc.)
+    // Determine requested language (query param takes priority for separate CDN cache URL)
+    const lang = url.searchParams.get('locale') || url.searchParams.get('lang') || req.headers.get('x-localization') || req.headers.get('accept-language') || 'en';
+
+    // Forward all query parameters
     url.searchParams.forEach((value, key) => {
       backendUrl.searchParams.set(key, value);
     });
+    backendUrl.searchParams.set('locale', lang);
 
     const headers = new Headers();
     headers.set('Accept', 'application/json');
+    headers.set('X-localization', lang);
 
     const zoneId = req.headers.get('zoneid') || req.headers.get('zoneId') || '[1]';
     headers.set('zoneId', zoneId);
@@ -21,9 +26,6 @@ export default async function handler(req) {
     const rawModuleId = req.headers.get('moduleid') || req.headers.get('moduleId') || url.searchParams.get('module_id') || url.searchParams.get('module');
     const moduleId = (rawModuleId && rawModuleId !== 'blaban') ? rawModuleId : '1';
     headers.set('moduleId', moduleId);
-
-    const lang = req.headers.get('x-localization') || req.headers.get('accept-language');
-    if (lang) headers.set('X-localization', lang);
 
     const response = await fetch(backendUrl.toString(), {
       method: 'GET',
@@ -50,8 +52,10 @@ export default async function handler(req) {
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'Vercel-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-        'Cache-Tag': 'catalog,products,store-items',
+        'Cache-Tag': `catalog,products,store-items,lang-${lang}`,
+        'Vary': 'X-localization, Accept-Language, locale',
         'X-Edge-Cache': 'HIT-VERCEL',
+        'X-Language': lang,
       },
     });
   } catch (error) {

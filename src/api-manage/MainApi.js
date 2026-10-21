@@ -111,7 +111,13 @@ MainApi.interceptors.request.use(function (config) {
       delete config.headers.common["Authorization"];
     }
   }
-  if (language) config.headers["X-localization"] = language;
+  if (language) {
+    config.headers["X-localization"] = language;
+    config.params = config.params || {};
+    if (!config.params.locale) {
+      config.params.locale = language;
+    }
+  }
   if (hostname) config.headers["origin"] = hostname;
   config.headers["X-software-id"] = software_id;
   config.headers["Accept"] = 'application/json';
