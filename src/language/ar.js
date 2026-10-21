@@ -35,6 +35,7 @@ export const arabic = {
   "Pay with Wallet": "الدفع من المحفظة",
   "Please enter your name": "يرجى إدخال اسمك الكامل",
   "Please enter your contact phone number": "يرجى إدخال رقم هاتفك للتواصل",
+  "Please enter your email": "يرجى إدخال بريدك الإلكتروني",
   "Please complete your address details (Block, Street, Building/House, Floor/Apartment)": "يرجى إكمال تفاصيل العنوان (القطعة، الشارع، المبنى/المنزل، الدور/الشقة)",
   "Redirecting to payment gateway...": "جارٍ التحويل إلى بوابة الدفع...",
   "Create account with exiting info.": "إنشاء حساب بالبيانات المدخلة",

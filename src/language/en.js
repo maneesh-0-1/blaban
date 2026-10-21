@@ -35,6 +35,7 @@ export const english = {
   "Pay with Wallet": "Pay with Wallet",
   "Please enter your name": "Please enter your name",
   "Please enter your contact phone number": "Please enter your contact phone number",
+  "Please enter your email": "Please enter your email",
   "Please complete your address details (Block, Street, Building/House, Floor/Apartment)": "Please complete your address details (Block, Street, Building/House, Floor/Apartment)",
   "Redirecting to payment gateway...": "Redirecting to payment gateway...",
   "Create account with exiting info.": "Create account with exiting info.",

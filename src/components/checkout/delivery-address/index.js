@@ -576,7 +576,7 @@ const DeliveryAddress = ({
               borderRadius: "12px",
               p: { xs: 2, md: 2.5 },
               border: `1px solid ${theme.palette.divider}`,
-              mb: 2,
+              mb: orderType === "take_away" ? 0 : 2,
             }}
           >
             <Typography
@@ -644,6 +644,7 @@ const DeliveryAddress = ({
                   fullWidth
                   size="small"
                   label={t("Email Address")}
+                  required
                   placeholder={t("Enter your email")}
                   type="email"
                   value={
@@ -943,10 +944,7 @@ const DeliveryAddress = ({
     return content;
   }
 
-  // take_away = customer picks up from store, no delivery address needed.
-  if (orderType === "take_away") {
-    return null;
-  }
+
 
   return (
     <Box

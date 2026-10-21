@@ -632,16 +632,16 @@ const ItemCheckout = (props) => {
           ? address?.contact_person_name
             ? address?.contact_person_name
             : profileInfo?.name
-          : guestUserInfo?.contact_person_name,
+          : (address?.contact_person_name || guestUserInfo?.contact_person_name),
         contact_person_number: formatPhoneNumber(
           token
             ? address?.contact_person_number
               ? address?.contact_person_number
               : profileInfo?.phone
-            : `${guestUserInfo?.contact_person_number}`
+            : `${address?.contact_person_number || guestUserInfo?.contact_person_number || ""}`
         ),
         contact_person_email: token
-          ? profileInfo?.email || ""
+          ? profileInfo?.email || address?.contact_person_email || ""
           : (address?.contact_person_email || guestUserInfo?.contact_person_email || ""),
         block: token ? (address?.block || "") : (address?.block || guestUserInfo?.block || ""),
         house: token ? address?.house : guestUserInfo?.house,
@@ -726,12 +726,25 @@ const ItemCheckout = (props) => {
       ? (profileInfo?.phone || address?.contact_person_number)
       : (address?.contact_person_number || guestUserInfo?.contact_person_number);
 
+    const activeEmail = token
+      ? (profileInfo?.email || address?.contact_person_email)
+      : (address?.contact_person_email || guestUserInfo?.contact_person_email);
+
     if (!activeName || activeName.trim() === "") {
       toast.error(t("Please enter your name"), { id: "checkout-name" });
       return;
     }
     if (!activePhone || activePhone.trim() === "") {
       toast.error(t("Please enter your contact phone number"), { id: "checkout-phone" });
+      return;
+    }
+    if (!activeEmail || activeEmail.trim() === "") {
+      toast.error(t("Please enter your email"), { id: "checkout-email" });
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(activeEmail.trim())) {
+      toast.error(t("Please enter a valid email address"), { id: "checkout-email-invalid" });
       return;
     }
 
