@@ -14,10 +14,13 @@ export default async function handler(req) {
     const headers = new Headers();
     headers.set('Accept', 'application/json');
 
-    const zoneId = req.headers.get('zoneid') || req.headers.get('zoneId');
-    if (zoneId) headers.set('zoneId', zoneId);
-    const moduleId = req.headers.get('moduleid') || req.headers.get('moduleId');
-    if (moduleId) headers.set('moduleId', moduleId);
+    const zoneId = req.headers.get('zoneid') || req.headers.get('zoneId') || '[1]';
+    headers.set('zoneId', zoneId);
+
+    const rawModuleId = req.headers.get('moduleid') || req.headers.get('moduleId') || url.searchParams.get('module_id') || url.searchParams.get('module');
+    const moduleId = (rawModuleId && rawModuleId !== 'blaban') ? rawModuleId : '1';
+    headers.set('moduleId', moduleId);
+
     const lang = req.headers.get('x-localization') || req.headers.get('accept-language');
     if (lang) headers.set('X-localization', lang);
 
