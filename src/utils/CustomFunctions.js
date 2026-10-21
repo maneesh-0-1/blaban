@@ -791,6 +791,24 @@ export const getDeliveryFees = (
   extraCharge,
   surgePrice
 ) => {
+  if (orderType !== "delivery" && orderType !== "schedule_order") {
+    return 0;
+  }
+  if (typeof window !== "undefined") {
+    try {
+      const storedCharge = window.localStorage.getItem("areaDeliveryCharge");
+      if (storedCharge !== null && storedCharge !== "" && !isNaN(Number(storedCharge))) {
+        return Number(storedCharge);
+      }
+      const storedArea = window.localStorage.getItem("selectedArea");
+      if (storedArea) {
+        const parsed = JSON.parse(storedArea);
+        if (parsed?.delivery_charge !== undefined && parsed?.delivery_charge !== null && !isNaN(Number(parsed.delivery_charge))) {
+          return Number(parsed.delivery_charge);
+        }
+      }
+    } catch (e) {}
+  }
   if (orderType === "delivery" || orderType === "schedule_order") {
     //convert m to km
     let convertedDistance = handleDistance(distance, origin, destination);
@@ -965,28 +983,26 @@ export const getCalculatedTotal = (
   packagingCharge,
   referDiscount,
   vatAmount,
-  surgePrice
+  surgePrice,
+  deliveryFeeOverride
 ) => {
-  const taxAmount = vatAmount || 0;
-  if (couponDiscount) {
-    if (couponDiscount?.coupon_type === "free_delivery") {
-      return (
-        getSubTotalPrice(cartList) -
-        getProductDiscount(cartList, storeData) +
-        taxAmount -
-        (couponDiscount
-          ? getCouponDiscount(couponDiscount, storeData, cartList)
-          : 0)
-      );
-    } else {
-      return (
-        getSubTotalPrice(cartList) -
-        getProductDiscount(cartList, storeData) +
-        taxAmount -
-        (couponDiscount
-          ? getCouponDiscount(couponDiscount, storeData, cartList)
-          : 0) +
-        getDeliveryFees(
+  const taxAmount = Number(vatAmount || 0);
+  const tipAmount = Number(deliveryTip || 0);
+  const extraPackagingAmount = Number(packagingCharge || 0);
+  const addCharge = Number(additionalCharge || 0);
+  const refDiscount = Number(referDiscount || 0);
+  const couponDisc = couponDiscount
+    ? getCouponDiscount(couponDiscount, storeData, cartList)
+    : 0;
+  const itemsSubtotal = getSubTotalPrice(cartList);
+  const prodDiscount = getProductDiscount(cartList, storeData);
+
+  const rawDeliveryFee =
+    deliveryFeeOverride !== undefined &&
+    deliveryFeeOverride !== null &&
+    !isNaN(Number(deliveryFeeOverride))
+      ? Number(deliveryFeeOverride)
+      : getDeliveryFees(
           storeData,
           global,
           cartList,
@@ -999,37 +1015,27 @@ export const getCalculatedTotal = (
           destination,
           extraCharge,
           surgePrice
-        ) +
-        deliveryTip +
-        additionalCharge +
-        packagingCharge
-      );
-    }
-  } else {
-    return (
-      getSubTotalPrice(cartList) -
-      getProductDiscount(cartList, storeData) +
-      taxAmount -
-      0 +
-      getDeliveryFees(
-        storeData,
-        global,
-        cartList,
-        distanceData?.data,
-        couponDiscount,
-        couponType,
-        orderType,
-        zoneData,
-        origin,
-        destination,
-        extraCharge,
-        surgePrice
-      ) +
-      deliveryTip +
-      additionalCharge +
-      packagingCharge
-    );
-  }
+        );
+
+  const effectiveDeliveryFee =
+    couponDiscount?.coupon_type === "free_delivery" ||
+    freeDelivery === "true" ||
+    orderType === "take_away"
+      ? 0
+      : Number(rawDeliveryFee || 0);
+
+  return Math.max(
+    0,
+    itemsSubtotal -
+      prodDiscount -
+      couponDisc -
+      refDiscount +
+      taxAmount +
+      effectiveDeliveryFee +
+      tipAmount +
+      addCharge +
+      extraPackagingAmount
+  );
 };
 
 export const isFoodAvailableBySchedule = (cart, selectedTime) => {

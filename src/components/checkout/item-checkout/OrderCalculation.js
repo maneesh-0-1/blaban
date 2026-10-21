@@ -336,16 +336,33 @@ const OrderCalculation = (props) => {
     setProPaymentOpen(true);
   };
 
-  const handleDeliveryFee = () => {
+  const [, setAreaTick] = useState(0);
+  useEffect(() => {
+    const onAreaChange = () => setAreaTick((t) => t + 1);
+    window.addEventListener("deliveryAreaChanged", onAreaChange);
+    return () => window.removeEventListener("deliveryAreaChanged", onAreaChange);
+  }, []);
+
+  const getResolvedDeliveryFee = () => {
     let areaCharge = props.areaDeliveryFee;
-    if (areaCharge === undefined && typeof window !== "undefined") {
+    if ((areaCharge === undefined || areaCharge === null) && typeof window !== "undefined") {
       const stored = localStorage.getItem("areaDeliveryCharge");
-      if (stored !== null && stored !== "") {
+      if (stored !== null && stored !== "" && !isNaN(Number(stored))) {
         areaCharge = Number(stored);
+      } else {
+        const selArea = localStorage.getItem("selectedArea");
+        if (selArea) {
+          try {
+            const parsed = JSON.parse(selArea);
+            if (parsed?.delivery_charge != null && !isNaN(Number(parsed.delivery_charge))) {
+              areaCharge = Number(parsed.delivery_charge);
+            }
+          } catch (e) {}
+        }
       }
     }
 
-    let price = (areaCharge !== undefined && areaCharge !== null && !isNaN(areaCharge))
+    let price = (areaCharge !== undefined && areaCharge !== null && !isNaN(Number(areaCharge)))
       ? Number(areaCharge)
       : getDeliveryFees(
           storeData,
@@ -368,9 +385,18 @@ const OrderCalculation = (props) => {
 
     const proDiscount = computeProDeliveryDiscount(price);
     const billedPrice = Math.max(0, Number(price) - proDiscount);
-    setDeliveryFee(orderType !== "delivery" ? 0 : billedPrice);
+    return { price, proDiscount, billedPrice };
+  };
 
-    if (proDeliveryBenefitActive && proDiscount > 0 && Number(price) > 0) {
+  const { price: rawDeliveryPrice, proDiscount, billedPrice } = getResolvedDeliveryFee();
+
+  useEffect(() => {
+    const finalFee = orderType !== "delivery" ? 0 : billedPrice;
+    setDeliveryFee(finalFee);
+  }, [orderType, billedPrice, setDeliveryFee]);
+
+  const handleDeliveryFee = () => {
+    if (proDeliveryBenefitActive && proDiscount > 0 && Number(rawDeliveryPrice) > 0) {
       return (
         <Stack
           direction="row"
@@ -380,7 +406,7 @@ const OrderCalculation = (props) => {
           width="100%"
         >
           <Typography sx={{ textDecoration: "line-through", opacity: 0.6 }}>
-            {storeData && getAmountWithSign(price)}
+            {storeData && getAmountWithSign(rawDeliveryPrice)}
           </Typography>
           <Typography color="primary" fontWeight={600}>
             {billedPrice === 0
@@ -403,7 +429,7 @@ const OrderCalculation = (props) => {
         width="100%"
       >
         <Typography>{"(+)"}</Typography>
-        <Typography>{storeData && getAmountWithSign(price)}</Typography>
+        <Typography>{storeData && getAmountWithSign(billedPrice)}</Typography>
       </Stack>
     );
   };
@@ -454,44 +480,24 @@ const OrderCalculation = (props) => {
       packagingCharge,
       referDiscount,
       taxAmount?.tax_amount,
-      surgePrice
+      surgePrice,
+      billedPrice
     );
-    totalAmount = Number(totalAmount) + deliveryOptionSurcharge;
+    totalAmount = Number(totalAmount) + Number(deliveryOptionSurcharge || 0);
 
-    // Pro member with an active delivery_fee benefit → waive the fee
-    // (offer_type "free") or apply the percentage discount (offer_type
-    // "partial_free"). getCalculatedTotal already rolled the full fee into
-    // the total, so subtract the benefit's discount portion back out.
-    if (proDeliveryBenefitActive) {
-      const deliveryFeeValue = getDeliveryFees(
-        storeData,
-        configData,
-        cartList,
-        distanceData?.data,
-        couponDiscount,
-        couponType,
-        orderType,
-        zoneData,
-        origin,
-        destination,
-        tempExtraCharge,
-        surgePrice
-      );
-      totalAmount =
-        Number(totalAmount) - computeProDeliveryDiscount(deliveryFeeValue);
-    }
-
-    // Pro "discount" benefit (percentage off the subtotal, capped at
-    // max_amount). getCalculatedTotal doesn't know about it, so subtract
-    // the computed amount from the running total.
     if (proOrderDiscountActive && proOrderDiscountAmount > 0) {
       totalAmount = Number(totalAmount) - proOrderDiscountAmount;
     }
 
-    setPayableAmount(totalAmount);
-    dispatch(setTotalAmount(totalAmount));
-    return totalAmount;
+    return Math.max(0, totalAmount);
   };
+
+  const computedOrderAmount = handleOrderAmount();
+
+  useEffect(() => {
+    setPayableAmount(computedOrderAmount);
+    dispatch(setTotalAmount(computedOrderAmount));
+  }, [computedOrderAmount, setPayableAmount, dispatch]);
   let diffDiscount = {
     value: 0,
   };

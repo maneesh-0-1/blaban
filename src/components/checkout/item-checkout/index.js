@@ -148,7 +148,39 @@ const ItemCheckout = (props) => {
   const [taxAmount, setTaxAmount] = useState(0);
   const [total_order_amount, setTotalOrderAmount] = useState(0);
   const [deliveryTip, setDeliveryTip] = useState(0);
-  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const storedCharge = localStorage.getItem("areaDeliveryCharge");
+        if (storedCharge !== null && storedCharge !== "" && !isNaN(Number(storedCharge))) {
+          return Number(storedCharge);
+        }
+        const storedArea = localStorage.getItem("selectedArea");
+        if (storedArea) {
+          const parsed = JSON.parse(storedArea);
+          if (parsed?.delivery_charge != null && !isNaN(Number(parsed.delivery_charge))) {
+            return Number(parsed.delivery_charge);
+          }
+        }
+      } catch (e) {}
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    const handleAreaChanged = (e) => {
+      if (e?.detail) {
+        if (e.detail.type === "take_away" || orderType === "take_away") {
+          setDeliveryFee(0);
+        } else {
+          const fee = Number(e.detail.area?.delivery_charge ?? e.detail.deliveryCharge ?? 0);
+          setDeliveryFee(fee);
+        }
+      }
+    };
+    window.addEventListener("deliveryAreaChanged", handleAreaChanged);
+    return () => window.removeEventListener("deliveryAreaChanged", handleAreaChanged);
+  }, [orderType]);
   const [isImageSelected, setIsImageSelected] = useState([]);
   const [prescriptionImages, setPrescriptionImages] = useState([]);
   const [cutlery, setCutlery] = useState(0);
@@ -773,11 +805,23 @@ const ItemCheckout = (props) => {
             orderMutation(order, {
               onSuccess: handleSuccessSecond,
               onError: (error) => {
-                error?.response?.data?.errors?.forEach((item) =>
-                  toast.error(item.message, {
+                console.error("Order error:", error?.response?.data || error);
+                const data = error?.response?.data;
+                if (Array.isArray(data?.errors)) {
+                  data.errors.forEach((item) =>
+                    toast.error(item.message || item.code || t("Failed to place order"), {
+                      position: "bottom-right",
+                    })
+                  );
+                } else if (typeof data?.message === "string") {
+                  toast.error(data.message, { position: "bottom-right" });
+                } else if (typeof data?.errors === "string") {
+                  toast.error(data.errors, { position: "bottom-right" });
+                } else {
+                  toast.error(t("Failed to place order. Please check your details and try again."), {
                     position: "bottom-right",
-                  })
-                );
+                  });
+                }
               },
             });
           }
@@ -1465,6 +1509,7 @@ const ItemCheckout = (props) => {
                     destination={address}
                     zoneData={zoneData}
                     extraCharge={extraCharge && extraCharge}
+                    areaDeliveryFee={deliveryFee}
                     setDeliveryFee={setDeliveryFee}
                     extraChargeLoading={extraChargeLoading}
                     walletBalance={customerData?.data?.wallet_balance}
