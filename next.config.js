@@ -39,10 +39,35 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/api/edge-catalog/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
+          {
+            key: 'Vercel-CDN-Cache-Control',
+            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
+        ],
+      },
     ];
   },
   async rewrites() {
     return [
+      {
+        source: '/backend-api/api/v1/store-categories/items',
+        destination: '/api/edge-catalog/items',
+      },
+      {
+        source: '/backend-api/api/v1/categories',
+        destination: '/api/edge-catalog/categories',
+      },
       {
         source: '/backend-api/api/:path*',
         destination: 'https://admin.blabankw.com/api/:path*',
