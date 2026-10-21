@@ -1,4 +1,10 @@
-import { Box, Divider, Stack, Typography, alpha } from "@mui/material";
+import { Box, Divider, Stack, Typography, alpha, IconButton, Tooltip } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { useDispatch } from "react-redux";
+import { setRemoveItemFromCart } from "../../../redux/slices/cart";
+import useDeleteCartItem from "../../../api-manage/hooks/react-query/add-cart/useDeleteCartItem";
+import { toast } from "react-hot-toast";
+import { cart_item_remove } from "../../../utils/toasterMessages";
 import Skeleton from "@mui/material/Skeleton";
 import { useTheme } from "@mui/material/styles";
 import { getAmountWithSign } from "../../../helper-functions/CardHelpers";
@@ -34,6 +40,23 @@ export const VegNonveg = ({ theme, item, t }) => {
 
 const RegularOrders = (props) => {
 	const { configData, cartList, t, isSmall } = props;
+	const dispatch = useDispatch();
+	const guestId = typeof window !== "undefined" ? localStorage.getItem("guest_id") : null;
+	const { mutate: deleteMutate, isLoading: removeIsLoading } = useDeleteCartItem();
+
+	const handleRemove = (cartItem) => {
+		const cartIdAndGuestId = {
+			cart_id: cartItem?.cartItemId ?? cartItem?.id,
+			store_id: cartItem?.store_id ?? cartItem?.store?.id,
+			guestId: guestId,
+		};
+		deleteMutate(cartIdAndGuestId, {
+			onSuccess: () => {
+				dispatch(setRemoveItemFromCart(cartItem));
+				toast.success(t(cart_item_remove));
+			},
+		});
+	};
 	const theme = useTheme();
 	const neutralBase =
 		theme.palette.neutral?.[400] || theme.palette.text.secondary;
@@ -120,29 +143,49 @@ const RegularOrders = (props) => {
 						<VariationContent cartItem={item} />
 					</Stack>
 
-					<Box
-						sx={{
-							minWidth: 32,
-							height: 32,
-							px: 1,
-							borderRadius: "8px",
-							backgroundColor: alpha(neutralBase, 0.12),
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							flexShrink: 0,
-						}}
-					>
-						<Typography
+					<Stack direction="row" alignItems="center" spacing={1} sx={{ flexShrink: 0 }}>
+						<Box
 							sx={{
-								fontWeight: 700,
-								fontSize: { xs: "13px", md: "14px" },
-								color: theme.palette.text.primary,
+								minWidth: 32,
+								height: 32,
+								px: 1,
+								borderRadius: "8px",
+								backgroundColor: alpha(neutralBase, 0.12),
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								flexShrink: 0,
 							}}
 						>
-							{item.quantity}
-						</Typography>
-					</Box>
+							<Typography
+								sx={{
+									fontWeight: 700,
+									fontSize: { xs: "13px", md: "14px" },
+									color: theme.palette.text.primary,
+								}}
+							>
+								{item.quantity}
+							</Typography>
+						</Box>
+						<Tooltip title={t("Remove item")}>
+							<IconButton
+								size="small"
+								onClick={() => handleRemove(item)}
+								disabled={removeIsLoading}
+								sx={{
+									color: theme.palette.error.main,
+									backgroundColor: alpha(theme.palette.error.main, 0.08),
+									"&:hover": {
+										backgroundColor: alpha(theme.palette.error.main, 0.18),
+									},
+									p: "5px",
+									borderRadius: "8px",
+								}}
+							>
+								<DeleteOutlineIcon sx={{ fontSize: 18 }} />
+							</IconButton>
+						</Tooltip>
+					</Stack>
 				</Stack>
 			))}
 		</Stack>

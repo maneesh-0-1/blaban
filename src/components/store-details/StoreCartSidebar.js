@@ -384,54 +384,69 @@ const CartItemRow = ({ cartItem }) => {
           </Stack>
 
           {/* Qty stepper: −  N  + (or 🗑  N  + when qty=1) */}
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={0}
-            sx={{
-              flexShrink: 0,
-              backgroundColor: theme.palette.action.hover,
-              borderRadius: "8px",
-              overflow: "hidden",
-            }}
-          >
-            {cartItem?.quantity === 1 ? (
-              <QtyButton
-                onClick={handleRemove}
-                disabled={removeIsLoading}
-                sx={{ color: theme.palette.error.main }}
-              >
-                <i
-                  className="fi fi-rr-trash"
-                  style={{
-                    fontSize: "20px",
-                    lineHeight: 1,
-                    color: "currentColor",
-                  }}
-                />
-              </QtyButton>
-            ) : (
-              <QtyButton onClick={handleDecrement} disabled={isLoading}>
-                <RemoveIcon sx={{ fontSize: 20 }} />
-              </QtyButton>
-            )}
-            <Typography
+          <Stack direction="row" alignItems="center" spacing={0.75} sx={{ flexShrink: 0 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              gap={0}
               sx={{
-                fontSize: "16px",
-                fontWeight: 700,
-                width: "32px",
-                textAlign: "center",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
+                backgroundColor: theme.palette.action.hover,
+                borderRadius: "8px",
+                overflow: "hidden",
               }}
             >
-              {cartItem?.quantity}
-            </Typography>
-            <QtyButton onClick={handleIncrement} disabled={isLoading}>
-              <AddIcon sx={{ fontSize: 20 }} />
-            </QtyButton>
+              {cartItem?.quantity === 1 ? (
+                <QtyButton
+                  onClick={handleRemove}
+                  disabled={removeIsLoading}
+                  sx={{ color: theme.palette.error.main }}
+                  title={t("Remove item")}
+                >
+                  <DeleteOutlineIcon sx={{ fontSize: 18, color: theme.palette.error.main }} />
+                </QtyButton>
+              ) : (
+                <QtyButton onClick={handleDecrement} disabled={isLoading} title={t("Decrease")}>
+                  <RemoveIcon sx={{ fontSize: 18 }} />
+                </QtyButton>
+              )}
+              <Typography
+                sx={{
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  width: "28px",
+                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {cartItem?.quantity}
+              </Typography>
+              <QtyButton onClick={handleIncrement} disabled={isLoading} title={t("Increase")}>
+                <AddIcon sx={{ fontSize: 18 }} />
+              </QtyButton>
+            </Stack>
+
+            <Tooltip title={t("Remove item")}>
+              <IconButton
+                size="small"
+                onClick={handleRemove}
+                disabled={removeIsLoading}
+                aria-label={t("Remove item")}
+                sx={{
+                  color: theme.palette.error.main,
+                  backgroundColor: alpha(theme.palette.error.main, 0.08),
+                  "&:hover": {
+                    backgroundColor: alpha(theme.palette.error.main, 0.18),
+                  },
+                  p: "6px",
+                  borderRadius: "8px",
+                }}
+              >
+                <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
           </Stack>
         </Stack>
 

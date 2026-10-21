@@ -2,8 +2,12 @@ import { useQuery } from "react-query";
 import MainApi from "../../../MainApi";
 
 const getDeliveryData = async () => {
-  const { data } = await MainApi.get("/api/v1/delivery-areas/data");
-  return data;
+  try {
+    const { data } = await MainApi.get("/api/v1/delivery-areas/data");
+    return data;
+  } catch (err) {
+    return { success: false, branches: [], governorates: [] };
+  }
 };
 
 const useGetDeliveryAreas = () => {
@@ -11,6 +15,7 @@ const useGetDeliveryAreas = () => {
     staleTime: 10 * 60 * 1000,
     cacheTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
+    retry: false,
   });
 };
 
