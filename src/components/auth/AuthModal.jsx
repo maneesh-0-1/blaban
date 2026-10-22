@@ -27,6 +27,7 @@ import { toast } from "react-hot-toast";
 import { t } from "i18next";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { useGetWishList } from "api-manage/hooks/react-query/rental-wishlist/useGetWishlist";
+import useGetGroupedCart from "api-manage/hooks/react-query/add-cart/useGetGroupedCart";
 
 export const setUpRecaptcha = () => {
   if (document.getElementById("recaptcha-container")) {
@@ -100,9 +101,13 @@ const AuthModal = ({
   const { refetch } = useWishListGet({}, false, onSuccessHandler);
   const { refetch: rentalWishlistRefetch } = useGetWishList(onSuccessHandler);
 
+  const { refetch: cartListRefetch } = useGetGroupedCart();
   const handleSuccess = async (value) => {
     localStorage.setItem("token", value);
     toast.success(t(loginSuccessFull));
+    try {
+      await cartListRefetch();
+    } catch (e) {}
     if (zoneid) {
       if (moduleType === "rental") {
         await rentalWishlistRefetch();

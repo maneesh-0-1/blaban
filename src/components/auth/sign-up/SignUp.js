@@ -11,6 +11,7 @@ import { useSignUp } from "api-manage/hooks/react-query/auth/useSignUp";
 import { useFireBaseOtpVerify } from "api-manage/hooks/react-query/forgot-password/useFIreBaseOtpVerify";
 import { useVerifyPhone } from "api-manage/hooks/react-query/forgot-password/useVerifyPhone";
 import useGetProfile from "api-manage/hooks/react-query/profile/useGetProfile";
+import useGetGroupedCart from "api-manage/hooks/react-query/add-cart/useGetGroupedCart";
 import { useFormik } from "formik";
 import { getGuestId } from "helper-functions/getToken";
 import { useRouter } from "next/router";
@@ -113,14 +114,24 @@ const SignUp = ({
     dispatch(setUser(res));
     //handleClose()
   };
+  const { cartList } = useSelector((state) => state.cart);
+  const { refetch: cartListRefetch } = useGetGroupedCart();
   const { data: userData, refetch: profileRefetch } =
     useGetProfile(userOnSuccessHandler);
-  const handleTokenAfterSignUp = (response) => {
+  const handleTokenAfterSignUp = async (response) => {
     if (response) {
       localStorage.setItem("token", response?.token);
+      try {
+        await cartListRefetch();
+      } catch (e) {}
       profileRefetch();
       toast.success(t(signup_successfull));
       dispatch(setWelcomeModal(true));
+      const hasCartItems = cartList && cartList.length > 0;
+      if (hasCartItems || router.pathname === "/checkout") {
+        handleClose();
+        return;
+      }
       const zoneSelected = JSON.parse(localStorage.getItem("zoneid"));
       const moduleId = getCurrentModuleId();
       const pushWithModule = (pathname) => {

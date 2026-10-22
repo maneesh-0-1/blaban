@@ -63,7 +63,10 @@ export default function useGetGroupedCart(options = {}) {
   const guestId = getGuestId();
   const moduleId = getModuleId();
 
-  return useQuery(["cart-groups", moduleId], fetchGroupedCart, {
+  return useQuery(
+    ["cart-groups", moduleId, token ? "user" : (guestId || "guest")],
+    fetchGroupedCart,
+    {
     // Skip until a module is selected — MainApi sends `moduleId` as a
     // header, and the backend scopes the cart to it. Without it the call
     // either 4xxs or returns the wrong module's cart.
