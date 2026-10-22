@@ -772,16 +772,26 @@ const ItemCheckout = (props) => {
       const activeBlock = token ? activeAddress?.block : (activeAddress?.block || guestUserInfo?.block);
       const activeFloor = token ? activeAddress?.floor : (activeAddress?.floor || guestUserInfo?.floor);
 
-      if (!activeAddress || !activeAddress?.address) {
-        toast.error(t("Please select a delivery address"), { id: "checkout-addr" });
-        return;
+      let currentAddr = activeAddress;
+      if (!currentAddr?.address) {
+        let fallbackArea = "";
+        try {
+          const a = localStorage.getItem("selectedArea");
+          if (a) fallbackArea = JSON.parse(a)?.name || "";
+        } catch (e) {}
+        if (fallbackArea) {
+          currentAddr = { ...currentAddr, address: fallbackArea };
+        } else {
+          toast.error(t("Please select a delivery address"), { id: "checkout-addr" });
+          return;
+        }
       }
       if (!activePhone) {
         toast.error(t("Please provide a contact phone number"), { id: "checkout-phone" });
         return;
       }
-      if (!activeBlock || !activeRoad || !activeHouse || !activeFloor) {
-        toast.error(t("Please complete your address details (Block, Street, Building/House, Floor/Apartment)"), { id: "checkout-details" });
+      if (!activeBlock || !activeRoad || !activeHouse) {
+        toast.error(t("Please complete your address details (Block, Street, Building/House)"), { id: "checkout-details" });
         return;
       }
     }

@@ -981,11 +981,11 @@ const DeliveryAddress = ({
                   <Divider sx={{ my: 2 }} />
                 </Box>
               )}
+              {/* ─── Address Details (Block, Street, House/Building, Floor) ─── */}
               <Stack
-                direction={{ xs: "column", sm: "row" }}
-                alignItems={{ xs: "flex-start", sm: "center" }}
+                direction="row"
+                alignItems="center"
                 justifyContent="space-between"
-                spacing={1}
                 sx={{ mb: 1.5 }}
               >
                 <Typography
@@ -995,56 +995,23 @@ const DeliveryAddress = ({
                     color: theme.palette.text.primary,
                   }}
                 >
-                  {t("Delivery Address & Location")} <span style={{ color: "red" }}>*</span>
+                  {t("Address Details")} <span style={{ color: "red" }}>*</span>
                 </Typography>
 
-                {/* Manual & Automatic location buttons */}
-                <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={handleDetectGpsLocation}
-                    sx={{
-                      borderRadius: "8px",
-                      textTransform: "none",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      flex: { xs: 1, sm: "none" },
-                    }}
-                  >
-                    📍 {t("Use GPS Location")}
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setOpenAddressPicker(true)}
-                    sx={{
-                      borderRadius: "8px",
-                      textTransform: "none",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      flex: { xs: 1, sm: "none" },
-                    }}
-                  >
-                    🗺️ {t("Pick on Map")}
-                  </Button>
-                </Stack>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => setOpenAddressPicker(true)}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: theme.palette.primary.main,
+                  }}
+                >
+                  🗺️ {t("Pick on Map (Optional)")}
+                </Button>
               </Stack>
-
-              {/* Current address pill */}
-              <Box sx={{ mb: 2 }}>{AddressPill}</Box>
-
-              {/* Detailed Address inputs: Block, Street, House/Building, Floor */}
-              <Typography
-                sx={{
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: theme.palette.text.secondary,
-                  mb: 1,
-                }}
-              >
-                {t("Address Details (Mandatory)")}
-              </Typography>
               <Grid container spacing={1.5}>
                 <Grid item xs={6} sm={3}>
                   <TextField
@@ -1057,7 +1024,14 @@ const DeliveryAddress = ({
                     onChange={(e) => {
                       const val = e.target.value;
                       if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, block: val }));
-                      setAddress({ ...address, block: val });
+                      let defaultArea = address?.address;
+                      if (!defaultArea) {
+                        try {
+                          const a = localStorage.getItem("selectedArea");
+                          if (a) defaultArea = JSON.parse(a)?.name || "";
+                        } catch (err) {}
+                      }
+                      setAddress({ ...address, address: defaultArea || address?.address, block: val });
                     }}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
                   />
@@ -1098,9 +1072,8 @@ const DeliveryAddress = ({
                   <TextField
                     fullWidth
                     size="small"
-                    label={t("Floor / Apt")}
-                    required
-                    placeholder={t("Floor")}
+                    label={t("Floor / Apt (Optional)")}
+                    placeholder={t("Floor / Apt")}
                     value={token ? address?.floor || "" : address?.floor || guestUserInfo?.floor || ""}
                     onChange={(e) => {
                       const val = e.target.value;

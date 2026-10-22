@@ -1683,6 +1683,11 @@ export const arabic = {
   "Save your favourite items and stores here":
     "احفظ عناصرك ومتاجرك المفضلة هنا",
   "Saved Addresses": "العناوين المحفوظة",
+  "Floor / Apt (Optional)": "الدور / الشقة (اختياري)",
+  "Pick on Map (Optional)": "تحديد على الخريطة (اختياري)",
+  "Address Details": "تفاصيل العنوان",
+  "Please complete your address details (Block, Street, Building/House)": "يرجى إكمال تفاصيل العنوان (القطعة، الشارع، المبنى/المنزل)",
+
   "Select your saved Home or Office address for delivery:": "اختر عنوان المنزل أو العمل المحفوظ للتوصيل:",
   "Selected": "المحدد",
   "Saves Addresses": "يحفظ العناوين",
