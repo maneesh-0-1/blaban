@@ -342,38 +342,26 @@ const AllResult = ({
   storesLabel,
   itemsLoading,
   storesLoading,
+  itemsHasNext,
+  itemsFetchingNext,
+  fetchMoreItems,
   exclusiveStores,
   t,
   theme,
 }) => {
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
+  const { ref: itemsInViewRef, inView: itemsInView } = useInView({ rootMargin: "0px 0px 50% 0px" });
 
-  const [itemsCurrentSlide, setItemsCurrentSlide] = useState(0);
+  useEffect(() => {
+    if (itemsInView && itemsHasNext && !itemsFetchingNext && fetchMoreItems) {
+      fetchMoreItems();
+    }
+  }, [itemsInView, itemsHasNext, itemsFetchingNext, fetchMoreItems]);
+
   const [dealsCurrentSlide, setDealsCurrentSlide] = useState(0);
   const [storesCurrentSlide, setStoresCurrentSlide] = useState(0);
-  const itemsSliderRef = useRef(null);
   const dealsSliderRef = useRef(null);
-
   const storesSliderRef = useRef(null);
-  // ── Slider settings ─────────────────────────────────────────────────────
-
-  const itemsSettings = {
-    dots: false,
-    infinite: false,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 2,
-    swipeToSlide: true,
-    arrows: false,
-    responsive: [
-      { breakpoint: 1450, settings: { slidesToShow: 5, slidesToScroll: 2 , swipeToSlide: true} },
-      { breakpoint: 1024, settings: { slidesToShow: 4, slidesToScroll: 2 , swipeToSlide: true} },
-      { breakpoint: 760, settings: { slidesToShow: 3, slidesToScroll: 2 , swipeToSlide: true} },
-      { breakpoint: 480, settings: { slidesToShow: 2.6, slidesToScroll: 2 , swipeToSlide: true} },
-      { breakpoint: 400, settings: { slidesToShow: 2.2, slidesToScroll: 2 , swipeToSlide: true} },
-      { breakpoint: 340, settings: { slidesToShow: 2, slidesToScroll: 2 , swipeToSlide: true} },
-    ],
-  };
 
   const storesSettings = {
     dots: false,
@@ -396,45 +384,41 @@ const AllResult = ({
         <Stack
           spacing={2}
           sx={{
-            pb: { xs: "8px", md: 0 },
             pl: { xs: "20px", md: 0 },
-            pr: { xs: 0, md: 0 },
+            pr: { xs: "20px", md: 0 },
           }}
         >
-          <SliderSectionHeader
-            sliderRef={itemsSliderRef}
-            currentSlide={itemsCurrentSlide}
-            totalSlides={items.length}
-            slidesToShow={5}
-            heading={<SectionTitle>{itemsLabel}</SectionTitle>}
-          />
-          <SliderWrapper>
-            {itemsLoading ? (
-              <Slider {...itemsSettings}>
-                {[...Array(5)].map((_, i) => (
-                  <ProductCardSimmer key={i} cardWidth={{ xs: "140px" }} />
-                ))}
-              </Slider>
-            ) : items.length > 0 ? (
-              <Slider
-                {...itemsSettings}
-                ref={itemsSliderRef}
-                afterChange={(i) => setItemsCurrentSlide(i)}
-              >
-                {items.map((item) => (
-                  <div key={item?.id}>
-                    <NewProductCard
-                      variant="vertical"
-                      item={item}
-                      cardWidth={isSmall ? "140px" : undefined}
-                    />
-                  </div>
-                ))}
-              </Slider>
-            ) : (
-              <SearchEmptyState label={`No ${itemsLabel} found`} />
-            )}
-          </SliderWrapper>
+          <SectionTitle>{itemsLabel}</SectionTitle>
+          <Box sx={{ overflow: "hidden" }}>
+            <Grid container spacing={{ xs: 2, sm: 3, md: 3 }}>
+              {itemsLoading
+                ? [...Array(10)].map((_, i) => (
+                    <Grid key={i} item xs={6} sm={4} md={3} lg={2.4}>
+                      <ProductCardSimmer cardWidth="100%" />
+                    </Grid>
+                  ))
+                : items.length === 0
+                ? null
+                : items.map((item) => (
+                    <Grid key={item?.id} item xs={6} sm={4} md={3} lg={2.4}>
+                      <NewProductCard
+                        variant="vertical"
+                        item={item}
+                        cardWidth={isSmall ? "100%" : undefined}
+                      />
+                    </Grid>
+                  ))}
+            </Grid>
+          </Box>
+          {!itemsLoading && items.length === 0 && (
+            <SearchEmptyState label={`No ${itemsLabel} found`} />
+          )}
+          <Box ref={itemsInViewRef} sx={{ height: "10px" }} />
+          {itemsFetchingNext && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+              <CircularProgress size={24} />
+            </Box>
+          )}
         </Stack>
       )}
 
@@ -512,8 +496,8 @@ const AllResult = ({
         </Box>
       )}
 
-      {/* ── Restaurants section ── */}
-      {showStores && (
+      {/* ── Restaurants section (only show if there are stores found or loading) ── */}
+      {showStores && (storesLoading || stores.length > 0) && (
         <Stack
           spacing={2}
           sx={{

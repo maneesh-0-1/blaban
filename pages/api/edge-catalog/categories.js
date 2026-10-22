@@ -7,8 +7,9 @@ export default async function handler(req) {
     const url = new URL(req.url);
     const backendUrl = new URL('https://admin.blabankw.com/api/v1/categories');
 
-    // Determine requested language
-    const lang = url.searchParams.get('locale') || url.searchParams.get('lang') || req.headers.get('x-localization') || req.headers.get('accept-language') || 'en';
+    // Language handling
+    const rawLang = url.searchParams.get('locale') || url.searchParams.get('lang') || req.headers.get('x-localization') || '';
+    const lang = rawLang && rawLang.toLowerCase().startsWith('ar') ? 'ar' : 'en';
 
     url.searchParams.forEach((value, key) => {
       backendUrl.searchParams.set(key, value);
@@ -19,11 +20,16 @@ export default async function handler(req) {
     headers.set('Accept', 'application/json');
     headers.set('X-localization', lang);
 
-    const zoneId = req.headers.get('zoneid') || req.headers.get('zoneId') || '[1]';
+    // Default to B.Laban Kuwait zones [6,7,8,9,10] if not provided or invalid
+    let zoneId = req.headers.get('zoneid') || req.headers.get('zoneId') || url.searchParams.get('zone_id');
+    if (!zoneId || zoneId === 'undefined' || zoneId === 'null' || zoneId === '[1]') {
+      zoneId = '[6,7,8,9,10]';
+    }
     headers.set('zoneId', zoneId);
 
-    const rawModuleId = req.headers.get('moduleid') || req.headers.get('moduleId') || url.searchParams.get('module_id') || url.searchParams.get('module');
-    const moduleId = (rawModuleId && rawModuleId !== 'blaban') ? rawModuleId : '1';
+    // Default to Module 2 (B.Laban Food module)
+    let rawModuleId = req.headers.get('moduleid') || req.headers.get('moduleId') || url.searchParams.get('module_id') || url.searchParams.get('module');
+    const moduleId = (rawModuleId && rawModuleId !== 'blaban' && !isNaN(Number(rawModuleId)) && Number(rawModuleId) > 0) ? String(rawModuleId) : '2';
     headers.set('moduleId', moduleId);
 
     const response = await fetch(backendUrl.toString(), {
@@ -47,7 +53,6 @@ export default async function handler(req) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        // Edge Cache: 1 hour (3600s), stale-while-revalidate 24 hours (86400s)
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'Vercel-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',

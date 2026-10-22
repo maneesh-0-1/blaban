@@ -69,6 +69,10 @@ const nextConfig = {
         destination: '/api/edge-catalog/categories',
       },
       {
+        source: '/backend-api/api/v1/get-combined-data',
+        destination: '/api/edge-catalog/combined-data',
+      },
+      {
         source: '/backend-api/api/:path*',
         destination: 'https://admin.blabankw.com/api/:path*',
       },

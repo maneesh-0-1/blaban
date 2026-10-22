@@ -40,8 +40,8 @@ const SECTIONS_MAP = {
   [ModuleTypes.ECOMMERCE]: getEcommerceSections,
 };
 
-const ALL_TAB_LIMIT = 10;
-const PAGE_LIMIT = 20;
+const ALL_TAB_LIMIT = 50;
+const PAGE_LIMIT = 50;
 
 const ModuleSearchContainer = ({
   searchValue,
