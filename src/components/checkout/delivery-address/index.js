@@ -18,6 +18,13 @@ import {
   useTheme,
 } from "@mui/material";
 import { Box, Stack } from "@mui/system";
+import HomeIcon from "@mui/icons-material/Home";
+import BusinessIcon from "@mui/icons-material/Business";
+import PlaceIcon from "@mui/icons-material/Place";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+import Divider from "@mui/material/Divider";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -102,17 +109,54 @@ const DeliveryAddress = ({
     ...address,
   };
   const handleSuccess = (addressData) => {
-    if (storeZoneId) {
-      const newObj = {
-        ...addressData,
-        addresses: getZoneWiseAddresses(addressData?.addresses, storeZoneId),
-      };
-
-      setData(newObj);
-    } else {
-      setData(addressData);
-    }
+    setData(addressData);
   };
+
+  const handleSelectSavedAddress = (item) => {
+    setAddress({
+      ...address,
+      ...item,
+      id: item?.id,
+      lat: item?.latitude ?? item?.lat ?? address?.lat,
+      lng: item?.longitude ?? item?.lng ?? address?.lng,
+      latitude: item?.latitude ?? item?.lat ?? address?.latitude,
+      longitude: item?.longitude ?? item?.lng ?? address?.longitude,
+      address: item?.address || address?.address,
+      address_type: item?.address_type || address?.address_type,
+      block: item?.block != null ? String(item.block) : (address?.block || ""),
+      road: item?.road != null ? String(item.road) : (address?.road || ""),
+      house: item?.house != null ? String(item.house) : (address?.house || ""),
+      floor: item?.floor != null ? String(item.floor) : (address?.floor || ""),
+      contact_person_name: item?.contact_person_name || address?.contact_person_name,
+      contact_person_number: item?.contact_person_number || address?.contact_person_number,
+    });
+  };
+
+  // Auto-select first saved address (or one matching current branch/zone) if user hasn't selected one yet
+  useEffect(() => {
+    const list = data?.addresses || addressQueryData?.addresses || [];
+    if (token && list.length > 0 && orderType !== "take_away") {
+      const alreadySelected = list.some((a) => a.id === address?.id);
+      if (!alreadySelected && (!address?.block || !address?.road)) {
+        const matched =
+          list.find((a) => {
+            if (storeZoneId && Array.isArray(a.zone_ids)) {
+              return (
+                a.zone_ids.includes(storeZoneId) ||
+                a.zone_ids.includes(Number(storeZoneId)) ||
+                a.zone_ids.includes(String(storeZoneId))
+              );
+            }
+            if (storeZoneId && a.zone_id) return a.zone_id == storeZoneId;
+            return false;
+          }) || list[0];
+
+        if (matched) {
+          handleSelectSavedAddress(matched);
+        }
+      }
+    }
+  }, [data, addressQueryData, token, orderType]);
   const { data: addressQueryData, refetch, isRefetching, isLoading } = useGetAddressList(handleSuccess);
 
   // Sync local data state from React Query cache.
@@ -618,7 +662,7 @@ const DeliveryAddress = ({
                   placeholder={t("Enter your name")}
                   value={
                     token
-                      ? profileFullName || profileInfo?.name || ""
+                      ? (address?.contact_person_name || profileFullName || profileInfo?.name || "")
                       : (address?.contact_person_name || guestUserInfo?.contact_person_name || "")
                   }
                   onChange={(e) => {
@@ -642,7 +686,7 @@ const DeliveryAddress = ({
                   placeholder={t("e.g. +965 12345678")}
                   value={
                     token
-                      ? profileInfo?.phone || ""
+                      ? (address?.contact_person_number || profileInfo?.phone || "")
                       : (address?.contact_person_number || guestUserInfo?.contact_person_number || "")
                   }
                   onChange={(e) => {
@@ -696,6 +740,247 @@ const DeliveryAddress = ({
                 mb: 2,
               }}
             >
+              {/* ─── Saved Addresses Selector (Home, Office, Other) ─── */}
+              {token && (data?.addresses?.length > 0 || isLoading) && (
+                <Box sx={{ mb: 2.5 }}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    justifyContent="space-between"
+                    spacing={1}
+                    sx={{ mb: 1.5 }}
+                  >
+                    <Stack spacing={0.25}>
+                      <Typography
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: { xs: "14px", md: "15px" },
+                          color: theme.palette.text.primary,
+                        }}
+                      >
+                        {t("Saved Addresses")}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: "12px",
+                          color: theme.palette.text.secondary,
+                        }}
+                      >
+                        {t("Select your saved Home or Office address for delivery:")}
+                      </Typography>
+                    </Stack>
+
+                    <Button
+                      size="small"
+                      startIcon={<AddIcon sx={{ fontSize: "16px !important" }} />}
+                      onClick={handleAddressModal}
+                      sx={{
+                        borderRadius: "8px",
+                        textTransform: "none",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        px: 1.5,
+                        py: 0.5,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                        color: theme.palette.primary.main,
+                        "&:hover": {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.16),
+                        },
+                      }}
+                    >
+                      {t("Add New Address")}
+                    </Button>
+                  </Stack>
+
+                  <Grid container spacing={1.5}>
+                    {data?.addresses?.map((item) => {
+                      const isSelected = item?.id === address?.id;
+                      const typeNorm = (item?.address_type || "other").toLowerCase();
+                      const isHome = typeNorm.includes("home");
+                      const isOffice = typeNorm.includes("office") || typeNorm.includes("work");
+
+                      return (
+                        <Grid item xs={12} sm={6} key={item.id}>
+                          <Box
+                            onClick={() => handleSelectSavedAddress(item)}
+                            sx={{
+                              p: 1.5,
+                              borderRadius: "12px",
+                              cursor: "pointer",
+                              border: isSelected
+                                ? `2px solid ${theme.palette.primary.main}`
+                                : `1px solid ${theme.palette.divider}`,
+                              backgroundColor: isSelected
+                                ? alpha(theme.palette.primary.main, 0.05)
+                                : theme.palette.background.paper,
+                              transition: "all 0.2s ease-in-out",
+                              position: "relative",
+                              "&:hover": {
+                                borderColor: theme.palette.primary.main,
+                                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.12)}`,
+                              },
+                            }}
+                          >
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="space-between"
+                              sx={{ mb: 1 }}
+                            >
+                              <Stack direction="row" alignItems="center" spacing={0.75}>
+                                <Box
+                                  sx={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    backgroundColor: isSelected
+                                      ? theme.palette.primary.main
+                                      : alpha(theme.palette.primary.main, 0.1),
+                                    color: isSelected ? "#ffffff" : theme.palette.primary.main,
+                                  }}
+                                >
+                                  {isHome ? (
+                                    <HomeIcon sx={{ fontSize: 16 }} />
+                                  ) : isOffice ? (
+                                    <BusinessIcon sx={{ fontSize: 16 }} />
+                                  ) : (
+                                    <PlaceIcon sx={{ fontSize: 16 }} />
+                                  )}
+                                </Box>
+                                <Typography
+                                  sx={{
+                                    fontWeight: 700,
+                                    fontSize: "13px",
+                                    textTransform: "capitalize",
+                                    color: theme.palette.text.primary,
+                                  }}
+                                >
+                                  {t(item.address_type || "Address")}
+                                </Typography>
+                              </Stack>
+
+                              <Stack direction="row" alignItems="center" spacing={0.5}>
+                                {isSelected && (
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.5,
+                                      px: 1,
+                                      py: 0.25,
+                                      borderRadius: "12px",
+                                      backgroundColor: alpha(theme.palette.primary.main, 0.12),
+                                      color: theme.palette.primary.main,
+                                      fontSize: "11px",
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    <CheckCircleIcon sx={{ fontSize: "14px !important" }} />
+                                    {t("Selected")}
+                                  </Box>
+                                )}
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditSavedAddress(item);
+                                  }}
+                                  sx={{
+                                    p: 0.5,
+                                    color: theme.palette.text.secondary,
+                                    "&:hover": { color: theme.palette.primary.main },
+                                  }}
+                                >
+                                  <EditIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Stack>
+                            </Stack>
+
+                            <Typography
+                              sx={{
+                                fontSize: "12px",
+                                color: theme.palette.text.secondary,
+                                lineHeight: 1.4,
+                                mb: 0.75,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                              }}
+                            >
+                              {item.address}
+                            </Typography>
+
+                            {(item.block || item.road || item.house || item.floor) && (
+                              <Stack
+                                direction="row"
+                                flexWrap="wrap"
+                                gap={0.75}
+                                sx={{ fontSize: "11px", color: theme.palette.text.secondary }}
+                              >
+                                {item.block && (
+                                  <Box
+                                    sx={{
+                                      px: 0.75,
+                                      py: 0.25,
+                                      borderRadius: "4px",
+                                      backgroundColor: alpha(theme.palette.divider, 0.5),
+                                    }}
+                                  >
+                                    {t("Block")}: <strong>{item.block}</strong>
+                                  </Box>
+                                )}
+                                {item.road && (
+                                  <Box
+                                    sx={{
+                                      px: 0.75,
+                                      py: 0.25,
+                                      borderRadius: "4px",
+                                      backgroundColor: alpha(theme.palette.divider, 0.5),
+                                    }}
+                                  >
+                                    {t("Street")}: <strong>{item.road}</strong>
+                                  </Box>
+                                )}
+                                {item.house && (
+                                  <Box
+                                    sx={{
+                                      px: 0.75,
+                                      py: 0.25,
+                                      borderRadius: "4px",
+                                      backgroundColor: alpha(theme.palette.divider, 0.5),
+                                    }}
+                                  >
+                                    {t("Building")}: <strong>{item.house}</strong>
+                                  </Box>
+                                )}
+                                {item.floor && (
+                                  <Box
+                                    sx={{
+                                      px: 0.75,
+                                      py: 0.25,
+                                      borderRadius: "4px",
+                                      backgroundColor: alpha(theme.palette.divider, 0.5),
+                                    }}
+                                  >
+                                    {t("Floor")}: <strong>{item.floor}</strong>
+                                  </Box>
+                                )}
+                              </Stack>
+                            )}
+                          </Box>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+
+                  <Divider sx={{ my: 2 }} />
+                </Box>
+              )}
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 alignItems={{ xs: "flex-start", sm: "center" }}

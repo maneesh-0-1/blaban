@@ -1488,6 +1488,7 @@ export const english = {
   "Save this Address": "Save this Address",
   "Save your favourite items and stores here": "Save your favourite items and stores here",
   "Saved Addresses": "Saved Addresses",
+  "Select your saved Home or Office address for delivery:": "Select your saved Home or Office address for delivery:",
   "Saves Addresses": "Saves Addresses",
   "Scan to Download": "Scan to Download",
   "Schedule": "Schedule",

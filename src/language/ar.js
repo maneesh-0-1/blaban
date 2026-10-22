@@ -1683,6 +1683,8 @@ export const arabic = {
   "Save your favourite items and stores here":
     "احفظ عناصرك ومتاجرك المفضلة هنا",
   "Saved Addresses": "العناوين المحفوظة",
+  "Select your saved Home or Office address for delivery:": "اختر عنوان المنزل أو العمل المحفوظ للتوصيل:",
+  "Selected": "المحدد",
   "Saves Addresses": "يحفظ العناوين",
   "Scan to Download": "امسح للتنزيل",
   Schedule: "جدول",
