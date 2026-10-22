@@ -45,6 +45,7 @@ import { useInView } from "react-intersection-observer";
 import { removeDuplicates } from "utils/CustomFunctions";
 import DotSpin from "../../DotSpin";
 import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 import StoreFilter from "components/store-details/middle-section/StoreFilter";
 import { filterTypeItems } from "components/search/filterTypes";
 import SliderSectionHeader from "components/common/SliderSectionHeader";
@@ -813,6 +814,16 @@ const MiddleSection = (props) => {
                         },
                       }}
                     />
+                    {searchInputValue && (
+                      <IconButton
+                        size="small"
+                        aria-label={t("Clear search")}
+                        onClick={() => handleSearchResult("")}
+                        sx={{ p: "2px", color: "text.secondary" }}
+                      >
+                        <CloseIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    )}
                   </Box>
                   {/* StoreFilter removed */}
                 </Stack>
@@ -851,10 +862,7 @@ const MiddleSection = (props) => {
                 </Stack>
               ) : (
                 (() => {
-                  const allProducts = (() => {
-                    if (state.searchKey && state.data?.products?.length > 0) {
-                      return state.data.products;
-                    }
+                  const allStoreProducts = (() => {
                     const seen = new Set();
                     const list = [];
                     (data?.pages || []).forEach((p) => {
@@ -864,10 +872,178 @@ const MiddleSection = (props) => {
                           list.push(item);
                         }
                       });
+                      if (p?.category_wise_items) {
+                        Object.values(p.category_wise_items).forEach((catItems) => {
+                          if (Array.isArray(catItems)) {
+                            catItems.forEach((item) => {
+                              if (item?.id != null && !seen.has(item.id)) {
+                                seen.add(item.id);
+                                list.push(item);
+                              }
+                            });
+                          }
+                        });
+                      }
                     });
-                    if (list.length > 0) return list;
-                    return state.data?.products ?? [];
+                    (state.data?.products || []).forEach((item) => {
+                      if (item?.id != null && !seen.has(item.id)) {
+                        seen.add(item.id);
+                        list.push(item);
+                      }
+                    });
+                    return list;
                   })();
+
+                  const isSearchActive = Boolean((searchInputValue || state.searchKey || "").trim());
+                  const normalizedQuery = (searchInputValue || state.searchKey || "").trim().toLowerCase();
+
+                  const searchFilteredProducts = (() => {
+                    if (!isSearchActive) return [];
+                    const apiProducts = state.searchKey ? (state.data?.products || []) : [];
+                    const localMatches = allStoreProducts.filter((item) => {
+                      const name = (item?.name || "").toLowerCase();
+                      const desc = (item?.description || "").toLowerCase();
+                      return name.includes(normalizedQuery) || desc.includes(normalizedQuery);
+                    });
+                    const map = new Map();
+                    [...apiProducts, ...localMatches].forEach((p) => {
+                      if (p?.id != null && !map.has(p.id)) {
+                        map.set(p.id, p);
+                      }
+                    });
+                    return Array.from(map.values());
+                  })();
+
+                  // If search is active, render the dedicated search results view!
+                  if (isSearchActive) {
+                    if (searchFilteredProducts.length === 0 && !isRefetchingSearch) {
+                      return (
+                        <Stack width="100%" alignItems="center" py={6} spacing={2}>
+                          <CustomEmptyResult
+                            image={notFoundImage}
+                            label={`${t("No products found matching")} "${searchInputValue || state.searchKey}"`}
+                            width="180px"
+                            height="180px"
+                          />
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => handleSearchResult("")}
+                            sx={{ textTransform: "none", borderRadius: "8px" }}
+                          >
+                            {t("Clear Search")}
+                          </Button>
+                        </Stack>
+                      );
+                    }
+                    return (
+                      <Stack spacing={2} sx={{ py: 1 }}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          justifyContent="space-between"
+                          sx={{ px: 0.5 }}
+                        >
+                          <Typography
+                            component="h2"
+                            sx={{
+                              fontSize: { xs: "18px", sm: "20px", md: "24px" },
+                              fontWeight: 800,
+                              color: "#002D62",
+                              letterSpacing: "-0.3px",
+                            }}
+                          >
+                            {t("Search Results")} ({searchFilteredProducts.length} {t("items found")})
+                          </Typography>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => handleSearchResult("")}
+                            sx={{
+                              borderRadius: "8px",
+                              textTransform: "none",
+                              fontWeight: 600,
+                              fontSize: "13px",
+                            }}
+                          >
+                            {t("Clear Search")}
+                          </Button>
+                        </Stack>
+
+                        <Box
+                          sx={{
+                            display: "grid",
+                            gap: { xs: 1.5, sm: 2, md: 2.5 },
+                            gridTemplateColumns: {
+                              xs: "repeat(2, 1fr)",
+                              sm: "repeat(3, 1fr)",
+                              md: "repeat(4, 1fr)",
+                              lg: "repeat(5, 1fr)",
+                            },
+                            py: 1,
+                            px: 0.5,
+                          }}
+                        >
+                          {searchFilteredProducts.map((item) => (
+                            <NewProductCard
+                              key={item?.id}
+                              item={item}
+                              variant="vertical"
+                              isStore
+                              cardWidth="100%"
+                            />
+                          ))}
+                        </Box>
+                      </Stack>
+                    );
+                  }
+
+                  // If View All Products is toggled, render all store products in grid
+                  if (viewAllProducts) {
+                    return (
+                      <Stack spacing={2} sx={{ py: 1 }}>
+                        <Typography
+                          component="h2"
+                          sx={{
+                            fontSize: { xs: "18px", sm: "20px", md: "24px" },
+                            fontWeight: 800,
+                            color: "#002D62",
+                            letterSpacing: "-0.3px",
+                            px: 0.5,
+                          }}
+                        >
+                          {t("All Products")} ({allStoreProducts.length})
+                        </Typography>
+
+                        <Box
+                          sx={{
+                            display: "grid",
+                            gap: { xs: 1.5, sm: 2, md: 2.5 },
+                            gridTemplateColumns: {
+                              xs: "repeat(2, 1fr)",
+                              sm: "repeat(3, 1fr)",
+                              md: "repeat(4, 1fr)",
+                              lg: "repeat(5, 1fr)",
+                            },
+                            py: 1,
+                            px: 0.5,
+                          }}
+                        >
+                          {allStoreProducts.map((item) => (
+                            <NewProductCard
+                              key={item?.id}
+                              item={item}
+                              variant="vertical"
+                              isStore
+                              cardWidth="100%"
+                            />
+                          ))}
+                        </Box>
+                      </Stack>
+                    );
+                  }
+
+                  const allProducts = allStoreProducts;
 
                   // Group products by their category id.
                   // 1. Direct from category_wise_items (most accurate from backend API)

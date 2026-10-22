@@ -154,6 +154,10 @@ const ManageSearch = ({
 
   useEffect(() => {
     setOpenSearchSuggestions(false);
+    if (pathname !== "/search") {
+      setSearchValue("");
+      setIsEmpty(true);
+    }
   }, [pathname, searchParams?.toString()]);
   const handleOnFocus = () => {
     isFocused.current = true;
@@ -234,24 +238,12 @@ const ManageSearch = ({
         maxWidth: "100%",
         whiteSpace: "nowrap",
         overflow: "hidden",
+        fontSize: "14px",
+        color: theme.palette.mode === "dark" ? "#94a3b8" : "#8c8c8c",
+        fontWeight: 400,
       }}
     >
-      {t("Search for")}&nbsp;
-      <span
-        style={{
-          fontWeight: 700,
-          color: theme.palette.neutral[1050],
-          display: "inline-block",
-          maxWidth: "100%",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          opacity: phVisible ? 1 : 0,
-          transform: phVisible ? "translateY(0)" : "translateY(-5px)",
-          transition: "opacity 0.28s ease, transform 0.28s ease",
-        }}
-      >
-        &ldquo;{currentNoun}&rdquo;
-      </span>
+      {t("Search food, groceries, or products...")}
     </span>
   );
 
