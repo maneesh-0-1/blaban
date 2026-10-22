@@ -81,24 +81,45 @@ const AddressCard = (props) => {
           <Typography fontWeight="500" textTransform="capitalize">
             {t(address_type)}
           </Typography>
-          <Stack direction="row" alignItems="center">
-            <IconButton onClick={handleClick}>
-              <i
-                className="fi fi-rr-map-marker-edit"
-                style={{ fontSize: "18px", lineHeight: 1, display: "flex" }}
-              />
-            </IconButton>
-            <IconButton onClick={() => setOpenDelete(true)}>
-              <i
-                className="fi fi-rr-trash"
-                style={{
-                  fontSize: "18px",
-                  lineHeight: 1,
-                  display: "flex",
-                  color: "#f44336",
+          <Stack direction="row" alignItems="center" spacing={0.75}>
+            <Tooltip title={t("Edit")}>
+              <IconButton
+                onClick={handleClick}
+                size="small"
+                aria-label={t("Edit Address")}
+                sx={{
+                  color: (theme) => theme.palette.primary.main,
+                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                  border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  borderRadius: "6px",
+                  p: "5px",
+                  "&:hover": {
+                    backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.16),
+                  },
                 }}
-              />
-            </IconButton>
+              >
+                <EditOutlinedIcon sx={{ fontSize: "17px" }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t("Delete")}>
+              <IconButton
+                onClick={() => setOpenDelete(true)}
+                size="small"
+                aria-label={t("Delete Address")}
+                sx={{
+                  color: "#f44336",
+                  backgroundColor: alpha("#f44336", 0.08),
+                  border: `1px solid ${alpha("#f44336", 0.2)}`,
+                  borderRadius: "6px",
+                  p: "5px",
+                  "&:hover": {
+                    backgroundColor: alpha("#f44336", 0.16),
+                  },
+                }}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: "17px" }} />
+              </IconButton>
+            </Tooltip>
           </Stack>
         </CustomStackFullWidth>
 

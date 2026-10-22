@@ -1,18 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
 	CustomListItem,
 	CustomStackFullWidth,
 } from "../../../styled-components/CustomStyles.style";
 import ListItemText from "@mui/material/ListItemText";
-import { Skeleton, Typography } from "@mui/material";
+import { IconButton, Skeleton, Tooltip, Typography, alpha } from "@mui/material";
 import Radio from "@mui/material/Radio";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import { useTheme } from "@mui/material/styles";
 
 import { Stack } from "@mui/system";
 
 import { CustomTypographyEllipsis } from "../../../styled-components/CustomTypographies.style";
+import DeleteAddress from "../../address/DeleteAddress";
 
 // Placeholder rows shown while address list is loading
 const AddressSkeletonItem = () => (
@@ -39,7 +42,10 @@ const AddressSelectionList = (props) => {
 		setSelectedAddress,
 		renderOnNavbar,
 		isLoading,
+		onEditAddress,
 	} = props;
+
+	const [deleteTargetAddress, setDeleteTargetAddress] = useState(null);
 
 	if (isLoading) {
 		return (
@@ -68,55 +74,114 @@ const AddressSelectionList = (props) => {
 								alignItems="flex-start"
 								selected={item.id === address?.id}
 								cursor="pointer"
-								// className="selected"
 							>
 								<CustomStackFullWidth
 									direction="row"
-									alignItems="flex-start"
+									alignItems="center"
+									justifyContent="space-between"
 								>
-									<Radio
-										checked={item.id === address?.id}
-										row
-										aria-labelledby="demo-row-radio-buttons-group-label"
-										name="row-radio-buttons-group"
-										sx={{ marginTop: "-2px" }}
-									/>
-									<ListItemText
-										primary={
-											<Typography
-												textTransform="capitalize"
-												fontSize={{
-													xs: "13px",
-													sm: "14px",
-													md: "16px",
+									<CustomStackFullWidth
+										direction="row"
+										alignItems="flex-start"
+										sx={{ flex: 1, minWidth: 0, mr: 1 }}
+									>
+										<Radio
+											checked={item.id === address?.id}
+											row
+											aria-labelledby="demo-row-radio-buttons-group-label"
+											name="row-radio-buttons-group"
+											sx={{ marginTop: "-2px" }}
+										/>
+										<ListItemText
+											primary={
+												<Typography
+													textTransform="capitalize"
+													fontSize={{
+														xs: "13px",
+														sm: "14px",
+														md: "16px",
+													}}
+													fontWeight={
+														item.id === address?.id
+															? "600"
+															: "600"
+													}
+												>
+													{t(item.address_type)}
+												</Typography>
+											}
+											secondary={
+												<CustomTypographyEllipsis
+													sx={{
+														fontSize: {
+															xs: "10px",
+															md: "12px",
+															maxWidth:
+																renderOnNavbar ===
+																"true"
+																	? "190px"
+																	: "100%",
+														},
+													}}
+												>
+													{item.address}
+												</CustomTypographyEllipsis>
+											}
+										/>
+									</CustomStackFullWidth>
+
+									<Stack
+										direction="row"
+										alignItems="center"
+										spacing={0.5}
+										sx={{ flexShrink: 0 }}
+										onClick={(e) => e.stopPropagation()}
+									>
+										{typeof onEditAddress === "function" && (
+											<Tooltip title={t("Edit")}>
+												<IconButton
+													size="small"
+													aria-label={t("Edit Address")}
+													onClick={(e) => {
+														e.stopPropagation();
+														onEditAddress(item);
+													}}
+													sx={{
+														p: "5px",
+														color: theme.palette.primary.main,
+														backgroundColor: alpha(theme.palette.primary.main, 0.08),
+														borderRadius: "6px",
+														"&:hover": {
+															backgroundColor: alpha(theme.palette.primary.main, 0.18),
+														},
+													}}
+												>
+													<EditOutlinedIcon sx={{ fontSize: "16px" }} />
+												</IconButton>
+											</Tooltip>
+										)}
+										<Tooltip title={t("Delete")}>
+											<IconButton
+												size="small"
+												aria-label={t("Delete Address")}
+												onClick={(e) => {
+													e.stopPropagation();
+													setDeleteTargetAddress(item);
 												}}
-												fontWeight={
-													item.id === address?.id
-														? "600"
-														: "600"
-												}
-											>
-												{t(item.address_type)}
-											</Typography>
-										}
-										secondary={
-											<CustomTypographyEllipsis
 												sx={{
-													fontSize: {
-														xs: "10px",
-														md: "12px",
-														maxWidth:
-															renderOnNavbar ===
-															"true"
-																? "220px"
-																: "100%",
+													p: "5px",
+													color: "#f44336",
+													backgroundColor: alpha("#f44336", 0.08),
+													borderRadius: "6px",
+													"&:hover": {
+														backgroundColor: alpha("#f44336", 0.18),
 													},
 												}}
 											>
-												{item.address}
-											</CustomTypographyEllipsis>
-										}
-									/>
+												<DeleteOutlineOutlinedIcon sx={{ fontSize: "16px" }} />
+											</IconButton>
+										</Tooltip>
+									</Stack>
 								</CustomStackFullWidth>
 							</CustomListItem>
 						</Stack>
@@ -164,8 +229,16 @@ const AddressSelectionList = (props) => {
 						</Stack>
 					</Stack>
 				)}
-				{/*{!data && <CustomCheckOutShimmer />}*/}
 			</Stack>
+
+			{deleteTargetAddress && (
+				<DeleteAddress
+					open={Boolean(deleteTargetAddress)}
+					handleClose={() => setDeleteTargetAddress(null)}
+					addressId={deleteTargetAddress.id}
+					refetch={refetch}
+				/>
+			)}
 		</>
 	);
 };

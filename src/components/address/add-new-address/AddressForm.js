@@ -164,7 +164,7 @@ const AddressForm = ({
 console.log({editAddress,address});
 
     if (token) {
-      if (editAddress && editAddress?.address_type) {
+      if (editAddress && (editAddress?.id || editAddress?.address_type)) {
            console.log({values,editAddress});
         // "Selected Address" is the transient checkout address — not yet
         // persisted server-side. Editing it only updates local state.

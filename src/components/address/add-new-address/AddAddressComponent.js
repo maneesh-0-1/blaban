@@ -54,14 +54,29 @@ const AddAddressComponent = ({
   const theme = useTheme();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [addressType, setAddressType] = useState(
-    editAddress ? editAddress?.address_type : ""
+    editAddress?.address_type || "home"
   );
   const { configData } = useSelector((state) => state.configData);
   const [isDisablePickButton, setDisablePickButton] = useState(false);
-  const [locationEnabled, setLocationEnabled] = useState(false);
+  const [locationEnabled, setLocationEnabled] = useState(Boolean(editAddress?.latitude));
   const [location, setLocation] = useState(
-    configData && configData?.default_location
+    editAddress?.latitude && editAddress?.longitude
+      ? { lat: parseFloat(editAddress.latitude), lng: parseFloat(editAddress.longitude) }
+      : configData?.default_location
   );
+
+  useEffect(() => {
+    if (editAddress?.latitude && editAddress?.longitude) {
+      setLocation({
+        lat: parseFloat(editAddress.latitude),
+        lng: parseFloat(editAddress.longitude),
+      });
+      setLocationEnabled(true);
+    }
+    if (editAddress?.address_type) {
+      setAddressType(editAddress.address_type);
+    }
+  }, [editAddress]);
   const [searchKey, setSearchKey] = useState("");
   const [enabled, setEnabled] = useState(false);
   const [placeDetailsEnabled, setPlaceDetailsEnabled] = useState(true);
@@ -123,7 +138,9 @@ const AddAddressComponent = ({
 
   const handleClick = (name) => {
     setAddressType(name);
-    setEditAddress({ ...editAddress, address_type: null });
+    if (editAddress) {
+      setEditAddress({ ...editAddress, address_type: name });
+    }
   };
   const handleChangeForSearchs = (event) => {
     if (event.target.value) {
@@ -158,7 +175,7 @@ const AddAddressComponent = ({
           fontSize={{ xs: "14px", sm: "14px", md: "16px" }}
           fontWeight="700"
         >
-          {t("Add Address")}
+          {editAddress ? t("Edit Address") : t("Add Address")}
         </Typography>
 
         <Stack>
@@ -236,22 +253,14 @@ const AddAddressComponent = ({
           <Stack direction="row" spacing={2.5} pt="10px">
             <AddressTypeStack
               value="home"
-              addressType={
-                editAddress?.address_type
-                  ? editAddress?.address_type
-                  : addressType
-              }
+              addressType={addressType}
               onClick={() => handleClick("home")}
             >
               <CustomImageContainer src={home.src} width="24px" height="24px" />
             </AddressTypeStack>
             <AddressTypeStack
               value="office"
-              addressType={
-                editAddress?.address_type
-                  ? editAddress?.address_type
-                  : addressType
-              }
+              addressType={addressType}
               onClick={() => handleClick("office")}
             >
               <CustomImageContainer
@@ -262,11 +271,7 @@ const AddAddressComponent = ({
             </AddressTypeStack>
             <AddressTypeStack
               value="other"
-              addressType={
-                editAddress?.address_type
-                  ? editAddress?.address_type
-                  : addressType
-              }
+              addressType={addressType}
               onClick={() => handleClick("other")}
             >
               <CustomImageContainer
@@ -282,10 +287,10 @@ const AddAddressComponent = ({
           atModal="false"
           addressType={addressType}
           configData={configData}
-          phone={editAddress ? editAddress?.phone : userData?.phone}
-          email={editAddress ? editAddress?.email : userData?.email}
-          lat={location?.lat || ""}
-          lng={location?.lng || ""}
+          phone={editAddress?.contact_person_number || editAddress?.phone || userData?.phone}
+          email={editAddress?.contact_person_email || editAddress?.email || userData?.email}
+          lat={location?.lat || editAddress?.latitude || ""}
+          lng={location?.lng || editAddress?.longitude || ""}
           personName={
             editAddress
               ? editAddress?.contact_person_name

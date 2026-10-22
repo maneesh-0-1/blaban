@@ -66,7 +66,7 @@ const AddNewAddress = (props) => {
   const token = localStorage.getItem("token");
   const reduxDispatch = useDispatch();
   const [addressType, setAddressType] = useState(
-    guestUserInfo ? guestUserInfo?.address_type : ""
+    editAddress?.address_type || (guestUserInfo ? guestUserInfo?.address_type : "home")
   );
   const personName = `${profileInfo?.f_name} ${profileInfo?.l_name}`;
 
@@ -86,11 +86,26 @@ const AddNewAddress = (props) => {
   }, [state?.location]);
 
   useEffect(() => {
-    dispatch({
-      type: ACTIONS.setLocation,
-      payload: configData?.default_location,
-    });
-  }, []);
+    if (editAddress?.latitude && editAddress?.longitude) {
+      const loc = {
+        lat: parseFloat(editAddress.latitude),
+        lng: parseFloat(editAddress.longitude),
+      };
+      dispatch({
+        type: ACTIONS.setLocation,
+        payload: loc,
+      });
+      setEditAddressLocation(loc);
+    } else {
+      dispatch({
+        type: ACTIONS.setLocation,
+        payload: configData?.default_location,
+      });
+    }
+    if (editAddress?.address_type) {
+      setAddressType(editAddress.address_type);
+    }
+  }, [editAddress]);
 
   const { data: places, isLoading } = useGetAutocompletePlace(
     state.searchKey,

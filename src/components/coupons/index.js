@@ -13,19 +13,19 @@ import NewCouponCard from "./NewCouponCard";
 const Coupons = ({ moduleId, moduleType }) => {
   const [copy, setCopy] = useState(null);
 
-  const {
-    data: rentalCouponData,
-    refetch: rentalCouponRefetch,
-    isLoading: isRentalCouponLoading,
-    isFetching: isRentalCouponFetching,
-  } = useGetCouponLists(moduleId);
-  const { data, refetch, isLoading, isFetching } = useGetCoupons(moduleId);
-
   // When a module is explicitly selected (Coupons tab), trust its type;
   // otherwise fall back to the globally selected module in localStorage.
   const isRentalModule = moduleType
     ? moduleType === "rental"
     : getCurrentModuleType() === "rental";
+
+  const {
+    data: rentalCouponData,
+    refetch: rentalCouponRefetch,
+    isLoading: isRentalCouponLoading,
+    isFetching: isRentalCouponFetching,
+  } = useGetCouponLists(moduleId, { enabled: Boolean(isRentalModule) });
+  const { data, refetch, isLoading, isFetching } = useGetCoupons(moduleId);
 
   useEffect(() => {
     if (isRentalModule) {

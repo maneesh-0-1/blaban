@@ -45,9 +45,7 @@ const Address = (props) => {
 
   const [edit, setEdit] = useState(null);
   useEffect(() => {
-    if (AllSaveAddress?.length === 0) {
-      refetch();
-    }
+    refetch();
   }, []);
   useEffect(() => {
     if (data) {

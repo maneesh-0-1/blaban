@@ -164,6 +164,12 @@ const DeliveryAddress = ({
     setAddressFormMode("full");
     reduxDispatch(setOpenAddressModal(true));
   };
+  const handleEditSavedAddress = (savedItem) => {
+    setOpenAddressPicker(false);
+    setEditAddress(savedItem);
+    setAddressFormMode("full");
+    reduxDispatch(setOpenAddressModal(true));
+  };
   const handleEditAddress = () => {
     setEditAddress(address);
     setAddressFormMode("location");
@@ -577,6 +583,7 @@ const DeliveryAddress = ({
           configData={configData}
           renderOnNavbar={renderOnNavbar}
           isLoading={isLoading}
+          onEditAddress={handleEditSavedAddress}
         />
       ) : (
         <>
@@ -938,9 +945,9 @@ const DeliveryAddress = ({
           t={t}
           isLoading={isLoading}
           token={token}
+          refetch={refetch}
+          onEditAddress={handleEditSavedAddress}
           onAddNewAddress={() => {
-            // Close picker then open AddNewAddress modal.
-            // AddressForm calls handleLatLng on success → auto-selects new address.
             setOpenAddressPicker(false);
             setEditAddress(null);
             setAddressFormMode("full");

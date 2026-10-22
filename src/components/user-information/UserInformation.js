@@ -37,7 +37,7 @@ const PAGE_TITLES = {
   "referral-code": "Referral Code",
   inbox: "Inbox",
   settings: "Settings",
-  addresses: "Addresses",
+  addresses: "My Addresses",
   "monthly-cart-list": "Monthly Cart List",
   "subscription-plan": "Subscription Plan",
   "track-order": "Track Orders",

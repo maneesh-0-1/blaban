@@ -15,11 +15,17 @@ const fetchCouponLists = async (moduleId) => {
 };
 
 // Use the fetcher function in useQuery
-export const useGetCouponLists = (moduleId) => {
-  return useQuery(["coupon-list-vehicle", moduleId], () => fetchCouponLists(moduleId), {
-    staleTime: 5 * 60 * 1000, // Data will be considered fresh for 5 minutes
-    cacheTime: 10 * 60 * 1000, // Data will be cached for 10 minutes
-    refetchOnWindowFocus: false,
-    onError: onSingleErrorResponse, // Prevent refetching when the window regains focus
-  });
+export const useGetCouponLists = (moduleId, options = {}) => {
+  return useQuery(
+    ["coupon-list-vehicle", moduleId],
+    () => fetchCouponLists(moduleId),
+    {
+      enabled: false,
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      onError: onSingleErrorResponse,
+      ...options,
+    }
+  );
 };

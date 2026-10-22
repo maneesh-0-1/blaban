@@ -96,7 +96,7 @@ const AccountMenuPanel = ({
   const menuItems = [
     {
       key: "addresses",
-      label: "Addresses",
+      label: "My Addresses",
       icon: "fi fi-rr-map-marker-home",
       path: profilePath("addresses"),
       requireAuth: true,

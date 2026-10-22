@@ -35,6 +35,8 @@ const CheckoutAddressPickerModal = ({
   t,
   isLoading,
   onAddNewAddress,
+  onEditAddress,
+  refetch,
   token,
 }) => {
   const theme = useTheme();
@@ -142,6 +144,13 @@ const CheckoutAddressPickerModal = ({
                   address={address}
                   renderOnNavbar="true"
                   isLoading={isLoading}
+                  refetch={refetch}
+                  onEditAddress={(item) => {
+                    onClose();
+                    if (typeof onEditAddress === "function") {
+                      onEditAddress(item);
+                    }
+                  }}
                 />
 
                 {/* Add new address — part of saved addresses section */}
