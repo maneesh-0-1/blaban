@@ -600,7 +600,7 @@ const ItemCheckout = (props) => {
       return {
         cart: JSON.stringify(carts),
         ...address,
-        is_buy_now: page === "buy_now" || page === "campaign" ? 1 : 0,
+        is_buy_now: page === "buy_now" || page === "campaign" || !token ? 1 : 0,
         partial_payment: usePartialPayment,
         schedule_at: scheduleAt === "now" ? null : scheduleAt,
         // order_time: scheduleAt,
@@ -617,7 +617,7 @@ const ItemCheckout = (props) => {
               if (a) sArea = JSON.parse(a);
             }
           } catch (e) {}
-          return sBranch?.store_id || sArea?.branch?.store_id || sArea?.store_id || storeId;
+          return sBranch?.store_id || sArea?.branch?.store_id || sArea?.store_id || carts?.[0]?.store_id || productList?.[0]?.store_id || storeId || 2;
         })(),
         coupon_code: couponDiscount?.code,
         coupon_discount_amount: couponDiscount?.discount,
@@ -628,7 +628,17 @@ const ItemCheckout = (props) => {
         dm_tips: deliveryTip,
         cutlery: resolvedCutlery,
         unavailable_item_note: resolvedUnavailableNote,
-        delivery_instruction: delivery_instruction,
+        delivery_instruction: orderType === "take_away"
+          ? (() => {
+              let bName = "";
+              try {
+                const b = localStorage.getItem("selectedBranch");
+                if (b) bName = JSON.parse(b)?.name;
+              } catch (e) {}
+              const prefix = bName ? `[Pickup: ${bName}] ` : "[Pickup] ";
+              return (prefix + (delivery_instruction || "")).trim();
+            })()
+          : delivery_instruction,
         guest_id: guestId,
         contact_person_name: token
           ? address?.contact_person_name
@@ -651,8 +661,8 @@ const ItemCheckout = (props) => {
         road: token ? address?.road : guestUserInfo?.road,
         extra_packaging_amount: resolvedPackagingAmount,
         ...(cartPrefs?.monthlySubscribe && { monthly_subscribe: 1 }),
-        create_new_user: check ? 1 : 0,
-        password: formik.values.password,
+        create_new_user: check && formik?.values?.password && formik.values.password.length >= 8 ? 1 : 0,
+        password: formik?.values?.password || "",
         is_guest: token ? 0 : 1,
         bring_change_amount: changeAmount,
         ...(() => {
@@ -667,16 +677,14 @@ const ItemCheckout = (props) => {
             }
           } catch (e) {}
           return {
-            ...(sBranch?.id && {
-              branch_id: sBranch.id,
+            ...(sBranch?.name && {
               branch_name: sBranch.name,
             }),
             ...(sArea?.id && {
               delivery_area_id: sArea.id,
               delivery_area_name: sArea.name,
-              ...(!sBranch?.id && sArea?.branch_id && {
-                branch_id: sArea.branch_id,
-                branch_name: sArea.branch?.name || null,
+              ...(sArea?.branch?.name && {
+                branch_name: sArea.branch.name,
               }),
             }),
           };
@@ -844,6 +852,10 @@ const ItemCheckout = (props) => {
                       position: "bottom-right",
                     })
                   );
+                } else if (Array.isArray(data) && data[0]?.errorInfo) {
+                  toast.error(data[0].errorInfo[2] || t("Failed to place order"), { position: "bottom-right" });
+                } else if (Array.isArray(data) && data[0]?.message) {
+                  toast.error(data[0].message, { position: "bottom-right" });
                 } else if (typeof data?.message === "string") {
                   toast.error(data.message, { position: "bottom-right" });
                 } else if (typeof data?.errors === "string") {
@@ -983,6 +995,10 @@ const ItemCheckout = (props) => {
                     position: "bottom-right",
                   })
                 );
+              } else if (Array.isArray(data) && data[0]?.errorInfo) {
+                toast.error(data[0].errorInfo[2] || t("Failed to place order"), { position: "bottom-right" });
+              } else if (Array.isArray(data) && data[0]?.message) {
+                toast.error(data[0].message, { position: "bottom-right" });
               } else if (typeof data?.message === "string") {
                 toast.error(data.message, { position: "bottom-right" });
               } else if (typeof data?.errors === "string") {
