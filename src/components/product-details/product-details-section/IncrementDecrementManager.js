@@ -1,3 +1,5 @@
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import React from "react";
 import PropTypes from "prop-types";
 import { alpha, Stack, Typography, useTheme } from "@mui/material";
@@ -33,10 +35,16 @@ const QuantityButton = ({ onClick, disabled, icon, ariaLabel, theme }) => (
         : { backgroundColor: theme.palette.action.hover },
     }}
   >
-    <i
-      className={icon}
-      style={{ fontSize: "16px", display: "flex", lineHeight: 1 }}
-    />
+    {icon === "fi fi-rr-minus-small" ? (
+      <RemoveIcon sx={{ fontSize: 20 }} />
+    ) : icon === "fi fi-rr-plus-small" ? (
+      <AddIcon sx={{ fontSize: 20 }} />
+    ) : (
+      <i
+        className={icon}
+        style={{ fontSize: "16px", display: "flex", lineHeight: 1 }}
+      />
+    )}
   </Box>
 );
 

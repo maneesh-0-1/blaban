@@ -1,5 +1,7 @@
 import { notifyItemAddedToCart } from "utils/cartFeedback";
 import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import {
   Box,
   Button,
@@ -1211,10 +1213,7 @@ const FoodDetailModal = ({
           "&.Mui-disabled": { opacity: 0.35 },
         }}
       >
-        <i
-          className="fi fi-rr-minus-small"
-          style={{ fontSize: 16, display: "flex", lineHeight: 1 }}
-        />
+        <RemoveIcon sx={{ fontSize: 20 }} />
       </IconButton>
       <Box
         sx={{
@@ -1243,10 +1242,7 @@ const FoodDetailModal = ({
           "&:hover": { backgroundColor: "action.hover" },
         }}
       >
-        <i
-          className="fi fi-rr-plus-small"
-          style={{ fontSize: 16, display: "flex", lineHeight: 1 }}
-        />
+        <AddIcon sx={{ fontSize: 20 }} />
       </IconButton>
     </Stack>
   );

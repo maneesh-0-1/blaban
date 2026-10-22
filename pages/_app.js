@@ -1,4 +1,6 @@
-﻿import "../src/styles/globals.css";
+import "../src/styles/globals.css";
+import "@flaticon/flaticon-uicons/css/regular/rounded.css";
+
 import "../src/styles/nprogress.css";
 import { CacheProvider } from "@emotion/react";
 import { Provider as ReduxProvider } from "react-redux";
