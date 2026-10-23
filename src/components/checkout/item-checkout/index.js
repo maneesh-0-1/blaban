@@ -140,10 +140,7 @@ const ItemCheckout = (props) => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [numberOfDay, setDayNumber] = useState(getDayNumber(today));
   const [couponDiscount, setCouponDiscount] = useState(null);
-  // Express / standard / slightly_delay choice from the radio-card row below
-  // DeliveryDetails. Shape: { id, deliveryType, surcharge }. Null when the
-  // zone doesn't expose `delivery_options` or order isn't delivery.
-  const [selectedDeliveryOption, setSelectedDeliveryOption] = useState(null);
+
   const [scheduleAt, setScheduleAt] = useState("now");
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [taxAmount, setTaxAmount] = useState(0);
@@ -153,19 +150,19 @@ const ItemCheckout = (props) => {
     if (typeof window !== "undefined") {
       try {
         const storedCharge = localStorage.getItem("areaDeliveryCharge");
-        if (storedCharge !== null && storedCharge !== "" && !isNaN(Number(storedCharge))) {
+        if (storedCharge !== null && storedCharge !== "" && !isNaN(Number(storedCharge)) && Number(storedCharge) > 0) {
           return Number(storedCharge);
         }
         const storedArea = localStorage.getItem("selectedArea");
         if (storedArea) {
           const parsed = JSON.parse(storedArea);
-          if (parsed?.delivery_charge != null && !isNaN(Number(parsed.delivery_charge))) {
+          if (parsed?.delivery_charge != null && !isNaN(Number(parsed.delivery_charge)) && Number(parsed.delivery_charge) > 0) {
             return Number(parsed.delivery_charge);
           }
         }
       } catch (e) {}
     }
-    return 0;
+    return null;
   });
 
   useEffect(() => {
@@ -175,12 +172,19 @@ const ItemCheckout = (props) => {
           setDeliveryFee(0);
         } else {
           const fee = Number(e.detail.area?.delivery_charge ?? e.detail.deliveryCharge ?? 0);
-          setDeliveryFee(fee);
+          setDeliveryFee(fee > 0 ? fee : null);
         }
       }
     };
     window.addEventListener("deliveryAreaChanged", handleAreaChanged);
     return () => window.removeEventListener("deliveryAreaChanged", handleAreaChanged);
+  }, [orderType]);
+
+  useEffect(() => {
+    if (orderType === "take_away") {
+      setDeliveryFee(0);
+      setDeliveryTip(0);
+    }
   }, [orderType]);
   const [isImageSelected, setIsImageSelected] = useState([]);
   const [prescriptionImages, setPrescriptionImages] = useState([]);
@@ -546,15 +550,7 @@ const ItemCheckout = (props) => {
       formData.append("payment_method", isDigital);
       formData.append("order_type", orderType);
 
-      // Delivery-speed selection (express / standard / slightly_delay).
-      // Skipped when a free-delivery coupon is applied — surcharge is moot.
-      if (
-        selectedDeliveryOption?.id != null &&
-        couponDiscount?.coupon_type !== "free_delivery"
-      ) {
-        formData.append("delivery_id", selectedDeliveryOption.id);
-        formData.append("delivery_type", selectedDeliveryOption.deliveryType);
-      }
+
 
       formData.append("store_id", storeData?.id);
       if (couponDiscount?.code) {
@@ -744,14 +740,7 @@ const ItemCheckout = (props) => {
         latitude: address?.latitude || "29.3759",
         longitude: address?.longitude || "47.9774",
         address: address?.address || (typeof window !== "undefined" ? localStorage.getItem("location") : "") || "Kuwait",
-        // Delivery-speed selection (express / standard / slightly_delay).
-        // Spread conditionally so free-delivery coupons skip the surcharge
-        // fields entirely and the backend uses base delivery only.
-        ...(selectedDeliveryOption?.id != null &&
-          couponDiscount?.coupon_type !== "free_delivery" && {
-            delivery_id: selectedDeliveryOption.id,
-            delivery_type: selectedDeliveryOption.deliveryType,
-          }),
+
       };
     }
   };
@@ -1493,8 +1482,6 @@ const ItemCheckout = (props) => {
                 zoneData={zoneData}
                 deliveryFee={deliveryFee}
                 couponDiscount={couponDiscount}
-                selectedDeliveryOption={selectedDeliveryOption}
-                setSelectedDeliveryOption={setSelectedDeliveryOption}
               />
 
               {Number.parseInt(configData?.dm_tips_status) === 1 &&
@@ -1651,7 +1638,6 @@ const ItemCheckout = (props) => {
                     customerData={customerData}
                     initVauleEx={storeData?.extra_packaging_amount}
                     isLoading={isLoading}
-                    selectedDeliveryOption={selectedDeliveryOption}
                     scheduleAt={scheduleAt}
                   />
 

@@ -81,15 +81,10 @@ const OrderCalculation = (props) => {
     isLoading,
     taxAmount,
     scheduleAt,
-    selectedDeliveryOption,
   } = props;
 
-  // Express / slightly_delay surcharge from the DeliverySpeedOptions row.
-  // Zero on take-away or when a free-delivery coupon is in effect.
-  const deliveryOptionSurcharge =
-    orderType === "delivery" && couponDiscount?.coupon_type !== "free_delivery"
-      ? Number(selectedDeliveryOption?.surcharge) || 0
-      : 0;
+  // No speed surcharge — single transparent delivery fee only
+  const deliveryOptionSurcharge = 0;
 
   const token = getToken();
   const { t } = useTranslation();
@@ -344,17 +339,21 @@ const OrderCalculation = (props) => {
   }, []);
 
   const getResolvedDeliveryFee = () => {
+    if (orderType === "take_away") {
+      return { price: 0, proDiscount: 0, billedPrice: 0 };
+    }
+
     let areaCharge = props.areaDeliveryFee;
-    if ((areaCharge === undefined || areaCharge === null) && typeof window !== "undefined") {
+    if ((areaCharge === undefined || areaCharge === null || Number(areaCharge) <= 0) && typeof window !== "undefined") {
       const stored = localStorage.getItem("areaDeliveryCharge");
-      if (stored !== null && stored !== "" && !isNaN(Number(stored))) {
+      if (stored !== null && stored !== "" && !isNaN(Number(stored)) && Number(stored) > 0) {
         areaCharge = Number(stored);
       } else {
         const selArea = localStorage.getItem("selectedArea");
         if (selArea) {
           try {
             const parsed = JSON.parse(selArea);
-            if (parsed?.delivery_charge != null && !isNaN(Number(parsed.delivery_charge))) {
+            if (parsed?.delivery_charge != null && !isNaN(Number(parsed.delivery_charge)) && Number(parsed.delivery_charge) > 0) {
               areaCharge = Number(parsed.delivery_charge);
             }
           } catch (e) {}
@@ -362,7 +361,7 @@ const OrderCalculation = (props) => {
       }
     }
 
-    let price = (areaCharge !== undefined && areaCharge !== null && !isNaN(Number(areaCharge)))
+    let price = (areaCharge !== undefined && areaCharge !== null && !isNaN(Number(areaCharge)) && Number(areaCharge) > 0)
       ? Number(areaCharge)
       : getDeliveryFees(
           storeData,
@@ -375,7 +374,7 @@ const OrderCalculation = (props) => {
           zoneData,
           origin,
           destination,
-          tempExtraCharge,
+          0,
           surgePrice
         );
 
@@ -483,7 +482,7 @@ const OrderCalculation = (props) => {
       surgePrice,
       billedPrice
     );
-    totalAmount = Number(totalAmount) + Number(deliveryOptionSurcharge || 0);
+    totalAmount = Number(totalAmount);
 
     if (proOrderDiscountActive && proOrderDiscountAmount > 0) {
       totalAmount = Number(totalAmount) - proOrderDiscountAmount;
@@ -885,34 +884,7 @@ const OrderCalculation = (props) => {
           </>
         }
 
-        {selectedDeliveryOption &&
-          selectedDeliveryOption.deliveryType !== "standard" &&
-          orderType === "delivery" &&
-          couponDiscount?.coupon_type !== "free_delivery" &&
-          deliveryOptionSurcharge !== 0 && (
-            <>
-              <Grid item md={8} xs={8} sx={{ textTransform: "capitalize" }}>
-                {selectedDeliveryOption.deliveryType === "express"
-                  ? t("Express Delivery")
-                  : t("Slightly Delay Delivery")}
-              </Grid>
-              <Grid item md={4} xs={4} align="right">
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="flex-end"
-                  spacing={0.5}
-                >
-                  <Typography>
-                    {deliveryOptionSurcharge > 0 ? "(+)" : "(-)"}
-                  </Typography>
-                  <Typography>
-                    {getAmountWithSign(Math.abs(deliveryOptionSurcharge))}
-                  </Typography>
-                </Stack>
-              </Grid>
-            </>
-          )}
+
 
         {/* {proFeatureEnabled && hasToken && !isProActive && (
           <Grid item xs={12} sx={{ mt: 1 }}>

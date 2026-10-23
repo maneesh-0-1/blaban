@@ -264,8 +264,6 @@ const PrescriptionCheckout = ({ storeId, page }) => {
             zoneData={zoneData?.data}
             deliveryFee={deliveryFee}
             couponDiscount={null}
-            selectedDeliveryOption={selectedDeliveryOption}
-            setSelectedDeliveryOption={setSelectedDeliveryOption}
           />
           {orderType !== "take_away" && (
             <DeliveryManTip

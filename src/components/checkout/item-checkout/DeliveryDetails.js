@@ -27,8 +27,6 @@ import CustomTextFieldWithFormik from "components/form-fields/CustomTextFieldWit
 import { getToken } from "helper-functions/getToken";
 import LockIcon from "@mui/icons-material/Lock";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import InstantDelivery from "./InstantDelivery";
-import DeliverySpeedOptions from "./DeliverySpeedOptions";
 import { isCartTakeawayOnly } from "utils/CustomFunctions";
 
 const DeliveryDetails = (props) => {
@@ -61,8 +59,6 @@ const DeliveryDetails = (props) => {
     zoneData,
     deliveryFee,
     couponDiscount,
-    selectedDeliveryOption,
-    setSelectedDeliveryOption,
   } = props;
   const { t } = useTranslation();
   const theme = useTheme();
@@ -542,17 +538,7 @@ const DeliveryDetails = (props) => {
           )}
         </Box>
       )}
-      {orderType !== "take_away" && (
-        <DeliverySpeedOptions
-          storeData={storeData}
-          zoneData={zoneData}
-          orderType={orderType}
-          deliveryFee={deliveryFee}
-          couponDiscount={couponDiscount}
-          selectedDeliveryOption={selectedDeliveryOption}
-          setSelectedDeliveryOption={setSelectedDeliveryOption}
-        />
-      )}
+
 
       <DeliveryAddress
         setAddress={setAddress}

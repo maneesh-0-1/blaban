@@ -797,13 +797,13 @@ export const getDeliveryFees = (
   if (typeof window !== "undefined") {
     try {
       const storedCharge = window.localStorage.getItem("areaDeliveryCharge");
-      if (storedCharge !== null && storedCharge !== "" && !isNaN(Number(storedCharge))) {
+      if (storedCharge !== null && storedCharge !== "" && !isNaN(Number(storedCharge)) && Number(storedCharge) > 0) {
         return Number(storedCharge);
       }
       const storedArea = window.localStorage.getItem("selectedArea");
       if (storedArea) {
         const parsed = JSON.parse(storedArea);
-        if (parsed?.delivery_charge !== undefined && parsed?.delivery_charge !== null && !isNaN(Number(parsed.delivery_charge))) {
+        if (parsed?.delivery_charge !== undefined && parsed?.delivery_charge !== null && !isNaN(Number(parsed.delivery_charge)) && Number(parsed.delivery_charge) > 0) {
           return Number(parsed.delivery_charge);
         }
       }
