@@ -15,7 +15,6 @@ import {
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import DeliveryDiningRoundedIcon from "@mui/icons-material/DeliveryDiningRounded";
 import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
@@ -112,18 +111,6 @@ const OrderSuccessPage = ({ configData }) => {
   const handleReturnHome = () => {
     // Navigate to root (which routes to the main B.Laban store)
     router.push("/");
-  };
-
-  const handleTrackOrder = () => {
-    if (activeOrderId) {
-      router.push(`/track-order?order_id=${activeOrderId}`);
-    } else {
-      router.push("/track-order");
-    }
-  };
-
-  const handleViewOrders = () => {
-    router.push("/profile?page=my-orders");
   };
 
   // If payment failed/cancelled
@@ -541,13 +528,8 @@ const OrderSuccessPage = ({ configData }) => {
             </Box>
           )}
 
-          {/* Action Buttons */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            sx={{ mt: 4, pt: 1 }}
-          >
-            {/* Primary: Return to Home Page */}
+          {/* Action Button: Return to Home Screen */}
+          <Box sx={{ mt: 4, pt: 1 }}>
             <Button
               fullWidth
               variant="contained"
@@ -555,59 +537,17 @@ const OrderSuccessPage = ({ configData }) => {
               onClick={handleReturnHome}
               startIcon={<HomeRoundedIcon />}
               sx={{
-                py: 1.5,
+                py: 1.6,
                 borderRadius: "12px",
                 fontWeight: 700,
-                fontSize: "15px",
+                fontSize: { xs: "15px", sm: "16px" },
                 textTransform: "none",
                 boxShadow: "0 4px 14px 0 rgba(0,0,0,0.12)",
               }}
             >
-              {t("Return to Home Page")}
+              {t("Return to Home Screen")}
             </Button>
-
-            {/* Secondary: Track Order */}
-            <Button
-              fullWidth
-              variant="outlined"
-              size="large"
-              onClick={handleTrackOrder}
-              startIcon={<DeliveryDiningRoundedIcon />}
-              sx={{
-                py: 1.5,
-                borderRadius: "12px",
-                fontWeight: 700,
-                fontSize: "15px",
-                textTransform: "none",
-                borderColor: theme.palette.divider,
-                color: "neutral.1050",
-                "&:hover": {
-                  borderColor: theme.palette.primary.main,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                },
-              }}
-            >
-              {t("Track Order")}
-            </Button>
-          </Stack>
-
-          {getToken() && (
-            <Box textAlign="center" mt={2}>
-              <Typography
-                onClick={handleViewOrders}
-                sx={{
-                  fontSize: "13px",
-                  color: theme.palette.primary.main,
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  fontWeight: 600,
-                  display: "inline-block",
-                }}
-              >
-                {t("View All My Orders")}
-              </Typography>
-            </Box>
-          )}
+          </Box>
         </Box>
       </Paper>
     </Box>

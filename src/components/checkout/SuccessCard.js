@@ -157,29 +157,22 @@ const SuccessCard = ({ configData, total, order_id }) => {
             {/*</Stack>*/}
           </CustomStackFullWidth>
         )}
-        <Stack pt="2rem" spacing={1}>
+        <Stack pt="2rem" spacing={1} width="100%" maxWidth="400px">
           <Button
-            onClick={() =>
-              router.push("/track-order", undefined, {
-                shallow: true,
-              })
-            }
+            onClick={() => router.push("/")}
             variant="contained"
-          >
-            {t("Track your order")}
-          </Button>
-          <Typography
-            onClick={() => router.push("/home", undefined, { shallow: true })}
-            variant="contained"
+            fullWidth
+            size="large"
             sx={{
-              textDecoration: "underLine",
-              cursor: "pointer",
-              textAlign: "center",
-              color: (theme) => theme.palette.primary.main,
+              py: 1.5,
+              borderRadius: "12px",
+              fontWeight: 700,
+              fontSize: "15px",
+              textTransform: "none",
             }}
           >
-            {t("Continue shopping ")}
-          </Typography>
+            {t("Return to Home Screen")}
+          </Button>
         </Stack>
       </CustomStackFullWidth>
     </CustomStackFullWidth>

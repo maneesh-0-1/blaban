@@ -2329,5 +2329,6 @@ export const english = {
   "{{percent}}% off as a Pro member on orders above {{amount}}": "{{percent}}% off as a Pro member on orders above {{amount}}",
   "{{percent}}% off on delivery fee as a Pro member": "{{percent}}% off on delivery fee as a Pro member",
   "{{percent}}% off on delivery fee as a Pro member on deliveries above {{amount}}": "{{percent}}% off on delivery fee as a Pro member on deliveries above {{amount}}",
-  "{{percent}}% off on delivery fee as a Pro member on orders above {{amount}}": "{{percent}}% off on delivery fee as a Pro member on orders above {{amount}}"
+  "{{percent}}% off on delivery fee as a Pro member on orders above {{amount}}": "{{percent}}% off on delivery fee as a Pro member on orders above {{amount}}",
+  "Return to Home Screen": "Return to Home Screen"
 };

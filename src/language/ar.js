@@ -2653,6 +2653,6 @@ export const arabic = {
 	"The item you want to view is not in your currently selected module. Switch the module to view this item.": "The item you want to view is not in your currently selected module. Switch the module to view this item.",
 	"The store you want to view is not in your currently selected module. Switch the module to view this store.": "The store you want to view is not in your currently selected module. Switch the module to view this store.",
 	"Unavailable": "Unavailable",
-	"item": "item"
-
+	"item": "item",
+	"Return to Home Screen": "العودة إلى الصفحة الرئيسية"
 };
