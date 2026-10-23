@@ -18,7 +18,11 @@ export const handleTokenExpire = (item, status) => {
           t("Your account is inactive or Your token has been expired"),
           { id: "session-expired" }
         );
-        Router.push("/home", undefined, { shallow: true });
+        const currentPath = Router.pathname || "";
+        const protectedRoutes = ["/profile", "/my-orders", "/chatting"];
+        if (protectedRoutes.some((route) => currentPath.startsWith(route))) {
+          Router.push("/store/blaban?module=blaban", undefined, { shallow: true });
+        }
       }
     }
   } else if (

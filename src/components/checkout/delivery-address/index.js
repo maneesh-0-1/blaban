@@ -111,6 +111,7 @@ const DeliveryAddress = ({
   const handleSuccess = (addressData) => {
     setData(addressData);
   };
+  const { data: addressQueryData, refetch, isRefetching, isLoading } = useGetAddressList(handleSuccess);
 
   const handleSelectSavedAddress = (item) => {
     setAddress({
@@ -157,7 +158,6 @@ const DeliveryAddress = ({
       }
     }
   }, [data, addressQueryData, token, orderType]);
-  const { data: addressQueryData, refetch, isRefetching, isLoading } = useGetAddressList(handleSuccess);
 
   // Sync local data state from React Query cache.
   // onSuccess only fires on a network fetch; when the cache is already warm
