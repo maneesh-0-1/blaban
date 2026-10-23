@@ -6,7 +6,8 @@ import { useTheme } from "@mui/styles";
 import { getAmountWithSign } from "helper-functions/CardHelpers";
 import { useDispatch } from "react-redux";
 import { setClearCart } from "redux/slices/cart";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
+import { clearCartOnOrderSuccess } from "helper-functions/clearCartHelper";
 import { toast } from "react-hot-toast";
 import { OrderApi } from "api-manage/another-formated-api/orderApi";
 import { onErrorResponse } from "api-manage/api-error-response/ErrorResponses";
@@ -45,6 +46,7 @@ const IncompleteOrderModal: React.FC<IncompleteOrderModalProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
   const formData = {
     order_id: failPaymentOrderData?.order_id,
@@ -68,8 +70,11 @@ const IncompleteOrderModal: React.FC<IncompleteOrderModalProps> = ({
       toast.success(response.data.message);
       setOpenIncompleteOrder(false);
     }
-    dispatch(setClearCart(undefined));
-    Router.push("/home", undefined, { shallow: true });
+    clearCartOnOrderSuccess(dispatch, queryClient);
+    Router.push({
+      pathname: "/order-success",
+      query: { order_id: failPaymentOrderData?.order_id },
+    });
   };
 
   const handleCancelSuccess = (response: any) => {
@@ -77,8 +82,8 @@ const IncompleteOrderModal: React.FC<IncompleteOrderModalProps> = ({
       toast.success(response.data.message);
     }
     setOpenIncompleteOrder(false);
-    dispatch(setClearCart(undefined));
-    Router.push("/home", undefined, { shallow: true });
+    clearCartOnOrderSuccess(dispatch, queryClient);
+    Router.push("/");
   };
 
   const handleSwitchToCOD = () => {

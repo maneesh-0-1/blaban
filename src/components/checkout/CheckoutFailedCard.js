@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import Router from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { setClearCart } from "redux/slices/cart";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { toast } from "react-hot-toast";
 
@@ -26,6 +26,7 @@ import CancelOrder from "../my-orders/order-details/CenacelOrder";
 import { useGetOrderCancelReason } from "api-manage/hooks/react-query/order/useGetOrderCancelReason";
 import { GoogleApi } from "api-manage/hooks/react-query/googleApi";
 import { getGuestId, getToken } from "helper-functions/getToken";
+import { clearCartOnOrderSuccess } from "helper-functions/clearCartHelper";
 import InfoIcon from "@mui/icons-material/Info";
 import Box from "@mui/material/Box";
 import { getAmountWithSign } from "helper-functions/CardHelpers";
@@ -46,6 +47,7 @@ const CheckoutFailedCard = ({
   const [additionalInfo, setAdditionalInfo] = useState(null);
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { data: cancelReasonsData, refetch } = useGetOrderCancelReason();
   console.log({ id });
   const { guestUserInfo } = useSelector((state) => state.guestUserInfo);
@@ -89,24 +91,31 @@ const CheckoutFailedCard = ({
     OrderApi.FailedPaymentMethodCancel
   );
   const handleSuccess = (response) => {
-    toast.success(response.data.message);
-    dispatch(setClearCart());
+    toast.success(response?.data?.message || t("Order canceled successfully"));
+    clearCartOnOrderSuccess(dispatch, queryClient);
     setOpenModal(false);
     refetchTrackData?.();
-    //Router.push("/home", undefined, { shallow: true });
     handleOrderDetailsClose?.();
+    Router.push("/");
   };
 
   const handleCancelSuccess = () => {
-    dispatch(setClearCart());
     cancelMutate(
-      { ...formData, reason: "Order payment canceled" },
+      { ...formData, reason: cancelReason || "Order payment canceled" },
       {
-        onSuccess: handleSuccess,
-        onError: onErrorResponse,
+        onSuccess: (response) => {
+          toast.success(response?.data?.message || t("Order canceled successfully"));
+          clearCartOnOrderSuccess(dispatch, queryClient);
+          setOpenModal(false);
+          refetchTrackData?.();
+          handleOrderDetailsClose?.();
+          Router.push("/");
+        },
+        onError: (err) => {
+          onErrorResponse(err);
+        },
       }
     );
-    //Router.push("/home", undefined, { shallow: true });
   };
   const handleOrderFail = () => {
     handleCancelSuccess();
@@ -116,7 +125,19 @@ const CheckoutFailedCard = ({
   const handleOnSuccess = () => {
     if (failPayment?.maximum_cod_order_amount > failPayment?.order_amount) {
       paymentMethodUpdateMutation(formData, {
-        onSuccess: handleSuccess,
+        onSuccess: (response) => {
+          toast.success(
+            response?.data?.message || t("Switched to Cash On Delivery")
+          );
+          clearCartOnOrderSuccess(dispatch, queryClient);
+          setOpenModal(false);
+          refetchTrackData?.();
+          handleOrderDetailsClose?.();
+          Router.push({
+            pathname: "/order-success",
+            query: { order_id: id },
+          });
+        },
         onError: onErrorResponse,
       });
     } else {
@@ -233,6 +254,22 @@ const CheckoutFailedCard = ({
               ? t("Cancel Parcel")
               : t("Cancel Order")}
           </LoadingButton>
+          <Button
+            sx={{
+              maxWidth: "250px",
+              textTransform: "none",
+              color: "text.secondary",
+            }}
+            variant="text"
+            fullWidth
+            onClick={() => {
+              clearCartOnOrderSuccess(dispatch, queryClient);
+              handleOrderDetailsClose?.();
+              Router.push("/");
+            }}
+          >
+            {t("Return to Home Page")}
+          </Button>
         </Stack>
       </Stack>
       <CustomModal
