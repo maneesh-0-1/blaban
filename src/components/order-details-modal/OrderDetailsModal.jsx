@@ -110,6 +110,7 @@ const OrderDetailsModal = ({ orderDetailsModalOpen }) => {
           id={order_id ? order_id : attributeId}
           configData={configData}
           handleOrderDetailsClose={handleOrderDetailsClose}
+          amount={totalAmount || total}
         />
       ) : (
         <CustomStackFullWidth

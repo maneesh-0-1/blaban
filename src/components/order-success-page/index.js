@@ -133,6 +133,8 @@ const OrderSuccessPage = ({ configData }) => {
         <CheckoutFailed
           id={activeOrderId}
           configData={configData}
+          amount={storedOrder?.order_amount || totalAmount}
+          storedOrder={storedOrder}
         />
       </Box>
     );

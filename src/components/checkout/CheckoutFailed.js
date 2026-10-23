@@ -10,27 +10,20 @@ import CheckoutFailedCard from "./CheckoutFailedCard";
 import { CustomStackFullWidth } from "../../styled-components/CustomStyles.style";
 
 const CheckoutFailed = (props) => {
-  const { configData, handleOrderDetailsClose } = props;
-  const [openModal, setModalOpen] = useState(false);
-  const { t } = useTranslation();
-  setTimeout(() => {
-    setModalOpen(true);
-    //handleOrderDetailsClose();
-  }, 500);
+  const { configData, handleOrderDetailsClose, id, amount, storedOrder } = props;
 
   return (
     <CustomStackFullWidth
       padding={{ xs: "40px 15px", md: "45px 45px 40px" }}
       alignItems="center"
     >
-
       <CheckoutFailedCard
-        id={props.id}
+        id={id}
         configData={configData}
         handleOrderDetailsClose={handleOrderDetailsClose}
-        amount="300"
+        amount={amount}
+        storedOrder={storedOrder}
       />
-
     </CustomStackFullWidth>
   );
 };

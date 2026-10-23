@@ -37,6 +37,7 @@ const CheckoutFailedCard = ({
   id,
   handleOrderDetailsClose,
   amount,
+  storedOrder: propStoredOrder,
   setOpenPaymentMethod,
   setPaymentFailedData,
   refetchTrackData,
@@ -48,6 +49,49 @@ const CheckoutFailedCard = ({
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
+
+  const [resolvedAmount, setResolvedAmount] = useState(() => {
+    if (amount != null && !isNaN(Number(amount)) && Number(amount) > 0 && Number(amount) !== 300) {
+      return Number(amount);
+    }
+    if (propStoredOrder?.order_amount != null && !isNaN(Number(propStoredOrder.order_amount))) {
+      return Number(propStoredOrder.order_amount);
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("lastPlacedOrder");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (
+            parsed &&
+            (!id || String(parsed.order_id) === String(id)) &&
+            parsed.order_amount != null &&
+            !isNaN(Number(parsed.order_amount)) &&
+            Number(parsed.order_amount) > 0
+          ) {
+            setResolvedAmount(Number(parsed.order_amount));
+            return;
+          }
+        }
+        if (amount != null && !isNaN(Number(amount)) && Number(amount) > 0 && Number(amount) !== 300) {
+          setResolvedAmount(Number(amount));
+          return;
+        }
+        const fallbackTotal = localStorage.getItem("totalAmount");
+        if (fallbackTotal && !isNaN(Number(fallbackTotal)) && Number(fallbackTotal) > 0) {
+          setResolvedAmount(Number(fallbackTotal));
+          return;
+        }
+      } catch (e) {
+        console.error("Error reading order amount snapshot:", e);
+      }
+    }
+  }, [id, amount, propStoredOrder]);
+
   const { data: cancelReasonsData, refetch } = useGetOrderCancelReason();
   console.log({ id });
   const { guestUserInfo } = useSelector((state) => state.guestUserInfo);
@@ -123,7 +167,12 @@ const CheckoutFailedCard = ({
   };
   console.log(failPayment);
   const handleOnSuccess = () => {
-    if (failPayment?.maximum_cod_order_amount > failPayment?.order_amount) {
+    const orderAmt =
+      resolvedAmount != null && resolvedAmount > 0
+        ? resolvedAmount
+        : failPayment?.order_amount;
+    const maxCod = failPayment?.maximum_cod_order_amount;
+    if (!maxCod || maxCod > orderAmt) {
       paymentMethodUpdateMutation(formData, {
         onSuccess: (response) => {
           toast.success(
@@ -204,7 +253,9 @@ const CheckoutFailedCard = ({
               color={theme.palette.neutral[1000]}
             >
               {getAmountWithSign(
-                failPayment?.partially_paid_amount > 0
+                resolvedAmount != null && resolvedAmount > 0
+                  ? resolvedAmount
+                  : failPayment?.partially_paid_amount > 0
                   ? failPayment?.order_amount -
                       failPayment?.partially_paid_amount
                   : failPayment?.order_amount

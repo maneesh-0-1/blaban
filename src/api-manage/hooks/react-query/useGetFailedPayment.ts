@@ -5,7 +5,7 @@ import { getGuestId } from "helper-functions/getToken";
 
 
 const getData = async (order_id: string) => {
-  const { data } = await MainApi.get(`${payment_failed_api}?order_id=${order_id}&&guest_id=${getGuestId()}`);
+  const { data } = await MainApi.get(`${payment_failed_api}?order_id=${order_id}&guest_id=${getGuestId()}`);
   return data;
 };
 
