@@ -19,9 +19,10 @@ import Router from "next/router";
 import React, { useEffect, useMemo, useReducer, useState, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useDispatch, useSelector } from "react-redux";
 import { setClearCart, setRemoveItemFromCart } from "redux/slices/cart";
+import { clearCartOnOrderSuccess } from "helper-functions/clearCartHelper";
 import {
   setOfflineInfoStep,
   setOfflineMethod,
@@ -214,6 +215,58 @@ const ItemCheckout = (props) => {
   const [dDistance, setDDistance] = useState(null);
   const token = getToken();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
+
+  const saveOrderSummarySnapshot = (placedOrderId) => {
+    const activeName = token
+      ? ([profileInfo?.f_name, profileInfo?.l_name].filter(Boolean).join(" ").trim() || profileInfo?.name)
+      : (address?.contact_person_name || guestUserInfo?.contact_person_name);
+    const activePhone = token
+      ? (profileInfo?.phone || address?.contact_person_number)
+      : (address?.contact_person_number || guestUserInfo?.contact_person_number);
+    const activeEmail = token
+      ? (profileInfo?.email || address?.contact_person_email)
+      : (address?.contact_person_email || guestUserInfo?.contact_person_email);
+
+    const orderSummary = {
+      order_id: placedOrderId,
+      order_amount: totalAmount,
+      order_type: orderType,
+      payment_method: paymentMethod,
+      payment_status: paymentMethod === "cash_on_delivery" ? "unpaid" : "paid",
+      created_at: new Date().toISOString(),
+      store_name: storeData?.name || "B.Laban",
+      customer_name: activeName || "",
+      customer_phone: activePhone || "",
+      customer_email: activeEmail || "",
+      delivery_address:
+        orderType === "take_away"
+          ? (storeData?.address || "Pickup / Takeaway")
+          : (address?.address || ""),
+      block: address?.block || guestUserInfo?.block || "",
+      road: address?.road || guestUserInfo?.road || "",
+      house: address?.house || guestUserInfo?.house || "",
+      floor: address?.floor || guestUserInfo?.floor || "",
+      items: (cartList || []).map((ci) => ({
+        id: ci?.id,
+        name: ci?.name,
+        price: ci?.price,
+        quantity: ci?.quantity,
+        totalPrice: ci?.totalPrice,
+        image_full_url: ci?.image_full_url,
+        selectedOption: ci?.selectedOption,
+        food_variations: ci?.food_variations,
+        selectedAddons: ci?.selectedAddons,
+      })),
+    };
+
+    try {
+      localStorage.setItem("lastPlacedOrder", JSON.stringify(orderSummary));
+    } catch (e) {
+      console.error("Error saving lastPlacedOrder:", e);
+    }
+  };
+
   const { t } = useTranslation();
   const guest_id = getGuestId();
   const { method } = router.query;
@@ -819,26 +872,25 @@ const ItemCheckout = (props) => {
               }
               if (paymentMethod === "digital_payment") {
                 toast.success(response?.data?.message);
+                saveOrderSummarySnapshot(response?.data?.order_id);
+                clearCartOnOrderSuccess(dispatch, queryClient, storeId);
                 const paymentBaseUrl =
                   process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
-                const page = "my-orders";
-                const callBackUrl = token
-                  ? `${window.location.origin}/profile?page=${page}`
-                  : `${window.location.origin}/home`;
+                const callBackUrl = `${window.location.origin}/order-success?order_id=${response?.data?.order_id}&payment_method=${paymentMethod}`;
                 const resolvedCustomerId =
                   response?.data?.user_id ||
                   customerData?.data?.id ||
                   guest_id;
                 const url = `${paymentBaseUrl}/payment-mobile?order_id=${
                   response?.data?.order_id
-                }&customer_id=${resolvedCustomerId}&payment_platform=web&callback=${callBackUrl}&payment_method=${paymentMethod}`;
+                }&customer_id=${resolvedCustomerId}&payment_platform=web&callback=${encodeURIComponent(callBackUrl)}&payment_method=${paymentMethod}`;
                 localStorage.setItem("totalAmount", totalAmount);
                 clearMonthlySubKey(storeId);
-                dispatch(setClearCart());
                 window.location.href = url;
                 return;
               } else if (paymentMethod === "wallet") {
                 toast.success(response?.data?.message);
+                saveOrderSummarySnapshot(response?.data?.order_id);
                 setOrderId(response?.data?.order_id);
                 setOrderSuccess(true);
               } else {
@@ -891,11 +943,10 @@ const ItemCheckout = (props) => {
 
             if (isDigital) {
               toast.loading(t("Redirecting to payment gateway..."), { id: "payment-redirect" });
+              saveOrderSummarySnapshot(response?.data?.order_id);
+              clearCartOnOrderSuccess(dispatch, queryClient, storeId);
               const payment_platform = "web";
-              const page = "my-orders";
-              const callBackUrl = token
-                ? `${window.location.origin}/profile?page=${page}`
-                : `${window.location.origin}/home`;
+              const callBackUrl = `${window.location.origin}/order-success?order_id=${response?.data?.order_id}&payment_method=${paymentMethod}`;
               const paymentBaseUrl =
                 process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
               const resolvedCustomerId =
@@ -908,7 +959,6 @@ const ItemCheckout = (props) => {
               localStorage.setItem("totalAmount", totalAmount);
               dispatch(setGuestUserInfo(null));
               clearMonthlySubKey(storeId);
-              dispatch(setClearCart());
               window.location.assign(url);
               return;
             }
@@ -973,6 +1023,7 @@ const ItemCheckout = (props) => {
                 { shallow: true }
               );
             } else {
+              saveOrderSummarySnapshot(response?.data?.order_id);
               setOrderId(response?.data?.order_id);
               dispatch(
                 setOrderInformation({
@@ -1098,26 +1149,13 @@ const ItemCheckout = (props) => {
     }
   }, [orderSuccess]);
   const handleOrderSuccess = () => {
-    if (page === "buysetScheduleAt_now") {
-      dispatch(setRemoveItemFromCart(cartList?.[0]));
-    }
-    localStorage.setItem("totalAmount", totalAmount);
-    if (!token) {
-      Router.push("/home");
-    } else {
-      Router.push(
-        {
-          pathname: "/profile",
-          query: {
-            orderId: orderId || order_id,
-            page: "my-orders",
-            from: "checkout",
-          },
-        },
-        undefined,
-        { shallow: false }
-      );
-    }
+    const placedOrderId = orderId || order_id;
+    saveOrderSummarySnapshot(placedOrderId);
+    clearCartOnOrderSuccess(dispatch, queryClient, storeId);
+    Router.push({
+      pathname: "/order-success",
+      query: { order_id: placedOrderId },
+    });
   };
   const handleImageUpload = (value) => {
     setIsImageSelected([value]);

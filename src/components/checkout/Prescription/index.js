@@ -156,7 +156,7 @@ const PrescriptionCheckout = ({ storeId, page }) => {
         if (!getToken()) {
           router.push(
             {
-              pathname: "/home",
+              pathname: "/order-success",
               query: { order_id: res?.data?.order_id },
             },
             undefined,

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { alpha, Box, Button, Stack, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
 import giftbox from "./assets/giftbox.gif";
+import { clearCartOnOrderSuccess } from "helper-functions/clearCartHelper";
+import { useQueryClient } from "react-query";
 
 import { useTranslation } from "react-i18next";
-import { Stack } from "@mui/material";
 import {
   CustomColouredTypography,
   CustomStackFullWidth,
@@ -23,8 +23,9 @@ const SuccessCard = ({ configData, total, order_id }) => {
   const { t } = useTranslation();
   const [totalAmount, setTotalAmount] = useState(0);
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   useEffect(() => {
-    dispatch(setClearCart());
+    clearCartOnOrderSuccess(dispatch, queryClient);
     dispatch(setCampaignItemList());
     if (total) {
       setTotalAmount(total);

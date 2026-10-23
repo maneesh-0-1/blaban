@@ -495,9 +495,7 @@ const ParcelCheckout = () => {
             const payment_platform = "web";
             const page = "my-orders";
             localStorage.setItem("totalAmount", res?.total_ammount);
-            const callBackUrl = token
-              ? `${window.location.origin}/profile?page=${page}`
-              : `${window.location.origin}/home`;
+            const callBackUrl = `${window.location.origin}/order-success?order_id=${res?.order_id}&payment_method=${paymentMethod}`;
             const paymentBaseUrl =
               process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
             const resolvedCustomerId =
@@ -610,7 +608,7 @@ const ParcelCheckout = () => {
               );
               Router.push(
                 {
-                  pathname: "/home",
+                  pathname: "/order-success",
                   query: { order_id: res?.order_id },
                 },
                 undefined,
