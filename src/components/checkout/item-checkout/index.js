@@ -733,8 +733,7 @@ const ItemCheckout = (props) => {
             ...(sBranch?.name && {
               branch_name: sBranch.name,
             }),
-            ...(sArea?.id && {
-              delivery_area_id: sArea.id,
+            ...(sArea?.name && {
               delivery_area_name: sArea.name,
               ...(sArea?.branch?.name && {
                 branch_name: sArea.branch.name,
