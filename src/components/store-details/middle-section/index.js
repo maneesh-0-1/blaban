@@ -127,6 +127,33 @@ export const getLowToHigh = (data) => {
     return data;
   }
 };
+// ── LazySection: Defers hydration and rendering of below-the-fold catalog sections ──
+const LazySection = ({ children, sectionKey, sectionRefs, isPriority = false }) => {
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    rootMargin: "350px 0px",
+  });
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        minHeight: inView || isPriority ? "auto" : 350,
+      }}
+    >
+      <div
+        ref={(el) => {
+          if (sectionRefs?.current && sectionKey) {
+            sectionRefs.current[sectionKey] = el;
+          }
+        }}
+      >
+        {inView || isPriority ? children : null}
+      </div>
+    </div>
+  );
+};
+
 const MiddleSection = (props) => {
   const {
     storeDetails,
@@ -1148,7 +1175,7 @@ const MiddleSection = (props) => {
 
                   return (
                     <Stack spacing={{ xs: 3, md: 5 }}>
-                      {sections.map((section) => {
+                      {sections.map((section, idx) => {
                         const isExpanded = !!expandedCategories[section.key];
                         const bannerImage =
                           section.image ||
@@ -1158,17 +1185,19 @@ const MiddleSection = (props) => {
                             : null);
 
                         return (
-                          <Stack
+                          <LazySection
                             key={section.key}
-                            ref={(el) => {
-                              sectionRefs.current[section.key] = el;
-                            }}
-                            spacing={1.5}
-                            sx={{
-                              contentVisibility: "auto",
-                              containIntrinsicSize: "0 350px",
-                            }}
+                            sectionKey={section.key}
+                            sectionRefs={sectionRefs}
+                            isPriority={idx < 2}
                           >
+                            <Stack
+                              spacing={1.5}
+                              sx={{
+                                contentVisibility: "auto",
+                                containIntrinsicSize: "0 350px",
+                              }}
+                            >
                             {/* ── Category Image Banner (matching labanxlaban reference) ── */}
                             {bannerImage && (
                               <Box
@@ -1301,8 +1330,9 @@ const MiddleSection = (props) => {
                               </Box>
                             )}
                           </Stack>
-                        );
-                      })}
+                        </LazySection>
+                      );
+                    })}
                     </Stack>
                   );
                 })()

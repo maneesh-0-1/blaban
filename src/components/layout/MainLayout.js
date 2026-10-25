@@ -15,9 +15,10 @@ import useGetLandingPage from "api-manage/hooks/react-query/useGetLandingPage";
 import useScrollDirection from "hooks/useScrollDirection";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { ModuleTypes } from "helper-functions/moduleTypes";
-import SearchProductModal from "../home/search/SearchProductModal";
+import dynamic from "next/dynamic";
 import FloatingCartButton from "../header/new-navbar/FloatingCartButton";
-import FloatingWhatsAppButton from "../common/FloatingWhatsAppButton";
+const SearchProductModal = dynamic(() => import("../home/search/SearchProductModal"), { ssr: false });
+const FloatingWhatsAppButton = dynamic(() => import("../common/FloatingWhatsAppButton"), { ssr: false });
 
 // Routes that own their own sticky/in-flow header on mobile (no extra mt needed).
 // Adding a route here removes the default mobile navbar offset on that page.
