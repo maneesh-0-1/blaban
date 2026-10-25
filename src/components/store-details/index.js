@@ -23,7 +23,7 @@ import AccountLanguageButton from "components/header/second-navbar/account-popov
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getToken } from "helper-functions/getToken";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
-import Prescription from "../Prescription";
+const Prescription = dynamic(() => import("../Prescription"), { ssr: false });
 import CustomContainer from "../container";
 import Top from "./Top";
 import MiddleSection from "./middle-section";
@@ -36,10 +36,10 @@ import CustomModal from "components/modal";
 const StoreCartSidebar = dynamic(() => import("./StoreCartSidebar"), { ssr: false });
 const RestaurantReviewModal = dynamic(() => import("components/store-details/ReviewModal"), { ssr: false });
 import useScrollToTop from "api-manage/hooks/custom-hooks/useScrollToTop";
-import LastOrdersSection from "components/home/module-wise-components/food/LastOrdersSection";
+const LastOrdersSection = dynamic(() => import("components/home/module-wise-components/food/LastOrdersSection"), { ssr: false });
 import useGetProActiveOffer from "api-manage/hooks/react-query/pro-plans/useGetProActiveOffer";
 import useSubscribeProPlan from "api-manage/hooks/react-query/pro-plans/useSubscribeProPlan";
-import ProPlanBanner from "components/pro-plan/ProPlanBanner";
+const ProPlanBanner = dynamic(() => import("components/pro-plan/ProPlanBanner"), { ssr: false });
 import ProSavingsBanner from "components/pro-plan/ProSavingsBanner";
 
 const ProPlanSubscriptionModal = dynamic(() =>
@@ -63,7 +63,7 @@ import {
   persistBranchSelection,
 } from "utils/branchHelper";
 
-const MapModal = dynamic(() => import("../Map/MapModal"));
+const MapModal = dynamic(() => import("../Map/MapModal"), { ssr: false });
 
 const parseZoneIdsFromStorageValue = (rawZoneIds) => {
   if (!rawZoneIds) return [];

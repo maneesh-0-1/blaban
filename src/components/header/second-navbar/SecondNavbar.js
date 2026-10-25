@@ -59,7 +59,7 @@ import {
 import TrackOrderSvg from "components/header/TrackOrderSvg";
 import NextImage from "components/NextImage";
 import trackImage from "./assets/fi_2726193.png";
-const AuthModal = dynamic(() => import("components/auth/AuthModal"));
+const AuthModal = dynamic(() => import("components/auth/AuthModal"), { ssr: false });
 
 const parseJsonFromStorage = (value) => {
   if (!value) return null;

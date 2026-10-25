@@ -50,7 +50,7 @@ const AllCartDrawer = dynamic(() => import("./AllCartDrawer"), { ssr: false });
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getModuleIdentifier, saveModuleParam } from "utils/moduleParamManager";
 
-const AuthModal = dynamic(() => import("components/auth/AuthModal"));
+const AuthModal = dynamic(() => import("components/auth/AuthModal"), { ssr: false });
 
 // â”€â”€â”€ Styled â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 

@@ -11,7 +11,7 @@ import WishListCardView from "../wishlist";
 import ProfileDrawer from "./ProfileDrawer";
 import NextImage from "components/NextImage";
 
-const AuthModal = dynamic(() => import("components/auth/AuthModal"));
+const AuthModal = dynamic(() => import("components/auth/AuthModal"), { ssr: false });
 
 const NAV_ITEMS = [
   {

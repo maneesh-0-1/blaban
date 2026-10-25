@@ -71,8 +71,8 @@ import CartIcon from "../added-cart-view/assets/CartIcon";
 import CustomDialogConfirm from "../custom-dialog/confirm/CustomDialogConfirm";
 import { PrimaryButton } from "../Map/map.style";
 import { getToken } from "../../helper-functions/getToken";
-import ProPlanBanner from "../pro-plan/ProPlanBanner";
-import ProSavingsBanner from "../pro-plan/ProSavingsBanner";
+const ProPlanBanner = dynamic(() => import("../pro-plan/ProPlanBanner"), { ssr: false });
+const ProSavingsBanner = dynamic(() => import("../pro-plan/ProSavingsBanner"), { ssr: false });
 import useGetSuggestedItems from "../../api-manage/hooks/react-query/product-details/useGetSuggestedItems";
 import useGetProActiveOffer from "../../api-manage/hooks/react-query/pro-plans/useGetProActiveOffer";
 import useSubscribeProPlan from "../../api-manage/hooks/react-query/pro-plans/useSubscribeProPlan";
@@ -91,7 +91,7 @@ const FoodDetailModal = dynamic(() =>
   import("../food-details/foodDetail-modal/FoodDetailModal")
 );
 const ModuleModal = dynamic(() => import("../cards/ModuleModal"));
-const AuthModal = dynamic(() => import("../auth/AuthModal"));
+const AuthModal = dynamic(() => import("../auth/AuthModal"), { ssr: false });
 const GuestCheckoutModal = dynamic(() => import("../cards/GuestCheckoutModal"));
 
 const SidebarSurface = styled(Box)(({ theme }) => ({

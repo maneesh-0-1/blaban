@@ -62,7 +62,8 @@ import { addWishList, removeWishListItem } from "../../redux/slices/wishList";
 import AmountWithDiscountedAmount from "../AmountWithDiscountedAmount";
 import CustomDialogConfirm from "../custom-dialog/confirm/CustomDialogConfirm";
 import CustomMultipleRatings from "../CustomMultipleRatings";
-import GetLocationAlert from "../GetLocationAlert";
+import dynamic from "next/dynamic";
+const GetLocationAlert = dynamic(() => import("../GetLocationAlert"), { ssr: false });
 import { HeartWrapper } from "../home/stores-with-filter/cards-grid/StoresInfoCard";
 import CustomLinearProgressbar from "../linear-progressbar";
 import CustomModal from "../modal";
@@ -1407,4 +1408,4 @@ const ProductCard = (props) => {
 
 ProductCard.propTypes = {};
 
-export default ProductCard;
+export default React.memo(ProductCard);

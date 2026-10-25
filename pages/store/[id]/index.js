@@ -106,6 +106,24 @@ const fetchWithCache = async (url, options, ttlMs) => {
   }
 };
 
+const pruneStoreDetails = (raw) => {
+  if (!raw || typeof raw !== "object") return null;
+  const {
+    storage,
+    translations,
+    tin,
+    tin_expire_date,
+    tin_certificate_image,
+    tin_certificate_image_full_url,
+    comment,
+    package_id,
+    pickup_zone_id,
+    ad,
+    ...clean
+  } = raw;
+  return clean;
+};
+
 export const getServerSideProps = async (context) => {
   const {
     id: storeId,
@@ -200,7 +218,7 @@ export const getServerSideProps = async (context) => {
     return {
       props: {
         configData: configData || null,
-        storeDetails: storeDetails || null,
+        storeDetails: pruneStoreDetails(storeDetails),
         distance: distance || null,
       },
     };

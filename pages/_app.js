@@ -16,7 +16,7 @@ import { SettingsConsumer, SettingsProvider } from "contexts/settings-context";
 import "../src/language/i18n";
 import "../src/utils/localStoragePollerFix";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
+
 import nProgress from "nprogress";
 import Router from "next/router";
 import { persistStore } from "redux-persist";

@@ -36,7 +36,8 @@ import useGetGeoCode from "../../api-manage/hooks/react-query/google-api/useGetG
 import useGetZoneId from "../../api-manage/hooks/react-query/google-api/useGetZone";
 import useGetPlaceDetails from "../../api-manage/hooks/react-query/google-api/useGetPlaceDetails";
 import { useDispatch, useSelector } from "react-redux";
-import GoogleMapComponent from "./GoogleMapComponent";
+import dynamic from "next/dynamic";
+const GoogleMapComponent = dynamic(() => import("./GoogleMapComponent"), { ssr: false });
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 import { ModuleSelection } from "../landing-page/hero-section/module-selection";

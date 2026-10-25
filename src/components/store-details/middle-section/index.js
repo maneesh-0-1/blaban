@@ -610,6 +610,90 @@ const MiddleSection = (props) => {
     return Array.from(map.values());
   }, [isSearchActive, normalizedQuery, allStoreProducts, state.searchKey, state.data?.products]);
 
+  // Memoized category sections and grouped products to eliminate heavy CPU
+  // calculations (JSON parsing, nested iteration, and filtering) from the render path.
+  const sections = useMemo(() => {
+    const productsByCat = {};
+    if (data?.pages?.length > 0) {
+      data.pages.forEach((p) => {
+        if (p?.category_wise_items && typeof p.category_wise_items === "object") {
+          Object.entries(p.category_wise_items).forEach(([catId, items]) => {
+            if (Array.isArray(items)) {
+              const key = String(catId);
+              if (!productsByCat[key]) productsByCat[key] = [];
+              items.forEach((item) => {
+                if (!productsByCat[key].some((x) => x?.id === item?.id)) {
+                  productsByCat[key].push(item);
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+
+    if (state.data?.category_wise_items && typeof state.data.category_wise_items === "object") {
+      Object.entries(state.data.category_wise_items).forEach(([catId, items]) => {
+        if (Array.isArray(items)) {
+          const key = String(catId);
+          if (!productsByCat[key]) productsByCat[key] = [];
+          items.forEach((item) => {
+            if (!productsByCat[key].some((x) => x?.id === item?.id)) {
+              productsByCat[key].push(item);
+            }
+          });
+        }
+      });
+    }
+
+    allStoreProducts.forEach((p) => {
+      const ids = new Set();
+      let catIds = p?.category_ids;
+      if (typeof catIds === "string") {
+        try {
+          catIds = JSON.parse(catIds);
+        } catch {
+          catIds = [];
+        }
+      }
+      if (Array.isArray(catIds)) {
+        catIds.forEach((c) => {
+          const id = c?.id ?? c;
+          if (id != null && String(id) !== "0") ids.add(String(id));
+        });
+      }
+      if (p?.category_id != null) {
+        ids.add(String(p.category_id));
+      }
+      ids.forEach((id) => {
+        if (!productsByCat[id]) productsByCat[id] = [];
+        if (!productsByCat[id].some((x) => x?.id === p?.id)) {
+          productsByCat[id].push(p);
+        }
+      });
+    });
+
+    const rawSec = (categoryList || []).map((cat) => {
+      const items = productsByCat[String(cat?.id)] || [];
+      return {
+        key: String(cat?.id),
+        title: cat?.name,
+        image:
+          cat?.image_full_url ||
+          (cat?.image
+            ? `${configData?.base_urls?.category_image_url || "https://admin.blabankw.com/storage/app/public/category"}/${cat.image}`
+            : null),
+        items,
+      };
+    }).filter((s) => s.items?.length > 0);
+
+    const specSec = rawSec.filter(
+      (s) => String(s?.title || "").trim().toLowerCase() !== "all products"
+    );
+
+    return specSec.length > 0 ? specSec : rawSec;
+  }, [allStoreProducts, data?.pages, state.data?.category_wise_items, categoryList, configData?.base_urls?.category_image_url]);
+
   // React-Query automatically queries when pageParams/query keys change.
   useEffect(() => {
     if (state.searchKey) {
@@ -1082,108 +1166,6 @@ const MiddleSection = (props) => {
                     );
                   }
 
-                  const allProducts = allStoreProducts;
-
-                  // Group products by their category id.
-                  // 1. Direct from category_wise_items (most accurate from backend API)
-                  const productsByCategory = {};
-
-                  if (data?.pages?.length > 0) {
-                    data.pages.forEach((p) => {
-                      if (p?.category_wise_items && typeof p.category_wise_items === "object") {
-                        Object.entries(p.category_wise_items).forEach(([catId, items]) => {
-                          if (Array.isArray(items)) {
-                            const key = String(catId);
-                            if (!productsByCategory[key]) productsByCategory[key] = [];
-                            items.forEach((item) => {
-                              if (!productsByCategory[key].some((x) => x?.id === item?.id)) {
-                                productsByCategory[key].push(item);
-                              }
-                            });
-                          }
-                        });
-                      }
-                    });
-                  }
-
-                  if (state.data?.category_wise_items && typeof state.data.category_wise_items === "object") {
-                    Object.entries(state.data.category_wise_items).forEach(([catId, items]) => {
-                      if (Array.isArray(items)) {
-                        const key = String(catId);
-                        if (!productsByCategory[key]) productsByCategory[key] = [];
-                        items.forEach((item) => {
-                          if (!productsByCategory[key].some((x) => x?.id === item?.id)) {
-                            productsByCategory[key].push(item);
-                          }
-                        });
-                      }
-                    });
-                  }
-
-                  // 2. Also map from allProducts in case products were added/filtered or category_wise_items is incomplete
-                  allProducts.forEach((p) => {
-                    const ids = new Set();
-                    let catIds = p?.category_ids;
-                    if (typeof catIds === "string") {
-                      try {
-                        catIds = JSON.parse(catIds);
-                      } catch {
-                        catIds = [];
-                      }
-                    }
-                    if (Array.isArray(catIds)) {
-                      catIds.forEach((c) => {
-                        const id = c?.id ?? c;
-                        if (id != null && String(id) !== "0") ids.add(String(id));
-                      });
-                    }
-                    if (p?.category_id != null) {
-                      ids.add(String(p.category_id));
-                    }
-                    ids.forEach((id) => {
-                      if (!productsByCategory[id]) productsByCategory[id] = [];
-                      if (!productsByCategory[id].some((x) => x?.id === p?.id)) {
-                        productsByCategory[id].push(p);
-                      }
-                    });
-                  });
-
-                  // Sort the popular section client-side using the same
-                  // discounted-price helpers used elsewhere. The backend
-                  // sort_by is honored for the API call (and for the
-                  // category sections, which keep backend order), but the
-                  // popular slider is sorted again here to guarantee the
-                  // visual order matches the user's selection regardless
-                  // of whether the endpoint actually honored sort_by.
-                  // Copy the array before sorting — getHighToLow/Low
-                  // mutate in place.
-                  const popularSource = allProducts.slice(0, 10);
-                  let popularItems = popularSource;
-                  if (state.sortBy === "high") {
-                    popularItems = getHighToLow([...popularSource]);
-                  } else if (state.sortBy === "low") {
-                    popularItems = getLowToHigh([...popularSource]);
-                  }
-
-                  const rawSections = categoryList.map((cat) => {
-                    const items = productsByCategory[String(cat?.id)] || [];
-                    return {
-                      key: String(cat?.id),
-                      title: cat?.name,
-                      image:
-                        cat?.image_full_url ||
-                        (cat?.image
-                          ? `${configData?.base_urls?.category_image_url || "https://admin.blabankw.com/storage/app/public/category"}/${cat.image}`
-                          : null),
-                      items,
-                    };
-                  }).filter((s) => s.items?.length > 0);
-
-                  const specificSections = rawSections.filter(
-                    (s) => String(s?.title || "").trim().toLowerCase() !== "all products"
-                  );
-
-                  const sections = specificSections.length > 0 ? specificSections : rawSections;
 
                   return (
                     <Stack spacing={{ xs: 3, md: 5 }}>
@@ -1269,7 +1251,7 @@ const MiddleSection = (props) => {
                                   "&::-webkit-scrollbar": { display: "none" },
                                 }}
                               >
-                                {section.items.map((item) => (
+                                {(section.items.slice(0, 8)).map((item) => (
                                   <Box
                                     key={`${section.key}-${item?.id}`}
                                     sx={{
