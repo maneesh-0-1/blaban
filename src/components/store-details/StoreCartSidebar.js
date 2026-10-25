@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -157,48 +157,16 @@ const CartItemRow = ({ cartItem }) => {
     useDeleteCartItem();
   const { mutate: updateMutate, isLoading } = useCartItemUpdate();
 
-  const onIncrementSuccess = (res) => {
-    if (res) {
-      res?.forEach((item) => {
-        if (cartItem?.cartItemId === item?.id) {
-          const product = {
-            ...item?.item,
-            cartItemId: item?.id,
-            totalPrice: item?.price,
-            quantity: item?.quantity,
-            food_variations: item?.item?.food_variations,
-            selectedAddons: item?.item?.addons,
-            itemBasePrice: item?.item?.price,
-            selectedOption: item?.variation,
-          };
-          dispatch(setIncrementToCartItem(product));
-        }
-      });
-    }
-  };
+  const debounceTimerRef = useRef(null);
 
-  const onDecrementSuccess = (res) => {
-    if (res) {
-      res?.forEach((item) => {
-        if (cartItem?.cartItemId === item?.id) {
-          const product = {
-            ...item?.item,
-            cartItemId: item?.id,
-            totalPrice: item?.price,
-            quantity: item?.quantity,
-            food_variations: item?.item?.food_variations,
-            selectedAddons: item?.item?.addons,
-            itemBasePrice: item?.item?.price,
-            selectedOption: item?.variation,
-          };
-          dispatch(setDecrementToCartItem(product));
-        }
-      });
-    }
-  };
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
 
   const handleIncrement = () => {
-    const updateQuantity = cartItem?.quantity + 1;
+    const updateQuantity = Number(cartItem?.quantity || 1) + 1;
     const price =
       cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
     const productPrice = price * updateQuantity;
@@ -235,13 +203,31 @@ const CartItemRow = ({ cartItem }) => {
       return;
     }
 
-    updateMutate(itemObject, {
-      onSuccess: onIncrementSuccess,
-      onError: onErrorResponse,
-    });
+    // ── Instant Optimistic Update (0ms) ──
+    const optimisticProduct = {
+      ...cartItem,
+      totalPrice: productPrice,
+      quantity: updateQuantity,
+    };
+    dispatch(setIncrementToCartItem(optimisticProduct));
+
+    // ── Debounced Server Sync (250ms) ──
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      updateMutate(itemObject, {
+        onError: (err) => {
+          dispatch(setDecrementToCartItem(cartItem));
+          onErrorResponse(err);
+        },
+      });
+    }, 250);
   };
 
   const handleDecrement = () => {
+    if (cartItem?.quantity <= 1) {
+      handleRemove();
+      return;
+    }
     const updateQuantity = cartItem?.quantity - 1;
     const price =
       cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
@@ -258,10 +244,25 @@ const CartItemRow = ({ cartItem }) => {
       mainPrice,
       guestId
     );
-    updateMutate(itemObject, {
-      onSuccess: onDecrementSuccess,
-      onError: onErrorResponse,
-    });
+
+    // ── Instant Optimistic Update (0ms) ──
+    const optimisticProduct = {
+      ...cartItem,
+      totalPrice: productPrice,
+      quantity: updateQuantity,
+    };
+    dispatch(setDecrementToCartItem(optimisticProduct));
+
+    // ── Debounced Server Sync (250ms) ──
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      updateMutate(itemObject, {
+        onError: (err) => {
+          dispatch(setIncrementToCartItem(cartItem));
+          onErrorResponse(err);
+        },
+      });
+    }, 250);
   };
 
   const handleRemove = () => {
@@ -417,7 +418,7 @@ const CartItemRow = ({ cartItem }) => {
               >
                 {cartItem?.quantity}
               </Typography>
-              <QtyButton onClick={handleIncrement} disabled={isLoading} title={t("Increase")}>
+              <QtyButton onClick={handleIncrement} title={t("Increase")}>
                 <AddIcon sx={{ fontSize: 18 }} />
               </QtyButton>
             </Stack>

@@ -28,6 +28,78 @@ const initialState = {
   },
 };
 const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+const updateListQuantity = (list, payload, isIncrement = true) => {
+  if (!Array.isArray(list) || list.length === 0) return [];
+  const targetCartItemId = payload?.cartItemId ?? payload?.id;
+  const isFood = getCurrentModuleType() === "food";
+  const hasFoodVariations = Array.isArray(payload?.food_variations) && payload.food_variations.length > 0;
+
+  return list.map((item) => {
+    const isCartItemMatch =
+      (payload?.cartItemId != null && item?.cartItemId === payload?.cartItemId) ||
+      (item?.cartItemId != null && item?.cartItemId === targetCartItemId);
+
+    const isFoodVariationMatch =
+      isFood &&
+      hasFoodVariations &&
+      item.id === payload.id &&
+      isEqual(item.food_variations, payload.food_variations);
+
+    const isNonFoodVariationMatch =
+      !isFood &&
+      item.id === payload.id &&
+      JSON.stringify(item?.selectedOption) === JSON.stringify(payload?.selectedOption);
+
+    const isSimpleIdMatch =
+      item.id === payload.id &&
+      (!hasFoodVariations || !item?.food_variations || item.food_variations.length === 0);
+
+    const isMatch = isCartItemMatch || isFoodVariationMatch || isNonFoodVariationMatch || isSimpleIdMatch;
+
+    if (!isMatch) return item;
+
+    const newQty = payload.quantity !== undefined
+      ? payload.quantity
+      : (isIncrement ? item.quantity + 1 : Math.max(1, item.quantity - 1));
+
+    const unitPrice = (item.quantity > 0 && item.totalPrice)
+      ? (item.totalPrice / item.quantity)
+      : (item.price || 0);
+
+    const newTotalPrice = payload.totalPrice !== undefined
+      ? payload.totalPrice
+      : unitPrice * newQty;
+
+    return {
+      ...item,
+      ...payload,
+      quantity: Math.max(1, newQty),
+      totalPrice: newTotalPrice,
+    };
+  });
+};
+
+const removeItemFromList = (list, payload) => {
+  if (!Array.isArray(list) || list.length === 0) return [];
+  const targetCartItemId = payload?.cartItemId ?? payload?.id;
+
+  return list.filter((cartItem) => {
+    if (payload?.cartItemId != null && cartItem?.cartItemId === payload.cartItemId) {
+      return false;
+    }
+    if (cartItem?.cartItemId != null && cartItem.cartItemId === targetCartItemId) {
+      return false;
+    }
+    if (cartItem?.id === payload?.id) {
+      if (payload?.selectedOption || cartItem?.selectedOption) {
+        return JSON.stringify(cartItem?.selectedOption) !== JSON.stringify(payload?.selectedOption);
+      }
+      return false;
+    }
+    return true;
+  });
+};
 export const cartSlice = createSlice({
   name: "cart",
   initialState,
@@ -133,113 +205,16 @@ export const cartSlice = createSlice({
       }
     },
     setIncrementToCartItem: (state = initialState, action) => {
-      let newData;
-      if (getCurrentModuleType() === "food") {
-        if (action.payload.food_variations.length > 0) {
-          let index = state.cartList.findIndex((item) =>
-            isEqual(item.food_variations, action.payload.food_variations)
-          );
-          newData = state.cartList.map((item, i) =>
-            // action.payload.totalPrice * action.payload.quantity  +
-
-            i === index
-              ? {
-                  ...item,
-                  totalPrice: action.payload.totalPrice,
-                  quantity: action.payload.quantity,
-                }
-              : item
-          );
-        } else {
-          newData = state.cartList.map((item) =>
-            item.id === action.payload.id
-              ? {
-                  ...item,
-                  totalPrice: action.payload.totalPrice,
-                  quantity: action.payload.quantity,
-                }
-              : item
-          );
-        }
-      } else {
-        newData = state.cartList.map((stateItem) => {
-          if (
-            stateItem.id === action.payload.id &&
-            JSON.stringify(stateItem?.selectedOption) ===
-              JSON.stringify(action.payload?.selectedOption)
-          ) {
-            return {
-              ...action.payload,
-              price: action.payload.price,
-              quantity: action.payload.quantity,
-              totalPrice: action.payload.totalPrice,
-            };
-          } else {
-            return stateItem;
-          }
-        });
-      }
-      state.cartList = newData;
+      state.cartList = updateListQuantity(state.cartList, action.payload, true);
+      state.storeCartList = updateListQuantity(state.storeCartList, action.payload, true);
     },
     setDecrementToCartItem: (state = initialState, action) => {
-      // without food module
-      let newData;
-      if (getCurrentModuleType() === "food") {
-        if (action.payload.food_variations.length > 0) {
-          let index = state.cartList.findIndex((item) =>
-            isEqual(item.food_variations, action.payload.food_variations)
-          );
-
-          newData = state.cartList.map((item, i) =>
-            i === index
-              ? {
-                  ...item,
-                  totalPrice: action.payload.totalPrice,
-                  quantity: action.payload.quantity,
-                }
-              : item
-          );
-        } else {
-          newData = state.cartList.map((item) =>
-            item.id === action.payload.id
-              ? {
-                  ...item,
-                  totalPrice: action.payload.totalPrice,
-                  quantity: action.payload.quantity,
-                }
-              : item
-          );
-        }
-      } else {
-        newData = state.cartList.map((stateItem) => {
-          if (
-            stateItem.id === action.payload.id &&
-            JSON.stringify(stateItem?.selectedOption) ===
-              JSON.stringify(action.payload?.selectedOption)
-          ) {
-            return {
-              ...action.payload,
-              price: action.payload.price,
-              quantity: action.payload.quantity,
-              totalPrice: action.payload.totalPrice,
-            };
-          } else {
-            return stateItem;
-          }
-        });
-      }
-
-      state.cartList = newData;
+      state.cartList = updateListQuantity(state.cartList, action.payload, false);
+      state.storeCartList = updateListQuantity(state.storeCartList, action.payload, false);
     },
     setRemoveItemFromCart: (state = initialState, action) => {
-      state.cartList = state.cartList.filter((cartItem) =>
-        cartItem.module_type === action.payload.module_type
-          ? cartItem?.id === action.payload.id
-            ? JSON.stringify(cartItem?.selectedOption) !==
-              JSON.stringify(action.payload?.selectedOption)
-            : cartItem
-          : cartItem
-      );
+      state.cartList = removeItemFromList(state.cartList, action.payload);
+      state.storeCartList = removeItemFromList(state.storeCartList, action.payload);
     },
     setCampaignItemList: (state = initialState, action) => {
       state.campaignItemList = [action.payload];

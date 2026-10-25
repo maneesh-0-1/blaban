@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Typography, useMediaQuery } from "@mui/material";
 import CustomImageContainer from "../CustomImageContainer";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
@@ -54,6 +54,7 @@ const CartContent = (props) => {
   const guestId = localStorage.getItem("guest_id");
   const { mutate, isLoading: removeIsLoading } = useDeleteCartItem();
   const { mutate: updateMutate, isLoading } = useCartItemUpdate();
+  const debounceTimerRef = useRef(null);
 
   const cartUpdateHandleSuccess = (res) => {
     if (res) {
@@ -95,10 +96,9 @@ const CartContent = (props) => {
     }
   };
   const handleIncrement = (cartItem) => {
-    const updateQuantity = cartItem?.quantity + 1;
+    const updateQuantity = Number(cartItem?.quantity || 1) + 1;
     const price =
       cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
-    //here quantity is incremented with number 1
     const productPrice = price * updateQuantity;
     const mainPrice =
       getCurrentModuleType() === "food"
@@ -117,42 +117,53 @@ const CartContent = (props) => {
     if (getCurrentModuleType() !== "food") {
       if (cartItem?.stock <= cartItem?.quantity) {
         toast.error(t(out_of_stock));
-      } else {
-        if (cartItem?.maximum_cart_quantity) {
-          if (cartItem?.maximum_cart_quantity <= cartItem?.quantity) {
-            toast.error(t(out_of_limits), { id: "out-of-limits" });
-          } else {
-            updateMutate(itemObject, {
-              onSuccess: cartUpdateHandleSuccess,
-              onError: onErrorResponse,
-            });
-          }
-        } else {
-          updateMutate(itemObject, {
-            onSuccess: cartUpdateHandleSuccess,
-            onError: onErrorResponse,
-          });
-        }
+        return;
+      }
+      if (
+        cartItem?.maximum_cart_quantity &&
+        cartItem?.maximum_cart_quantity <= cartItem?.quantity
+      ) {
+        toast.error(t(out_of_limits), { id: "out-of-limits" });
+        return;
       }
     } else {
-      if (cartItem?.maximum_cart_quantity) {
-        if (cartItem?.maximum_cart_quantity <= cartItem?.quantity) {
-          toast.error(t(out_of_limits));
-        } else {
-        }
+      if (
+        cartItem?.maximum_cart_quantity &&
+        cartItem?.maximum_cart_quantity <= cartItem?.quantity
+      ) {
+        toast.error(t(out_of_limits));
+        return;
       }
-      updateMutate(itemObject, {
-        onSuccess: cartUpdateHandleSuccess,
-        onError: onErrorResponse,
-      });
     }
+
+    // ── Instant Optimistic Update (0ms) ──
+    dispatch(
+      setIncrementToCartItem({
+        ...cartItem,
+        totalPrice: productPrice,
+        quantity: updateQuantity,
+      })
+    );
+
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      updateMutate(itemObject, {
+        onError: (err) => {
+          dispatch(setDecrementToCartItem(cartItem));
+          onErrorResponse(err);
+        },
+      });
+    }, 250);
   };
 
   const handleDecrement = () => {
+    if (cartItem?.quantity <= 1) {
+      handleRemove();
+      return;
+    }
     const updateQuantity = cartItem?.quantity - 1;
     const price =
       cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
-    //here quantity is decremented with number 1
     const productPrice = price * updateQuantity;
     const mainPrice =
       getCurrentModuleType() === "food"
@@ -166,10 +177,25 @@ const CartContent = (props) => {
       mainPrice,
       guestId
     );
-    updateMutate(itemObject, {
-      onSuccess: cartUpdateHandleSuccessDecrement,
-      onError: onErrorResponse,
-    });
+
+    // ── Instant Optimistic Update (0ms) ──
+    dispatch(
+      setDecrementToCartItem({
+        ...cartItem,
+        totalPrice: productPrice,
+        quantity: updateQuantity,
+      })
+    );
+
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      updateMutate(itemObject, {
+        onError: (err) => {
+          dispatch(setIncrementToCartItem(cartItem));
+          onErrorResponse(err);
+        },
+      });
+    }, 250);
   };
 
   const handleSuccess = () => {
@@ -303,7 +329,7 @@ const CartContent = (props) => {
               aria-label="delete"
               size="small"
               sx={{ padding: "2px" }}
-              disabled={isLoading}
+              disabled={false}
             >
               <RemoveIcon
                 size="small"
@@ -315,20 +341,14 @@ const CartContent = (props) => {
               />
             </IconButton>
           )}
-          {isLoading ? (
-            <Stack width="16px" height="18px">
-              <Loading color={theme.palette.primary.main} />
-            </Stack>
-          ) : (
-            <Typography fontSize="12px" fontWeight="500">
-              {cartItem?.quantity}
-            </Typography>
-          )}
+          <Typography fontSize="12px" fontWeight="500">
+            {cartItem?.quantity}
+          </Typography>
 
           <IconButton
             aria-label="delete"
             sx={{ padding: "2px" }}
-            disabled={isLoading}
+            disabled={false}
           >
             <AddIcon
               sx={{

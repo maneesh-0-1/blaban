@@ -1,3 +1,4 @@
+import React, { useRef } from "react";
 import { Box, Divider, Stack, Typography, alpha, IconButton, Tooltip } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/Add";
@@ -51,6 +52,7 @@ const RegularOrders = (props) => {
 	const guestId = typeof window !== "undefined" ? localStorage.getItem("guest_id") : null;
 	const { mutate: deleteMutate, isLoading: removeIsLoading } = useDeleteCartItem();
 	const { mutate: updateMutate, isLoading: updateIsLoading } = useCartItemUpdate();
+	const debounceTimers = useRef({});
 
 	const handleRemove = (cartItem) => {
 		const cartIdAndGuestId = {
@@ -67,7 +69,7 @@ const RegularOrders = (props) => {
 	};
 
 	const handleIncrement = (cartItem) => {
-		const updateQuantity = cartItem?.quantity + 1;
+		const updateQuantity = Number(cartItem?.quantity || 1) + 1;
 		const price =
 			cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
 		const productPrice = price * updateQuantity;
@@ -104,28 +106,27 @@ const RegularOrders = (props) => {
 			return;
 		}
 
-		updateMutate(itemObject, {
-			onSuccess: (res) => {
-				if (res) {
-					res?.forEach((item) => {
-						if (cartItem?.cartItemId === item?.id || cartItem?.id === item?.id) {
-							const product = {
-								...item?.item,
-								cartItemId: item?.id,
-								totalPrice: item?.price,
-								quantity: item?.quantity,
-								food_variations: item?.item?.food_variations,
-								selectedAddons: item?.item?.addons,
-								itemBasePrice: item?.item?.price,
-								selectedOption: item?.variation,
-							};
-							dispatch(setIncrementToCartItem(product));
-						}
-					});
-				}
-			},
-			onError: onErrorResponse,
-		});
+		// ── Instant Optimistic Update (0ms) ──
+		dispatch(
+			setIncrementToCartItem({
+				...cartItem,
+				totalPrice: productPrice,
+				quantity: updateQuantity,
+			})
+		);
+
+		const timerKey = String(cartItem?.cartItemId ?? cartItem?.id);
+		if (debounceTimers.current[timerKey]) {
+			clearTimeout(debounceTimers.current[timerKey]);
+		}
+		debounceTimers.current[timerKey] = setTimeout(() => {
+			updateMutate(itemObject, {
+				onError: (err) => {
+					dispatch(setDecrementToCartItem(cartItem));
+					onErrorResponse(err);
+				},
+			});
+		}, 250);
 	};
 
 	const handleDecrement = (cartItem) => {
@@ -150,28 +151,27 @@ const RegularOrders = (props) => {
 			guestId
 		);
 
-		updateMutate(itemObject, {
-			onSuccess: (res) => {
-				if (res) {
-					res?.forEach((item) => {
-						if (cartItem?.cartItemId === item?.id || cartItem?.id === item?.id) {
-							const product = {
-								...item?.item,
-								cartItemId: item?.id,
-								totalPrice: item?.price,
-								quantity: item?.quantity,
-								food_variations: item?.item?.food_variations,
-								selectedAddons: item?.item?.addons,
-								itemBasePrice: item?.item?.price,
-								selectedOption: item?.variation,
-							};
-							dispatch(setDecrementToCartItem(product));
-						}
-					});
-				}
-			},
-			onError: onErrorResponse,
-		});
+		// ── Instant Optimistic Update (0ms) ──
+		dispatch(
+			setDecrementToCartItem({
+				...cartItem,
+				totalPrice: productPrice,
+				quantity: updateQuantity,
+			})
+		);
+
+		const timerKey = String(cartItem?.cartItemId ?? cartItem?.id);
+		if (debounceTimers.current[timerKey]) {
+			clearTimeout(debounceTimers.current[timerKey]);
+		}
+		debounceTimers.current[timerKey] = setTimeout(() => {
+			updateMutate(itemObject, {
+				onError: (err) => {
+					dispatch(setIncrementToCartItem(cartItem));
+					onErrorResponse(err);
+				},
+			});
+		}, 250);
 	};
 
 	const theme = useTheme();
@@ -275,7 +275,7 @@ const RegularOrders = (props) => {
 							<IconButton
 								size="small"
 								onClick={() => handleDecrement(item)}
-								disabled={updateIsLoading || removeIsLoading}
+								disabled={removeIsLoading}
 								sx={{
 									p: "3px",
 									color: theme.palette.text.primary,
@@ -301,7 +301,7 @@ const RegularOrders = (props) => {
 							<IconButton
 								size="small"
 								onClick={() => handleIncrement(item)}
-								disabled={updateIsLoading || removeIsLoading}
+								disabled={false}
 								sx={{
 									p: "3px",
 									color: theme.palette.text.primary,

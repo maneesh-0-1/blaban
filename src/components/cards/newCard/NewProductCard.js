@@ -1384,6 +1384,7 @@ const NewProductCard = ({
   const { mutate: addFavoriteMutation } = useAddToWishlist();
   const { mutate: wishlistDeleteMutate } = useWishListDelete();
   const wishlistPending = useRef(false);
+  const updateDebounceRef = useRef(null);
 
   // ── Cart add success handler ──
   const handleAddSuccess = (res) => {
@@ -1510,15 +1511,15 @@ const NewProductCard = ({
     }
   };
 
-  // ── Increment — exact logic from ProductCard ──
+  // ── Increment — instant optimistic update + debounced server sync ──
   const handleIncrement = () => {
     if (!isInCart) return;
-    if (updateLoading) return;
-    const updateQuantity = isInCart.quantity + 1;
+    const updateQuantity = Number(isInCart.quantity || 1) + 1;
+    const newPrice = getPriceAfterQuantityChange(isInCart, updateQuantity);
     const itemObject = getItemDataForAddToCart(
       isInCart,
       updateQuantity,
-      getPriceAfterQuantityChange(isInCart, updateQuantity),
+      newPrice,
       getGuestId()
     );
 
@@ -1530,13 +1531,7 @@ const NewProductCard = ({
         toast.error(t(out_of_limits), { id: "out-of-limits" });
         return;
       }
-      updateMutate(itemObject, {
-        onSuccess: cartUpdateHandleSuccess,
-        onError: onErrorResponse,
-      });
     } else {
-      // Variation-aware stock: if a variation is selected, use its stock.
-      // isInCart.stock is base product stock — not reliable for variation products.
       const selectedVariation = isInCart.selectedOption?.[0];
       const stockValue =
         selectedVariation && typeof selectedVariation.stock === "number"
@@ -1556,17 +1551,33 @@ const NewProductCard = ({
         toast.error(t(out_of_limits), { id: "out-of-limits" });
         return;
       }
-      updateMutate(itemObject, {
-        onSuccess: cartUpdateHandleSuccess,
-        onError: onErrorResponse,
-      });
     }
+
+    // ── Instant optimistic UI update (0ms) ──
+    reduxDispatch(
+      setIncrementToCartItem({
+        ...isInCart,
+        quantity: updateQuantity,
+        totalPrice: newPrice,
+      })
+    );
+
+    if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
+    updateDebounceRef.current = setTimeout(() => {
+      updateMutate(itemObject, {
+        onError: (err) => {
+          reduxDispatch(setDecrementToCartItem(isInCart));
+          onErrorResponse(err);
+        },
+      });
+    }, 250);
   };
 
-  // ── Decrement — exact logic from ProductCard ──
+  // ── Decrement — instant optimistic update + debounced server sync ──
   const handleDecrement = () => {
     if (!isInCart) return;
     if (isInCart.quantity === 1) {
+      reduxDispatch(setRemoveItemFromCart(isInCart));
       cartItemRemoveMutate(
         {
           cart_id: isInCart.cartItemId,
@@ -1575,26 +1586,44 @@ const NewProductCard = ({
         },
         {
           onSuccess: () => {
-            reduxDispatch(setRemoveItemFromCart(isInCart));
             toast.success(t("Removed from cart."));
           },
-          onError: onErrorResponse,
+          onError: (err) => {
+            reduxDispatch(setIncrementToCartItem(isInCart));
+            onErrorResponse(err);
+          },
         }
       );
     } else {
       const updateQuantity = isInCart.quantity - 1;
-      updateMutate(
-        getItemDataForAddToCart(
-          isInCart,
-          updateQuantity,
-          getPriceAfterQuantityChange(isInCart, updateQuantity),
-          getGuestId()
-        ),
-        {
-          onSuccess: cartUpdateHandleSuccessDecrement,
-          onError: onErrorResponse,
-        }
+      const newPrice = getPriceAfterQuantityChange(isInCart, updateQuantity);
+
+      // ── Instant optimistic UI update (0ms) ──
+      reduxDispatch(
+        setDecrementToCartItem({
+          ...isInCart,
+          quantity: updateQuantity,
+          totalPrice: newPrice,
+        })
       );
+
+      if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
+      updateDebounceRef.current = setTimeout(() => {
+        updateMutate(
+          getItemDataForAddToCart(
+            isInCart,
+            updateQuantity,
+            newPrice,
+            getGuestId()
+          ),
+          {
+            onError: (err) => {
+              reduxDispatch(setIncrementToCartItem(isInCart));
+              onErrorResponse(err);
+            },
+          }
+        );
+      }, 250);
     }
   };
 
