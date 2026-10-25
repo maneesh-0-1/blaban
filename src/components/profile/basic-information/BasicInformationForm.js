@@ -31,7 +31,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import VerifiedIcon from "components/profile/VerifiedIcon";
 import CustomModal from "components/modal";
 import OtpForm from "components/auth/sign-up/OtpForm";
-import { auth } from "firebase";
+import { auth } from "../../../firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { useFireBaseOtpVerify } from "api-manage/hooks/react-query/forgot-password/useFIreBaseOtpVerify";
 

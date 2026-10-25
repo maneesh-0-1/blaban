@@ -67,8 +67,23 @@ export const getCleanToken = (token) => {
   return clean;
 };
 
+let cachedTokenVal = undefined;
+let cachedGuestIdVal = undefined;
+
+if (typeof window !== "undefined") {
+  window.addEventListener("onLocalStorageChange", (e) => {
+    if (!e?.detail || e.detail.key === "token" || e.detail.clear) cachedTokenVal = undefined;
+    if (!e?.detail || e.detail.key === "guest_id" || e.detail.clear) cachedGuestIdVal = undefined;
+  });
+  window.addEventListener("storage", (e) => {
+    if (!e.key || e.key === "token") cachedTokenVal = undefined;
+    if (!e.key || e.key === "guest_id") cachedGuestIdVal = undefined;
+  });
+}
+
 export const getToken = () => {
   if (typeof window !== "undefined") {
+    if (cachedTokenVal !== undefined) return cachedTokenVal;
     const rawToken = window.localStorage.getItem("token");
     const cleanToken = getCleanToken(rawToken);
     if (!cleanToken) {
@@ -78,12 +93,14 @@ export const getToken = () => {
       }
       return null;
     }
+    cachedTokenVal = cleanToken;
     return cleanToken;
   }
   return null;
 };
 export const getGuestId = () => {
   if (typeof window !== "undefined") {
+    if (cachedGuestIdVal !== undefined) return cachedGuestIdVal;
     const guestId = window.localStorage.getItem("guest_id");
     if (
       !guestId ||
@@ -93,6 +110,7 @@ export const getGuestId = () => {
     ) {
       return null;
     }
+    cachedGuestIdVal = guestId;
     return guestId;
   }
   return null;

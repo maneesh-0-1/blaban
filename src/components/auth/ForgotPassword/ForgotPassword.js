@@ -2,7 +2,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import { onErrorResponse } from "api-manage/api-error-response/ErrorResponses";
 import { useFireBaseOtpVerify } from "api-manage/hooks/react-query/forgot-password/useFIreBaseOtpVerify";
 import { useOtp } from "api-manage/hooks/react-query/forgot-password/useOtp";
-import { auth } from "firebase";
+import { auth } from "../../../firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { useState } from "react";
 import {

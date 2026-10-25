@@ -25,7 +25,7 @@ import { useWishListDelete } from "api-manage/hooks/react-query/wish-list/useWis
 import { getAmountWithSign } from "helper-functions/CardHelpers";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getLanguage } from "helper-functions/getLanguage";
-import { getGuestId } from "helper-functions/getToken";
+import { getGuestId, getToken } from "helper-functions/getToken";
 import { handleProductRedirect } from "helper-functions/handleProductRedirect";
 import { handleStoreRedirect } from "helper-functions/handleStoreRedirect";
 import { ModuleTypes } from "helper-functions/moduleTypes";
@@ -1373,8 +1373,7 @@ const NewProductCard = ({
   const isInCart = cartList?.find((c) => c.id === item?.id);
   const isProductExist = !!isInCart;
   const count = isInCart?.quantity ?? 0;
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = getToken();
   const isWishlisted =
     !!token && !!wishLists?.item?.find((w) => w.id === item?.id);
 
@@ -1754,33 +1753,40 @@ const NewProductCard = ({
         />
       )}
 
-      {/* Cart clear modal */}
-      <CustomModal
-        openModal={state.clearCartModal}
-        handleClose={() =>
-          dispatch({ type: ACTION.setClearCartModal, payload: false })
-        }
-      >
-        <CartClearModal
-          handleClose={handleCloseForClearCart}
-          dispatchRedux={reduxDispatch}
+      {/* Cart clear modal - mounted only when opened */}
+      {state.clearCartModal && (
+        <CustomModal
+          openModal={state.clearCartModal}
+          handleClose={() =>
+            dispatch({ type: ACTION.setClearCartModal, payload: false })
+          }
+        >
+          <CartClearModal
+            handleClose={handleCloseForClearCart}
+            dispatchRedux={reduxDispatch}
+          />
+        </CustomModal>
+      )}
+
+      {/* Location alert - mounted only when opened */}
+      {openLocationAlert && (
+        <CustomModal
+          openModal={openLocationAlert}
+          handleClose={() => setOpenLocationAlert(false)}
+        >
+          <GetLocationAlert setOpenAlert={setOpenLocationAlert} />
+        </CustomModal>
+      )}
+
+      {/* Delete confirm - mounted only when opened */}
+      {openDeleteConfirm && (
+        <CustomDialogConfirm
+          dialogTexts={t("Are you sure you want to delete this item?")}
+          open={openDeleteConfirm}
+          onClose={() => setOpenDeleteConfirm(false)}
+          onSuccess={() => {}}
         />
-      </CustomModal>
-
-      {/* Location alert */}
-      <CustomModal
-        openModal={false}
-        handleClose={() => setOpenLocationAlert(false)}
-      >
-        <GetLocationAlert setOpenAlert={setOpenLocationAlert} />
-      </CustomModal>
-
-      <CustomDialogConfirm
-        dialogTexts={t("Are you sure you want to delete this item?")}
-        open={openDeleteConfirm}
-        onClose={() => setOpenDeleteConfirm(false)}
-        onSuccess={() => {}}
-      />
+      )}
 
       {/* ── Rental Card (always vertical) ── */}
       {isRental && (
@@ -2126,4 +2132,4 @@ const NewProductCard = ({
   );
 };
 
-export default NewProductCard;
+export default React.memo(NewProductCard);

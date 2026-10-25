@@ -53,129 +53,107 @@ class CustomDocument extends Document {
 
           <meta name="theme-color" content="#111827" />
 
-          {/* Analytics scripts */}
-          {analyticsConfig.google_tag_manager && (
+          {/* Analytics scripts (deferred to prevent blocking initial JS execution / TBT) */}
+          {Object.keys(analyticsConfig).length > 0 && (
             <script
               dangerouslySetInnerHTML={{
                 __html: `
-                  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                  })(window,document,'script','dataLayer','${analyticsConfig.google_tag_manager}');
+                  (function () {
+                    var config = ${JSON.stringify(analyticsConfig)};
+                    
+                    // Initialize lightweight stubs synchronously so events can be queued safely
+                    if (config.google_tag_manager || config.google_analytics) {
+                      window.dataLayer = window.dataLayer || [];
+                    }
+                    if (config.google_analytics) {
+                      window.gtag = function() { window.dataLayer.push(arguments); };
+                      window.gtag('js', new Date());
+                      window.gtag('config', config.google_analytics);
+                    }
+                    if (config.facebook_pixel) {
+                      var fb = function() { fb.callMethod ? fb.callMethod.apply(fb, arguments) : fb.queue.push(arguments); };
+                      if (!window._fbq) window._fbq = fb;
+                      window.fbq = fb; fb.push = fb; fb.loaded = true; fb.version = '2.0'; fb.queue = [];
+                      fb('init', config.facebook_pixel);
+                      fb('track', 'PageView');
+                    }
+                    if (config.tiktok_pixel) {
+                      window.ttq = window.ttq || [];
+                      window.ttq.load = function(id) { window.ttq._i = id; };
+                      window.ttq.track = function() { (window.ttq.q = window.ttq.q || []).push(arguments); };
+                      window.ttq.load(config.tiktok_pixel);
+                      window.ttq.track('PageView');
+                    }
+                    if (config.snapchat_pixel) {
+                      window.tta = window.tta || function() { (window.ttaQueue = window.ttaQueue || []).push(arguments); };
+                      window.ttaConfig = { pixelId: config.snapchat_pixel, events: "page_view" };
+                    }
+                    if (config.x_pixel) {
+                      window.twq = function() { window.twq.exe ? window.twq.exe.apply(window.twq, arguments) : window.twq.queue.push(arguments); };
+                      window.twq.version = '1.1'; window.twq.queue = [];
+                      window.twq('config', config.x_pixel);
+                      window.twq('track', 'PageView');
+                    }
+                    if (config.pinterest_pixel) {
+                      window.pintrk = function() { (window.pintrk.queue = window.pintrk.queue || []).push(Array.prototype.slice.call(arguments)); };
+                      window.pintrk.version = '3.0';
+                      window.pintrk('load', config.pinterest_pixel);
+                      window.pintrk('page');
+                    }
+
+                    // Defer actual network fetching of heavy tracker SDKs until page is idle
+                    function loadRemoteScripts() {
+                      function inject(src) {
+                        var s = document.createElement('script');
+                        s.async = true;
+                        s.src = src;
+                        document.head.appendChild(s);
+                      }
+
+                      if (config.google_tag_manager) {
+                        inject('https://www.googletagmanager.com/gtm.js?id=' + config.google_tag_manager + '&l=dataLayer');
+                      }
+                      if (config.google_analytics) {
+                        inject('https://www.googletagmanager.com/gtag/js?id=' + config.google_analytics);
+                      }
+                      if (config.facebook_pixel) {
+                        inject('https://connect.facebook.net/en_US/fbevents.js');
+                      }
+                      if (config.linkedin_insight_tag) {
+                        window._linkedin_partner_id = config.linkedin_insight_tag;
+                        window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+                        window._linkedin_data_partner_ids.push(config.linkedin_insight_tag);
+                        inject('https://snap.licdn.com/li.lms-analytics/insight.min.js');
+                      }
+                      if (config.tiktok_pixel) {
+                        inject('https://analytics.tiktok.com/i18n/pixel/sdk.js?sdkid=' + config.tiktok_pixel);
+                      }
+                      if (config.snapchat_pixel) {
+                        inject('https://tr.snapchat.com/tr.js');
+                      }
+                      if (config.x_pixel) {
+                        inject('https://static.ads-twitter.com/uwt.js');
+                      }
+                      if (config.pinterest_pixel) {
+                        inject('https://s.pinimg.com/ct/core.js');
+                      }
+                    }
+
+                    if ('requestIdleCallback' in window) {
+                      window.addEventListener('load', function () {
+                        requestIdleCallback(loadRemoteScripts, { timeout: 3000 });
+                      }, { once: true });
+                    } else {
+                      window.addEventListener('load', function () {
+                        setTimeout(loadRemoteScripts, 1500);
+                      }, { once: true });
+                    }
+                  })();
                 `,
               }}
             />
           )}
-
-          {analyticsConfig.google_analytics && (
-            <>
-              <script async src={`https://www.googletagmanager.com/gtag/js?id=${analyticsConfig.google_analytics}`} />
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config','${analyticsConfig.google_analytics}');
-                  `,
-                }}
-              />
-            </>
-          )}
-
-          {analyticsConfig.facebook_pixel && (
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  !function(f,b,e,v,n,t,s)
-                  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                  n.queue=[];t=b.createElement(e);t.async=!0;
-                  t.src=v;s=b.getElementsByTagName(e)[0];
-                  s.parentNode.insertBefore(t,s)}(window, document,'script',
-                  'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init','${analyticsConfig.facebook_pixel}');
-                  fbq('track','PageView');
-                `,
-              }}
-            />
-          )}
-
-          {analyticsConfig.linkedin_insight_tag && (
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  _linkedin_partner_id = "${analyticsConfig.linkedin_insight_tag}";
-                  window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
-                  window._linkedin_data_partner_ids.push(_linkedin_partner_id);
-                `,
-              }}
-            />
-          )}
-
-          {analyticsConfig.tiktok_pixel && (
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  !function (w,d,t) {
-                    w[t] = w[t] || [];
-                    w[t].push({'ttq.load': '${analyticsConfig.tiktok_pixel}','ttq.track': 'PageView'});
-                    var s = d.createElement('script');
-                    s.src = 'https://analytics.tiktok.com/i18n/pixel/sdk.js?sdkid=${analyticsConfig.tiktok_pixel}';
-                    s.async = true;
-                    var e = d.getElementsByTagName('script')[0];
-                    e.parentNode.insertBefore(s,e);
-                  }(window, document, 'ttq');
-                `,
-              }}
-            />
-          )}
-
-          {analyticsConfig.snapchat_pixel && (
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  (function(e,t,n,c,r,a,i){e.tta=n,e.ttaQueue=e.ttaQueue||[],
-                  e.ttaConfig={pixelId:"${analyticsConfig.snapchat_pixel}",events:"page_view"},
-                  e.ttaQueue.push({event:"page_view",parameters:{}});
-                  var s=t.createElement(n);s.async=!0;s.src="https://tr.snapchat.com/tr.js";
-                  var o=t.getElementsByTagName(n)[0];o.parentNode.insertBefore(s,o)})
-                  (window,document,"script");
-                `,
-              }}
-            />
-          )}
-
-          {analyticsConfig.x_pixel && (
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
-                  },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='https://static.ads-twitter.com/uwt.js',
-                  a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
-                  twq('config','${analyticsConfig.x_pixel}');
-                  twq('track','PageView');
-                `,
-              }}
-            />
-          )}
-
-          {analyticsConfig.pinterest_pixel && (
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  !function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(
-                  Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");
-                  t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
-                  pintrk('load', '${analyticsConfig.pinterest_pixel}');
-                  pintrk('page');
-                `,
-              }}
-            />
-          )}
-        </Head>
+          </Head>
 
         <body>
           <Main />

@@ -1,37 +1,70 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { english } from "./en";
-import { bengali } from "./bn";
-import { arabic } from "./ar";
-import { spain } from "./es";
 
-// the translations
-// (tip move them in a JSON file and import them,
-// or even better, manage them separated from your code: https://react.i18next.com/guides/multiple-translation-files)
 const resources = {
   en: {
     translation: english,
   },
-  es: {
-    translation: spain,
-  },
-  bn: {
-    translation: bengali,
-  },
-  ar: {
-    translation: arabic,
-  },
 };
 
+let initialLng = "en";
+if (typeof window !== "undefined") {
+  try {
+    const match = document.cookie.match(/(?:^|;\s*)languageSetting=([^;]+)/);
+    if (match && match[1]) {
+      initialLng = decodeURIComponent(match[1]);
+    } else {
+      const stored = localStorage.getItem("languageSetting");
+      if (stored) initialLng = stored;
+    }
+  } catch (e) {}
+}
+
 i18n
-  .use(initReactI18next) // passes i18n down to react-i18next
+  .use(initReactI18next)
   .init({
     resources,
-    lng: "en", // language to use, more information here: https://www.i18next.com/overview/configuration-options#languages-namespaces-resources
+    lng: initialLng,
     fallbackLng: "en",
     interpolation: {
-      escapeValue: false, // react already safes from xss
+      escapeValue: false,
     },
   });
+
+export const loadLanguageAsync = async (lang) => {
+  if (!lang || lang === "en" || i18n.hasResourceBundle(lang, "translation")) {
+    return;
+  }
+  try {
+    let bundle = null;
+    if (lang === "ar") {
+      const mod = await import("./ar");
+      bundle = mod.arabic;
+    } else if (lang === "es") {
+      const mod = await import("./es");
+      bundle = mod.spain;
+    } else if (lang === "bn") {
+      const mod = await import("./bn");
+      bundle = mod.bengali;
+    }
+    if (bundle) {
+      i18n.addResourceBundle(lang, "translation", bundle, true, true);
+      i18n.changeLanguage(lang);
+    }
+  } catch (err) {
+    console.error("Failed to load language bundle:", lang, err);
+  }
+};
+
+i18n.on("languageChanged", (lng) => {
+  if (lng && lng !== "en") {
+    loadLanguageAsync(lng);
+  }
+});
+
+if (initialLng && initialLng !== "en") {
+  loadLanguageAsync(initialLng);
+}
 
 export default i18n;

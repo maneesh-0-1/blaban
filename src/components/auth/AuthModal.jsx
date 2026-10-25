@@ -21,7 +21,7 @@ import { useUpdateUserInfo } from "api-manage/hooks/react-query/auth/useUpdateUs
 import { ProfileApi } from "api-manage/another-formated-api/profileApi";
 import { useQuery } from "react-query";
 import { setUser } from "redux/slices/profileInfo";
-import { auth } from "firebase";
+import { auth } from "../../firebase";
 import PhoneInputForm from "components/auth/sign-in/social-login/PhoneInputForm";
 import { toast } from "react-hot-toast";
 import { t } from "i18next";

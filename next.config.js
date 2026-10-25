@@ -4,7 +4,24 @@ const nextConfig = {
   poweredByHeader: false,
   devIndicators: false,
   experimental: {
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/lab',
+      'date-fns',
+      'react-redux',
+      '@reduxjs/toolkit',
+    ],
     swcPlugins: [],
+  },
+  webpack: (config, { webpack }) => {
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/locale$/,
+        contextRegExp: /moment$/,
+      })
+    );
+    return config;
   },
   modularizeImports: {
     '@mui/material': {

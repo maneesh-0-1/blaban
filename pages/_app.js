@@ -46,6 +46,14 @@ const queryClient = new QueryClient({
   },
 });
 
+// Persist store initialized once outside component render
+let persistorInstance = null;
+if (typeof window !== "undefined") {
+  try {
+    persistorInstance = persistStore(store);
+  } catch (e) {}
+}
+
 function MyApp(props) {
   const {
     Component,
@@ -56,8 +64,8 @@ function MyApp(props) {
   const getLayout = Component.getLayout ?? ((page) => page);
   const { t } = useTranslation();
 
-  // Persist store
-  let persistor = persistStore(store);
+  // Persist store initialized once outside component
+  // let persistor = persistorInstance;
 
   // Version check
   useEffect(() => {
