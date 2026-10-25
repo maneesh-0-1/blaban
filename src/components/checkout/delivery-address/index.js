@@ -661,9 +661,11 @@ const DeliveryAddress = ({
                   required
                   placeholder={t("Enter your name")}
                   value={
-                    token
-                      ? (address?.contact_person_name || profileFullName || profileInfo?.name || "")
-                      : (address?.contact_person_name || guestUserInfo?.contact_person_name || "")
+                    address?.contact_person_name !== undefined
+                      ? address.contact_person_name
+                      : (token
+                          ? (profileFullName || profileInfo?.name || "")
+                          : (guestUserInfo?.contact_person_name || ""))
                   }
                   onChange={(e) => {
                     const val = e.target.value;
@@ -685,9 +687,11 @@ const DeliveryAddress = ({
                   required
                   placeholder={t("e.g. +965 12345678")}
                   value={
-                    token
-                      ? (address?.contact_person_number || profileInfo?.phone || "")
-                      : (address?.contact_person_number || guestUserInfo?.contact_person_number || "")
+                    address?.contact_person_number !== undefined
+                      ? address.contact_person_number
+                      : (token
+                          ? (profileInfo?.phone || "")
+                          : (guestUserInfo?.contact_person_number || ""))
                   }
                   onChange={(e) => {
                     const val = e.target.value;
@@ -710,9 +714,11 @@ const DeliveryAddress = ({
                   placeholder={t("Enter your email")}
                   type="email"
                   value={
-                    token
-                      ? profileInfo?.email || ""
-                      : (address?.contact_person_email || guestUserInfo?.contact_person_email || "")
+                    address?.contact_person_email !== undefined
+                      ? address.contact_person_email
+                      : (token
+                          ? (profileInfo?.email || "")
+                          : (guestUserInfo?.contact_person_email || ""))
                   }
                   onChange={(e) => {
                     const val = e.target.value;
@@ -1012,14 +1018,100 @@ const DeliveryAddress = ({
                   🗺️ {t("Pick on Map (Optional)")}
                 </Button>
               </Stack>
+
+              {/* Delivery Area / Location Indicator */}
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 1.25,
+                  borderRadius: "10px",
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 1.5,
+                }}
+              >
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flex: 1 }}>
+                  <LocationOnOutlinedIcon sx={{ fontSize: 20, color: theme.palette.primary.main, flexShrink: 0 }} />
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontSize: "11px",
+                        color: theme.palette.text.secondary,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      {t("Delivery Area")} <span style={{ color: "red" }}>*</span>
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        color: theme.palette.text.primary,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {address?.address || (() => {
+                        try {
+                          const a = localStorage.getItem("selectedArea");
+                          if (a) return JSON.parse(a)?.name || "";
+                        } catch (e) {}
+                        return "";
+                      })() || (typeof window !== "undefined" ? localStorage.getItem("location") : "") || t("No area selected (Required)")}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      const changeAreaBtn = document.querySelector("#change-delivery-area-btn");
+                      if (changeAreaBtn) {
+                        changeAreaBtn.click();
+                        return;
+                      }
+                    }
+                    setOpenAddressPicker(true);
+                  }}
+                  sx={{
+                    borderRadius: "8px",
+                    textTransform: "none",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    px: 1.5,
+                    py: 0.5,
+                    borderColor: alpha(theme.palette.primary.main, 0.5),
+                    color: theme.palette.primary.main,
+                    "&:hover": {
+                      borderColor: theme.palette.primary.main,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                    },
+                  }}
+                >
+                  {t("Change Area")}
+                </Button>
+              </Box>
+
               <Grid container spacing={1.5}>
                 <Grid item xs={6} sm={3}>
                   <TextField
                     fullWidth
                     size="small"
-                    label={t("Block (Optional)")}
+                    label={t("Block / Avenue")}
+                    required
                     placeholder={t("Block")}
-                    value={token ? address?.block || "" : address?.block || guestUserInfo?.block || ""}
+                    value={
+                      address?.block !== undefined
+                        ? address.block
+                        : (token ? "" : (guestUserInfo?.block || ""))
+                    }
                     onChange={(e) => {
                       const val = e.target.value;
                       if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, block: val }));
@@ -1042,11 +1134,22 @@ const DeliveryAddress = ({
                     label={t("Street / Road")}
                     required
                     placeholder={t("Street")}
-                    value={token ? address?.road || "" : address?.road || guestUserInfo?.road || ""}
+                    value={
+                      address?.road !== undefined
+                        ? address.road
+                        : (token ? "" : (guestUserInfo?.road || ""))
+                    }
                     onChange={(e) => {
                       const val = e.target.value;
                       if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, road: val }));
-                      setAddress({ ...address, road: val });
+                      let defaultArea = address?.address;
+                      if (!defaultArea) {
+                        try {
+                          const a = localStorage.getItem("selectedArea");
+                          if (a) defaultArea = JSON.parse(a)?.name || "";
+                        } catch (err) {}
+                      }
+                      setAddress({ ...address, address: defaultArea || address?.address, road: val });
                     }}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
                   />
@@ -1057,12 +1160,23 @@ const DeliveryAddress = ({
                     size="small"
                     label={t("Building / House")}
                     required
-                    placeholder={t("House")}
-                    value={token ? address?.house || "" : address?.house || guestUserInfo?.house || ""}
+                    placeholder={t("House / Building")}
+                    value={
+                      address?.house !== undefined
+                        ? address.house
+                        : (token ? "" : (guestUserInfo?.house || ""))
+                    }
                     onChange={(e) => {
                       const val = e.target.value;
                       if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, house: val }));
-                      setAddress({ ...address, house: val });
+                      let defaultArea = address?.address;
+                      if (!defaultArea) {
+                        try {
+                          const a = localStorage.getItem("selectedArea");
+                          if (a) defaultArea = JSON.parse(a)?.name || "";
+                        } catch (err) {}
+                      }
+                      setAddress({ ...address, address: defaultArea || address?.address, house: val });
                     }}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
                   />
@@ -1071,13 +1185,25 @@ const DeliveryAddress = ({
                   <TextField
                     fullWidth
                     size="small"
-                    label={t("Floor / Apt (Optional)")}
+                    label={t("Floor / Apartment")}
+                    required
                     placeholder={t("Floor / Apt")}
-                    value={token ? address?.floor || "" : address?.floor || guestUserInfo?.floor || ""}
+                    value={
+                      address?.floor !== undefined
+                        ? address.floor
+                        : (token ? "" : (guestUserInfo?.floor || ""))
+                    }
                     onChange={(e) => {
                       const val = e.target.value;
                       if (!token) reduxDispatch(setGuestUserInfo({ ...guestUserInfo, floor: val }));
-                      setAddress({ ...address, floor: val });
+                      let defaultArea = address?.address;
+                      if (!defaultArea) {
+                        try {
+                          const a = localStorage.getItem("selectedArea");
+                          if (a) defaultArea = JSON.parse(a)?.name || "";
+                        } catch (err) {}
+                      }
+                      setAddress({ ...address, address: defaultArea || address?.address, floor: val });
                     }}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
                   />

@@ -588,33 +588,34 @@ const ItemCheckout = (props) => {
         "is_buy_now",
         page === "buy_now" || page === "campaign" ? 1 : 0
       );
-      formData.append("block", token ? (address?.block || "") : (address?.block || guestUserInfo?.block || ""));
-      formData.append("house", token ? address?.house : guestUserInfo?.house);
-      formData.append("floor", token ? address?.floor : guestUserInfo?.floor);
-      formData.append("road", token ? address?.road : guestUserInfo?.road);
+      formData.append("block", (address?.block != null && String(address.block).trim()) || (guestUserInfo?.block != null && String(guestUserInfo.block).trim()) || "");
+      formData.append("house", (address?.house != null && String(address.house).trim()) || (guestUserInfo?.house != null && String(guestUserInfo.house).trim()) || "");
+      formData.append("floor", (address?.floor != null && String(address.floor).trim()) || (guestUserInfo?.floor != null && String(guestUserInfo.floor).trim()) || "");
+      formData.append("road", (address?.road != null && String(address.road).trim()) || (guestUserInfo?.road != null && String(guestUserInfo.road).trim()) || "");
       formData.append(
         "contact_person_name",
-        token
-          ? address?.contact_person_name
-            ? address?.contact_person_name
-            : profileInfo?.name
-          : guestUserInfo?.contact_person_name
+        (address?.contact_person_name && address.contact_person_name.trim()) ||
+        (token
+          ? ([profileInfo?.f_name, profileInfo?.l_name].filter(Boolean).join(" ").trim() || (profileInfo?.name && profileInfo.name.trim()))
+          : (guestUserInfo?.contact_person_name && guestUserInfo.contact_person_name.trim())) || ""
       );
       formData.append(
         "contact_person_number",
-        token
-          ? address?.contact_person_number
-            ? address?.contact_person_number
-            : profileInfo?.phone
-          : `+${guestUserInfo?.contact_person_number}`
+        formatPhoneNumber(
+          (address?.contact_person_number && String(address.contact_person_number).trim()) ||
+          (token
+            ? (profileInfo?.phone && String(profileInfo.phone).trim())
+            : (guestUserInfo?.contact_person_number && String(guestUserInfo.contact_person_number).trim())) || ""
+        )
       );
       formData.append(
         "contact_person_email",
-        token
-          ? profileInfo?.email || ""
-          : (address?.contact_person_email || guestUserInfo?.contact_person_email || "")
+        (address?.contact_person_email && address.contact_person_email.trim()) ||
+        (token
+          ? (profileInfo?.email && profileInfo.email.trim())
+          : (guestUserInfo?.contact_person_email && guestUserInfo.contact_person_email.trim())) || ""
       );
-      if (prescriptionImages?.length > 0) {
+if (prescriptionImages?.length > 0) {
         const filterBinaryImages = prescriptionImages.filter(
           (img) => !img.name
         );
@@ -699,25 +700,26 @@ const ItemCheckout = (props) => {
             })()
           : delivery_instruction,
         guest_id: guestId,
-        contact_person_name: token
-          ? address?.contact_person_name
-            ? address?.contact_person_name
-            : profileInfo?.name
-          : (address?.contact_person_name || guestUserInfo?.contact_person_name),
+        contact_person_name:
+          (address?.contact_person_name && address.contact_person_name.trim()) ||
+          (token
+            ? ([profileInfo?.f_name, profileInfo?.l_name].filter(Boolean).join(" ").trim() || (profileInfo?.name && profileInfo.name.trim()))
+            : (guestUserInfo?.contact_person_name && guestUserInfo.contact_person_name.trim())) || "",
         contact_person_number: formatPhoneNumber(
-          token
-            ? address?.contact_person_number
-              ? address?.contact_person_number
-              : profileInfo?.phone
-            : `${address?.contact_person_number || guestUserInfo?.contact_person_number || ""}`
+          (address?.contact_person_number && String(address.contact_person_number).trim()) ||
+          (token
+            ? (profileInfo?.phone && String(profileInfo.phone).trim())
+            : (guestUserInfo?.contact_person_number && String(guestUserInfo.contact_person_number).trim())) || ""
         ),
-        contact_person_email: token
-          ? profileInfo?.email || address?.contact_person_email || ""
-          : (address?.contact_person_email || guestUserInfo?.contact_person_email || ""),
-        block: token ? (address?.block || "") : (address?.block || guestUserInfo?.block || ""),
-        house: token ? address?.house : guestUserInfo?.house,
-        floor: token ? address?.floor : guestUserInfo?.floor,
-        road: token ? address?.road : guestUserInfo?.road,
+        contact_person_email:
+          (address?.contact_person_email && address.contact_person_email.trim()) ||
+          (token
+            ? (profileInfo?.email && profileInfo.email.trim())
+            : (guestUserInfo?.contact_person_email && guestUserInfo.contact_person_email.trim())) || "",
+        block: (address?.block != null && String(address.block).trim()) || (guestUserInfo?.block != null && String(guestUserInfo.block).trim()) || "",
+        house: (address?.house != null && String(address.house).trim()) || (guestUserInfo?.house != null && String(guestUserInfo.house).trim()) || "",
+        floor: (address?.floor != null && String(address.floor).trim()) || (guestUserInfo?.floor != null && String(guestUserInfo.floor).trim()) || "",
+        road: (address?.road != null && String(address.road).trim()) || (guestUserInfo?.road != null && String(guestUserInfo.road).trim()) || "",
         extra_packaging_amount: resolvedPackagingAmount,
         ...(cartPrefs?.monthlySubscribe && { monthly_subscribe: 1 }),
         create_new_user: check && formik?.values?.password && formik.values.password.length >= 8 ? 1 : 0,
@@ -779,70 +781,121 @@ const ItemCheckout = (props) => {
   }, [cartList, campaignItemList, couponDiscount, storeData]);
 
   const handlePlaceOrder = () => {
-    // ── Check mandatory contact details for all order types ──
-    const activeName = token
-      ? ([profileInfo?.f_name, profileInfo?.l_name].filter(Boolean).join(" ").trim() || profileInfo?.name)
-      : (address?.contact_person_name || guestUserInfo?.contact_person_name);
-    const activePhone = token
-      ? (profileInfo?.phone || address?.contact_person_number)
-      : (address?.contact_person_number || guestUserInfo?.contact_person_number);
+    // ── Check mandatory customer details for ALL order types ──
+    const activeName = (
+      (address?.contact_person_name && address.contact_person_name.trim()) ||
+      (token
+        ? ([profileInfo?.f_name, profileInfo?.l_name].filter(Boolean).join(" ").trim() || (profileInfo?.name && profileInfo.name.trim()))
+        : (guestUserInfo?.contact_person_name && guestUserInfo.contact_person_name.trim())) ||
+      ""
+    );
 
-    const activeEmail = token
-      ? (profileInfo?.email || address?.contact_person_email)
-      : (address?.contact_person_email || guestUserInfo?.contact_person_email);
+    const activePhone = (
+      (address?.contact_person_number && String(address.contact_person_number).trim()) ||
+      (token
+        ? (profileInfo?.phone && String(profileInfo.phone).trim())
+        : (guestUserInfo?.contact_person_number && String(guestUserInfo.contact_person_number).trim())) ||
+      ""
+    );
 
-    if (!activeName || activeName.trim() === "") {
+    const activeEmail = (
+      (address?.contact_person_email && address.contact_person_email.trim()) ||
+      (token
+        ? (profileInfo?.email && profileInfo.email.trim())
+        : (guestUserInfo?.contact_person_email && guestUserInfo.contact_person_email.trim())) ||
+      ""
+    );
+
+    if (!activeName) {
       toast.error(t("Please enter your name"), { id: "checkout-name" });
       return;
     }
-    if (!activePhone || activePhone.trim() === "") {
+    if (!activePhone) {
       toast.error(t("Please enter your contact phone number"), { id: "checkout-phone" });
       return;
     }
-    if (!activeEmail || activeEmail.trim() === "") {
-      toast.error(t("Please enter your email"), { id: "checkout-email" });
+    const cleanPhoneDigits = activePhone.replace(/\D/g, "");
+    if (cleanPhoneDigits.length < 7) {
+      toast.error(t("Please enter a valid contact phone number (at least 7 digits)"), { id: "checkout-phone-invalid" });
+      return;
+    }
+    if (!activeEmail) {
+      toast.error(t("Please enter your email address"), { id: "checkout-email" });
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(activeEmail.trim())) {
+    if (!emailRegex.test(activeEmail)) {
       toast.error(t("Please enter a valid email address"), { id: "checkout-email-invalid" });
       return;
     }
 
+    // ── Check mandatory address details for Home Delivery ──
     if (orderType !== "take_away") {
-      const activeAddress = address;
-      const activePhone = token
-        ? (activeAddress?.contact_person_number || profileInfo?.phone)
-        : (activeAddress?.contact_person_number || guestUserInfo?.contact_person_number);
-      const activeRoad = token
-        ? activeAddress?.road
-        : (activeAddress?.road || guestUserInfo?.road);
-      const activeHouse = token
-        ? activeAddress?.house
-        : (activeAddress?.house || guestUserInfo?.house);
-      const activeBlock = token ? activeAddress?.block : (activeAddress?.block || guestUserInfo?.block);
-      const activeFloor = token ? activeAddress?.floor : (activeAddress?.floor || guestUserInfo?.floor);
-
-      let currentAddr = activeAddress;
-      if (!currentAddr?.address) {
-        let fallbackArea = "";
+      let activeArea = (address?.address && address.address.trim()) || "";
+      if (!activeArea) {
         try {
           const a = localStorage.getItem("selectedArea");
-          if (a) fallbackArea = JSON.parse(a)?.name || "";
+          if (a) activeArea = (JSON.parse(a)?.name || "").trim();
         } catch (e) {}
-        if (fallbackArea) {
-          currentAddr = { ...currentAddr, address: fallbackArea };
-        } else {
-          toast.error(t("Please select a delivery address"), { id: "checkout-addr" });
-          return;
-        }
       }
-      if (!activePhone) {
-        toast.error(t("Please provide a contact phone number"), { id: "checkout-phone" });
+      if (!activeArea) {
+        try {
+          const loc = localStorage.getItem("location");
+          if (loc) activeArea = loc.trim();
+        } catch (e) {}
+      }
+      if (!activeArea) {
+        toast.error(t("Please select your delivery area / address"), { id: "checkout-area" });
         return;
       }
-      if (!activeRoad || !activeHouse) {
-        toast.error(t("Please complete your address details (Street, Building/House)"), { id: "checkout-details" });
+
+      const activeBlock = (
+        (address?.block != null && String(address.block).trim()) ||
+        (guestUserInfo?.block != null && String(guestUserInfo.block).trim()) ||
+        ""
+      );
+      if (!activeBlock) {
+        toast.error(t("Please enter Block / Avenue"), { id: "checkout-block" });
+        return;
+      }
+
+      const activeRoad = (
+        (address?.road != null && String(address.road).trim()) ||
+        (guestUserInfo?.road != null && String(guestUserInfo.road).trim()) ||
+        ""
+      );
+      if (!activeRoad) {
+        toast.error(t("Please enter Street / Road"), { id: "checkout-road" });
+        return;
+      }
+
+      const activeHouse = (
+        (address?.house != null && String(address.house).trim()) ||
+        (guestUserInfo?.house != null && String(guestUserInfo.house).trim()) ||
+        ""
+      );
+      if (!activeHouse) {
+        toast.error(t("Please enter Building / House number"), { id: "checkout-house" });
+        return;
+      }
+
+      const activeFloor = (
+        (address?.floor != null && String(address.floor).trim()) ||
+        (guestUserInfo?.floor != null && String(guestUserInfo.floor).trim()) ||
+        ""
+      );
+      if (!activeFloor) {
+        toast.error(t("Please enter Floor / Apartment number"), { id: "checkout-floor" });
+        return;
+      }
+    } else {
+      let selectedBranch = null;
+      try {
+        const b = localStorage.getItem("selectedBranch");
+        if (b) selectedBranch = JSON.parse(b);
+      } catch (e) {}
+      if (!selectedBranch?.id && !storeData?.id) {
+        toast.error(t("Please select a branch for pickup"), { id: "checkout-branch" });
         return;
       }
     }

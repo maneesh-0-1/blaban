@@ -25,19 +25,33 @@ const AdditionalAddresses = (props) => {
 		setAddress,
 		orderType,
 	} = props;
-	const [street, setStreet] = useState(
-		additionalInformationStates.streetNumber
+	const [block, setBlock] = useState(
+		additionalInformationStates?.block || address?.block || ""
 	);
-	const [house, setHouse] = useState(additionalInformationStates.houseNumber);
-	const [floor, setFloor] = useState(additionalInformationStates.floor);
+	const [street, setStreet] = useState(
+		additionalInformationStates?.streetNumber || address?.road || ""
+	);
+	const [house, setHouse] = useState(
+		additionalInformationStates?.houseNumber || address?.house || ""
+	);
+	const [floor, setFloor] = useState(
+		additionalInformationStates?.floor || address?.floor || ""
+	);
 
 	useEffect(() => {
-		 setStreet(address?.road || "");
-		 setHouse(address?.house || "");
-		setFloor(address?.floor || " " );
-	}, [address?.house, address?.road, address?.floor]);
+		setBlock(address?.block || "");
+		setStreet(address?.road || "");
+		setHouse(address?.house || "");
+		setFloor(address?.floor || "");
+	}, [address?.block, address?.house, address?.road, address?.floor]);
 
-
+	const handleBlockChange = (e) => {
+		setBlock(e.target.value);
+		additionalInformationDispatch({
+			type: ACTIONS.setBlock,
+			payload: e.target.value,
+		});
+	};
 	const handleStreetChange = (e) => {
 		setStreet(e.target.value);
 		additionalInformationDispatch({
@@ -68,22 +82,28 @@ const AdditionalAddresses = (props) => {
 	};
 	useEffect(() => {
 		if (orderType !== "take_away") {
-			setAddress({ ...address, road: street, house: house, floor: floor });
+			setAddress({ ...address, block, road: street, house, floor });
 		}
-		// return () => {
-		// 	setAddress({ ...address, road: "", house: "", floor: "" });
-		// };
-	}, [street, house, floor]);
+	}, [block, street, house, floor]);
 
 	return (
-		// eslint-disable-next-line react/jsx-no-undef
 		<CustomStackFullWidth>
 			<CustomStackFullWidth>
 				<FormGroup>
 					<Grid container spacing={{ xs: 1, sm: 2, md: 2 }}>
-						<Grid item xs={12}>
+						<Grid item xs={6}>
 							<CustomTextField
-								label={t("Street number")}
+								required="true"
+								label={t("Block / Avenue")}
+								value={block}
+								fullWidth
+								onChange={(e) => handleBlockChange(e)}
+							/>
+						</Grid>
+						<Grid item xs={6}>
+							<CustomTextField
+								required="true"
+								label={t("Street / Road")}
 								value={street}
 								fullWidth
 								onChange={(e) => handleStreetChange(e)}
@@ -91,7 +111,8 @@ const AdditionalAddresses = (props) => {
 						</Grid>
 						<Grid item xs={6}>
 							<CustomTextField
-								label={t("House number")}
+								required="true"
+								label={t("Building / House")}
 								value={house}
 								fullWidth
 								onChange={(e) => handleHouseChange(e)}
@@ -99,7 +120,8 @@ const AdditionalAddresses = (props) => {
 						</Grid>
 						<Grid item xs={6}>
 							<CustomTextField
-								label={t("Floor")}
+								required="true"
+								label={t("Floor / Apartment")}
 								value={floor}
 								fullWidth
 								onChange={(e) => handleFloorChange(e)}
