@@ -225,9 +225,14 @@ const MiddleSection = (props) => {
     categoryListRef.current = categoryList;
   }, [categoryList]);
 
+  const [revealedCategories, setRevealedCategories] = useState({});
+
   const handleSelectCategoryTab = (categoryId) => {
     const key = categoryId == null ? (categoryList[0]?.id ? String(categoryList[0].id) : "") : String(categoryId);
     setSelectedCategoryTabId(categoryId);
+    if (key) {
+      setRevealedCategories((prev) => ({ ...prev, [key]: true }));
+    }
     const node = sectionRefs.current[key];
     if (node) {
       // Page header + sub-nav (~110px) + sticky toolbar (~70px) ≈ 180px, +10px breathing
@@ -573,12 +578,16 @@ const MiddleSection = (props) => {
     setOffset(1);
   }, [storeId]);
 
-  // Auto-fetch remaining pages if a store has more items than the single-page limit
+  // Scroll-driven fetch: only fetch next page when user scrolls near the bottom
+  const { ref: scrollTriggerRef, inView: bottomInView } = useInView({
+    rootMargin: "500px 0px",
+  });
+
   useEffect(() => {
-    if (hasNextPage && !isFetchingNextPage && !isLoading) {
+    if (bottomInView && hasNextPage && !isFetchingNextPage && !isLoading) {
       fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
+  }, [bottomInView, hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
 
   const handleCategoryId = (id) => {
     setOffset(1);
@@ -1189,7 +1198,7 @@ const MiddleSection = (props) => {
                             key={section.key}
                             sectionKey={section.key}
                             sectionRefs={sectionRefs}
-                            isPriority={idx < 2}
+                            isPriority={idx === 0 || !!revealedCategories[section.key]}
                           >
                             <Stack
                               spacing={1.5}
@@ -1333,6 +1342,20 @@ const MiddleSection = (props) => {
                         </LazySection>
                       );
                     })}
+                      {/* Scroll trigger to fetch next batch when reaching near bottom */}
+                      <Box
+                        ref={scrollTriggerRef}
+                        sx={{
+                          width: "100%",
+                          height: 40,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          py: 2,
+                        }}
+                      >
+                        {isFetchingNextPage && <DotSpin />}
+                      </Box>
                     </Stack>
                   );
                 })()
