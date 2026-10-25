@@ -133,7 +133,7 @@ MainApi.interceptors.response.use(
       typeof msg === "string" &&
       msg.toLowerCase().includes("the jwt string must have two dots");
 
-    if (typeof window !== "undefined" && (status === 401 || isJwtError)) {
+    if (typeof window !== "undefined" && (status === 401 || status === 403 || isJwtError)) {
       const existingToken = localStorage.getItem("token");
       if (existingToken) {
         localStorage.removeItem("token");

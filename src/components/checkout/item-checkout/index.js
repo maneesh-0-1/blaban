@@ -369,6 +369,13 @@ const ItemCheckout = (props) => {
   );
   console.log({ zoneData, storeData });
 
+  const hasOriginAndDestination = Boolean(
+    (storeData?.latitude || storeData?.lat) &&
+    (storeData?.longitude || storeData?.lng) &&
+    (address?.latitude || address?.lat) &&
+    (address?.longitude || address?.lng)
+  );
+
   const {
     data: distanceData,
     refetch: refetchDistance,
@@ -377,7 +384,7 @@ const ItemCheckout = (props) => {
     ["get-distancesss", storeData, address, orderType],
     () => GoogleApi.distanceApi(storeData, address),
     {
-      enabled: true,
+      enabled: hasOriginAndDestination,
       onError: onErrorResponse,
     }
   );
@@ -416,6 +423,7 @@ const ItemCheckout = (props) => {
     {
       onSuccess: userOnSuccessHandler,
       onError: onSingleErrorResponse,
+      enabled: Boolean(token),
     }
   );
 
@@ -647,6 +655,7 @@ const ItemCheckout = (props) => {
           ? packagingCharge
           : 0
         : 0;
+      const sanitizedScheduleAt = scheduleAt !== "now" ? scheduleAt : null;
       return {
         cart: JSON.stringify(carts),
         ...address,
