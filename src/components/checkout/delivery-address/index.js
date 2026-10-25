@@ -1017,8 +1017,7 @@ const DeliveryAddress = ({
                   <TextField
                     fullWidth
                     size="small"
-                    label={t("Block")}
-                    required
+                    label={t("Block (Optional)")}
                     placeholder={t("Block")}
                     value={token ? address?.block || "" : address?.block || guestUserInfo?.block || ""}
                     onChange={(e) => {

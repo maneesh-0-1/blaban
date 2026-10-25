@@ -115,16 +115,16 @@ const ManageSearch = ({
     isRefetching: isRefetchingItemOrStoreSuggestion,
   } = useGetItemOrStore(removeSpecialCharacters(searchValue));
 
-  let searchTimeout;
+  const searchTimeoutRef = useRef(null);
 
-  const getSearchSuggestions = async () => {
-    if (searchTimeout) {
-      clearTimeout(searchTimeout); // Clear the previous timeout
+  const getSearchSuggestions = () => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
 
-    searchTimeout = setTimeout(async () => {
-      await refetchItemOrStoreSuggestion(); // Execute the function after 500ms
-    }, 500);
+    searchTimeoutRef.current = setTimeout(async () => {
+      await refetchItemOrStoreSuggestion();
+    }, 200);
   };
 
   useEffect(() => {

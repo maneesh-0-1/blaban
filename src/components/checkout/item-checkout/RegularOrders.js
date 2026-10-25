@@ -1,10 +1,17 @@
 import { Box, Divider, Stack, Typography, alpha, IconButton, Tooltip } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import { useDispatch } from "react-redux";
-import { setRemoveItemFromCart } from "../../../redux/slices/cart";
+import { setRemoveItemFromCart, setIncrementToCartItem, setDecrementToCartItem } from "../../../redux/slices/cart";
 import useDeleteCartItem from "../../../api-manage/hooks/react-query/add-cart/useDeleteCartItem";
+import useCartItemUpdate from "../../../api-manage/hooks/react-query/add-cart/useCartItemUpdate";
+import { getItemDataForAddToCart } from "../../product-details/product-details-section/helperFunction";
+import { getTotalVariationsPrice } from "../../../utils/CustomFunctions";
+import { getCurrentModuleType } from "../../../helper-functions/getCurrentModuleType";
+import { out_of_limits, out_of_stock, cart_item_remove } from "../../../utils/toasterMessages";
+import { onErrorResponse } from "../../../api-manage/api-error-response/ErrorResponses";
 import { toast } from "react-hot-toast";
-import { cart_item_remove } from "../../../utils/toasterMessages";
 import Skeleton from "@mui/material/Skeleton";
 import { useTheme } from "@mui/material/styles";
 import { getAmountWithSign } from "../../../helper-functions/CardHelpers";
@@ -43,6 +50,7 @@ const RegularOrders = (props) => {
 	const dispatch = useDispatch();
 	const guestId = typeof window !== "undefined" ? localStorage.getItem("guest_id") : null;
 	const { mutate: deleteMutate, isLoading: removeIsLoading } = useDeleteCartItem();
+	const { mutate: updateMutate, isLoading: updateIsLoading } = useCartItemUpdate();
 
 	const handleRemove = (cartItem) => {
 		const cartIdAndGuestId = {
@@ -57,6 +65,115 @@ const RegularOrders = (props) => {
 			},
 		});
 	};
+
+	const handleIncrement = (cartItem) => {
+		const updateQuantity = cartItem?.quantity + 1;
+		const price =
+			cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
+		const productPrice = price * updateQuantity;
+		const mainPrice =
+			getCurrentModuleType() === "food"
+				? productPrice
+				: (cartItem?.selectedOption?.length > 0
+						? cartItem?.selectedOption?.[0]?.price
+						: cartItem?.price) * updateQuantity;
+		const itemObject = getItemDataForAddToCart(
+			cartItem,
+			updateQuantity,
+			mainPrice,
+			guestId
+		);
+
+		if (getCurrentModuleType() !== "food") {
+			if (cartItem?.stock <= cartItem?.quantity) {
+				toast.error(t(out_of_stock));
+				return;
+			}
+			if (
+				cartItem?.maximum_cart_quantity &&
+				cartItem?.maximum_cart_quantity <= cartItem?.quantity
+			) {
+				toast.error(t(out_of_limits), { id: "out-of-limits" });
+				return;
+			}
+		} else if (
+			cartItem?.maximum_cart_quantity &&
+			cartItem?.maximum_cart_quantity <= cartItem?.quantity
+		) {
+			toast.error(t(out_of_limits));
+			return;
+		}
+
+		updateMutate(itemObject, {
+			onSuccess: (res) => {
+				if (res) {
+					res?.forEach((item) => {
+						if (cartItem?.cartItemId === item?.id || cartItem?.id === item?.id) {
+							const product = {
+								...item?.item,
+								cartItemId: item?.id,
+								totalPrice: item?.price,
+								quantity: item?.quantity,
+								food_variations: item?.item?.food_variations,
+								selectedAddons: item?.item?.addons,
+								itemBasePrice: item?.item?.price,
+								selectedOption: item?.variation,
+							};
+							dispatch(setIncrementToCartItem(product));
+						}
+					});
+				}
+			},
+			onError: onErrorResponse,
+		});
+	};
+
+	const handleDecrement = (cartItem) => {
+		if (cartItem?.quantity <= 1) {
+			handleRemove(cartItem);
+			return;
+		}
+		const updateQuantity = cartItem?.quantity - 1;
+		const price =
+			cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
+		const productPrice = price * updateQuantity;
+		const mainPrice =
+			getCurrentModuleType() === "food"
+				? productPrice
+				: (cartItem?.selectedOption?.length > 0
+						? cartItem?.selectedOption?.[0]?.price
+						: cartItem?.price) * updateQuantity;
+		const itemObject = getItemDataForAddToCart(
+			cartItem,
+			updateQuantity,
+			mainPrice,
+			guestId
+		);
+
+		updateMutate(itemObject, {
+			onSuccess: (res) => {
+				if (res) {
+					res?.forEach((item) => {
+						if (cartItem?.cartItemId === item?.id || cartItem?.id === item?.id) {
+							const product = {
+								...item?.item,
+								cartItemId: item?.id,
+								totalPrice: item?.price,
+								quantity: item?.quantity,
+								food_variations: item?.item?.food_variations,
+								selectedAddons: item?.item?.addons,
+								itemBasePrice: item?.item?.price,
+								selectedOption: item?.variation,
+							};
+							dispatch(setDecrementToCartItem(product));
+						}
+					});
+				}
+			},
+			onError: onErrorResponse,
+		});
+	};
+
 	const theme = useTheme();
 	const neutralBase =
 		theme.palette.neutral?.[400] || theme.palette.text.secondary;
@@ -143,35 +260,63 @@ const RegularOrders = (props) => {
 						<VariationContent cartItem={item} />
 					</Stack>
 
-					<Stack direction="row" alignItems="center" spacing={1} sx={{ flexShrink: 0 }}>
-						<Box
+					<Stack direction="row" alignItems="center" spacing={0.75} sx={{ flexShrink: 0 }}>
+						<Stack
+							direction="row"
+							alignItems="center"
 							sx={{
-								minWidth: 32,
-								height: 32,
-								px: 1,
+								border: "1px solid",
+								borderColor: alpha(neutralBase, 0.25),
 								borderRadius: "8px",
-								backgroundColor: alpha(neutralBase, 0.12),
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								flexShrink: 0,
+								backgroundColor: alpha(neutralBase, 0.05),
+								p: "2px",
 							}}
 						>
+							<IconButton
+								size="small"
+								onClick={() => handleDecrement(item)}
+								disabled={updateIsLoading || removeIsLoading}
+								sx={{
+									p: "3px",
+									color: theme.palette.text.primary,
+									"&:hover": { backgroundColor: alpha(theme.palette.primary.main, 0.1) },
+								}}
+							>
+								<RemoveIcon sx={{ fontSize: 15 }} />
+							</IconButton>
+
 							<Typography
 								sx={{
 									fontWeight: 700,
-									fontSize: { xs: "13px", md: "14px" },
+									fontSize: { xs: "12px", md: "13px" },
 									color: theme.palette.text.primary,
+									minWidth: 24,
+									textAlign: "center",
+									px: 0.5,
 								}}
 							>
 								{item.quantity}
 							</Typography>
-						</Box>
+
+							<IconButton
+								size="small"
+								onClick={() => handleIncrement(item)}
+								disabled={updateIsLoading || removeIsLoading}
+								sx={{
+									p: "3px",
+									color: theme.palette.text.primary,
+									"&:hover": { backgroundColor: alpha(theme.palette.primary.main, 0.1) },
+								}}
+							>
+								<AddIcon sx={{ fontSize: 15 }} />
+							</IconButton>
+						</Stack>
+
 						<Tooltip title={t("Remove item")}>
 							<IconButton
 								size="small"
 								onClick={() => handleRemove(item)}
-								disabled={removeIsLoading}
+								disabled={removeIsLoading || updateIsLoading}
 								sx={{
 									color: theme.palette.error.main,
 									backgroundColor: alpha(theme.palette.error.main, 0.08),

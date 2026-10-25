@@ -355,3 +355,22 @@ button.gm-ui-hover-effect {
     height: 9px !important;
     left: 7px !important;
 }
+
+
+/* Persistent visible scrollbars for SimpleBar */
+.simplebar-track.simplebar-vertical {
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 8px !important;
+}
+
+.simplebar-scrollbar:before {
+    background-color: rgba(120, 120, 120, 0.6) !important;
+    opacity: 0.6 !important;
+    border-radius: 6px !important;
+    visibility: visible !important;
+}
+
+.simplebar-scrollbar.simplebar-visible:before {
+    opacity: 0.85 !important;
+}

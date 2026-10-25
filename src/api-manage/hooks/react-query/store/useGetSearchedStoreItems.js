@@ -57,17 +57,27 @@ export default function useGetSearchedStoreItems(
   pageParams,
   handleSearchSuccess
 ) {
-  return useInfiniteQuery("searched-store-items", () => getData(pageParams), {
-    getNextPageParam: (lastPage, allPages) => {
-      const nextPage = allPages.length + 1;
-      return lastPage?.products?.length > 0 ? nextPage : undefined;
-    },
-    getPreviousPageParam: (firstPage, allPages) => firstPage.prevCursor,
-    retry: 3,
-    enabled: false,
-    onError: onSingleErrorResponse,
-    cacheTime: "0",
-  });
+  return useInfiniteQuery(
+    [
+      "searched-store-items",
+      pageParams?.storeId,
+      pageParams?.searchKey,
+      pageParams?.type,
+    ],
+    () => getData(pageParams),
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        const nextPage = allPages.length + 1;
+        return lastPage?.products?.length > 0 ? nextPage : undefined;
+      },
+      getPreviousPageParam: (firstPage, allPages) => firstPage.prevCursor,
+      retry: 1,
+      enabled: false,
+      onError: onSingleErrorResponse,
+      staleTime: 2 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000,
+    }
+  );
   // return useQuery("searched-store-items", () => getData(pageParams), {
   //   enabled: false,
   //   onSuccess: handleSearchSuccess,

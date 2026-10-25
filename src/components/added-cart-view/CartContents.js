@@ -28,6 +28,7 @@ const CartContents = (props) => {
     >
 
       <SimpleBar
+        autoHide={false}
         style={{
           maxHeight: "70vh",
           width: "100%",

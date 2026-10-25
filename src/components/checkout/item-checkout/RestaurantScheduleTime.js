@@ -122,8 +122,14 @@ const RestaurantScheduleTime = (props) => {
   const commitSchedule = (timeStr, offset = selectedDayOffset) => {
     if (!timeStr) return;
     const targetDate = moment().add(offset, "days").format("YYYY-MM-DD");
+    // If timeStr already contains a date (e.g. from getAllSchedule returning "YYYY-MM-DD HH:mm"), extract just the time portion
+    let timePart = String(timeStr).trim();
+    if (timePart.includes(" ")) {
+      const parts = timePart.split(" ");
+      timePart = parts[parts.length - 1];
+    }
     // Normalize time to HH:mm:ss
-    let normalizedTime = timeStr;
+    let normalizedTime = timePart;
     if (normalizedTime.length === 5) {
       normalizedTime = `${normalizedTime}:00`;
     }

@@ -23,6 +23,8 @@ const getData = async (key) => {
 export default function useGetItemOrStore(key) {
   return useQuery(["item-and-store-suggestions", key], () => getData(key), {
     enabled: false,
+    staleTime: 2 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
     onError: onSingleErrorResponse,
   });
 }

@@ -591,51 +591,8 @@ const NewNavBar = ({ configData }) => {
         <AddressReselect location={location} />
       </Box>
 
-      {/* Search: grows to fill space, 24px from icons */}
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          display: "flex",
-          justifyContent: "flex-end",
-          mr: "24px",
-        }}
-      >
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: showNavSearch ? "500px" : "0px",
-            opacity: showNavSearch ? 1 : 0,
-            visibility: showNavSearch ? "visible" : "hidden",
-            transition:
-              "max-width 0.35s ease, opacity 0.3s ease, visibility 0.3s",
-            minWidth: 0,
-            "& form > div:first-child": {
-              borderRadius: "9999px !important",
-              height: "44px",
-              backgroundColor: (theme) =>
-                `${theme.palette.background.secondary} !important`,
-              border: "none !important",
-            },
-            "& .MuiPaper-root": {
-              backgroundColor: "background.paper",
-            },
-          }}
-        >
-          <ManageSearch
-            zoneid={zoneId}
-            fullWidth
-            searchFromNav={true}
-            searchQuery={
-              router.pathname === "/search" &&
-              !searchBannerInView &&
-              router.query.data_type === "searched"
-                ? router.query.search
-                : undefined
-            }
-          />
-        </Box>
-      </Box>
+      {/* Search bar in header removed as requested */}
+      <Box sx={{ flex: 1 }} />
 
       {/* Right: icons */}
       {renderIcons()}

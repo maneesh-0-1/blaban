@@ -1,5 +1,6 @@
 import { useTheme } from "@emotion/react";
-import { alpha, Grid, Typography, useMediaQuery } from "@mui/material";
+import { alpha, Box, Button, Grid, Typography, useMediaQuery } from "@mui/material";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { Stack } from "@mui/system";
 import { baseUrl } from "api-manage/MainApi";
 import { OrderApi } from "api-manage/another-formated-api/orderApi";
@@ -651,7 +652,7 @@ const ItemCheckout = (props) => {
         ...address,
         is_buy_now: page === "buy_now" || page === "campaign" || !token ? 1 : 0,
         partial_payment: usePartialPayment,
-        schedule_at: scheduleAt === "now" ? null : scheduleAt,
+        schedule_at: sanitizedScheduleAt,
         // order_time: scheduleAt,
         payment_method: isDigital,
         order_type: orderType === "schedule_order" ? "delivery" : orderType,
@@ -831,8 +832,8 @@ const ItemCheckout = (props) => {
         toast.error(t("Please provide a contact phone number"), { id: "checkout-phone" });
         return;
       }
-      if (!activeBlock || !activeRoad || !activeHouse) {
-        toast.error(t("Please complete your address details (Block, Street, Building/House)"), { id: "checkout-details" });
+      if (!activeRoad || !activeHouse) {
+        toast.error(t("Please complete your address details (Street, Building/House)"), { id: "checkout-details" });
         return;
       }
     }
@@ -1136,6 +1137,22 @@ const ItemCheckout = (props) => {
       handleOrderSuccess();
     }
   }, [orderSuccess]);
+    const handleContinueShopping = () => {
+    const targetStoreId = storeData?.id || cartList?.[0]?.store_id;
+    const currentModule = getCurrentModuleType() || router.query?.module || "blaban";
+    if (targetStoreId) {
+      router.push({
+        pathname: `/store/${targetStoreId}`,
+        query: { module: currentModule },
+      });
+    } else {
+      router.push({
+        pathname: "/home",
+        query: { module: currentModule },
+      });
+    }
+  };
+
   const handleOrderSuccess = () => {
     const placedOrderId = orderId || order_id;
     saveOrderSummarySnapshot(placedOrderId);
@@ -1452,6 +1469,28 @@ const ItemCheckout = (props) => {
               spacing={{ xs: 2, sm: 2, md: 3 }}
               pb={{ xs: "1rem", sm: "2rem", md: "4rem" }}
             >
+              <Box sx={{ mb: -1 }}>
+                <Button
+                  aria-label="continue-shopping-top"
+                  onClick={handleContinueShopping}
+                  startIcon={<ArrowBackIosNewIcon sx={{ fontSize: "12px !important" }} />}
+                  sx={{
+                    textTransform: "none",
+                    color: "text.secondary",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    px: 0.5,
+                    py: 0.5,
+                    minWidth: "auto",
+                    "&:hover": {
+                      color: "primary.main",
+                      backgroundColor: "transparent",
+                    },
+                  }}
+                >
+                  {t("Continue Shopping")}
+                </Button>
+              </Box>
               <CheckoutStepper storeData={storeData} />
               <DeliveryDetails
                 storeData={storeData}
@@ -1586,10 +1625,33 @@ const ItemCheckout = (props) => {
                 <Stack justifyContent="space-between">
                   <CouponTitle textAlign="left">{t("Billing")}</CouponTitle>
                   {zoneData && handleBadWeatherUi(zoneData?.data?.zone_data)}
-                  <SimpleBar
-                    style={{
-                      maxHeight: "180px",
+                  <Box
+                    sx={{
+                      maxHeight: { xs: "280px", md: "350px" },
                       width: "100%",
+                      overflowY: "auto",
+                      overflowX: "hidden",
+                      border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
+                      borderRadius: "10px",
+                      p: 1.5,
+                      mt: 1,
+                      mb: 1.5,
+                      "&::-webkit-scrollbar": {
+                        width: "7px",
+                      },
+                      "&::-webkit-scrollbar-track": {
+                        background: alpha(theme.palette.neutral?.[400] || "#999", 0.08),
+                        borderRadius: "8px",
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: alpha(theme.palette.neutral?.[600] || "#666", 0.55),
+                        borderRadius: "8px",
+                        "&:hover": {
+                          backgroundColor: alpha(theme.palette.neutral?.[600] || "#666", 0.8),
+                        },
+                      },
+                      scrollbarWidth: "thin",
+                      scrollbarColor: `${alpha(theme.palette.neutral?.[600] || "#666", 0.55)} ${alpha(theme.palette.neutral?.[400] || "#999", 0.08)}`,
                     }}
                   >
                     <OrderSummaryDetails
@@ -1600,7 +1662,7 @@ const ItemCheckout = (props) => {
                       campaignItemList={campaignItemList}
                       isSmall={isSmall}
                     />
-                  </SimpleBar>
+                  </Box>
 
                   <OrderCalculation
                     usePartialPayment={usePartialPayment}
@@ -1641,7 +1703,7 @@ const ItemCheckout = (props) => {
                     scheduleAt={scheduleAt}
                   />
 
-                  <PlaceOrder
+                                    <PlaceOrder
                     placeOrder={placeOrder}
                     orderLoading={orderLoading}
                     zoneData={zoneData}
@@ -1653,6 +1715,32 @@ const ItemCheckout = (props) => {
                     totalAmount={totalAmount}
                     paymentMethod={paymentMethod}
                   />
+
+                  <Button
+                    aria-label="continue-shopping-checkout-billing"
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleContinueShopping}
+                    startIcon={<ArrowBackIosNewIcon sx={{ fontSize: "14px !important" }} />}
+                    sx={{
+                      mt: 1.5,
+                      py: 1.25,
+                      borderRadius: "10px",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: { xs: "14px", md: "15px" },
+                      borderColor: (theme) => alpha(theme.palette.divider, 0.9),
+                      color: "text.primary",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        borderColor: "primary.main",
+                        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.05),
+                        color: "primary.main",
+                      },
+                    }}
+                  >
+                    {t("Continue Shopping")}
+                  </Button>
                 </Stack>
               </CustomPaperBigCard>
             </CustomStackFullWidth>

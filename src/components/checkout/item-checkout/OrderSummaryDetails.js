@@ -6,7 +6,7 @@ const OrderSummaryDetails = (props) => {
 	const { page, configData, cartList, t, campaignItemList, isSmall } = props;
 	return (
 		<>
-			<Grid item md={12} xs={12} container spacing={1} mt="20px" pl="10px">
+			<Grid item md={12} xs={12} container spacing={1} mt="0px" pl="0px">
 				{(page === "cart" || page === "buy_now") && (
 					<RegularOrders
 						configData={configData}

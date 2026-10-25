@@ -396,20 +396,13 @@ const CartItemRow = ({ cartItem }) => {
                 overflow: "hidden",
               }}
             >
-              {cartItem?.quantity === 1 ? (
-                <QtyButton
-                  onClick={handleRemove}
-                  disabled={removeIsLoading}
-                  sx={{ color: theme.palette.error.main }}
-                  title={t("Remove item")}
-                >
-                  <DeleteOutlineIcon sx={{ fontSize: 18, color: theme.palette.error.main }} />
-                </QtyButton>
-              ) : (
-                <QtyButton onClick={handleDecrement} disabled={isLoading} title={t("Decrease")}>
-                  <RemoveIcon sx={{ fontSize: 18 }} />
-                </QtyButton>
-              )}
+              <QtyButton
+                onClick={handleDecrement}
+                disabled={isLoading || removeIsLoading}
+                title={t("Decrease")}
+              >
+                <RemoveIcon sx={{ fontSize: 18 }} />
+              </QtyButton>
               <Typography
                 sx={{
                   fontSize: "15px",
@@ -1331,9 +1324,28 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
               </Stack>
             </Stack>
           ) : (
-            <SimpleBar
-              style={{ maxHeight: "calc(90vh - 420px)", width: "100%" }}
+            <Box
+              sx={{
+                width: "100%",
+                "& .simplebar-scrollbar:before": {
+                  opacity: "0.6 !important",
+                  backgroundColor: (theme) => `${alpha(theme.palette.neutral?.[600] || "#666", 0.6)} !important`,
+                  borderRadius: "6px !important",
+                },
+                "& .simplebar-scrollbar.simplebar-visible:before": {
+                  opacity: "0.85 !important",
+                },
+                "& .simplebar-track.simplebar-vertical": {
+                  visibility: "visible !important",
+                  width: "8px",
+                  opacity: "1 !important",
+                },
+              }}
             >
+              <SimpleBar
+                autoHide={false}
+                style={{ maxHeight: "calc(90vh - 420px)", width: "100%" }}
+              >
               <Stack sx={{ px: 2.5, pb: 1 }}>
                 {/* Items section with border */}
                 <Stack
@@ -1692,6 +1704,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
                 })()}
               </Stack>
             </SimpleBar>
+          </Box>
           )}
 
           {/* Footer with subtotal and checkout */}

@@ -557,6 +557,59 @@ const MiddleSection = (props) => {
       setCategoryList(combined);
     }
   }, [data]);
+  // Memoized store products for ultra-fast instant search & rendering
+  const allStoreProducts = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    (data?.pages || []).forEach((p) => {
+      (p?.products || []).forEach((item) => {
+        if (item?.id != null && !seen.has(item.id)) {
+          seen.add(item.id);
+          list.push(item);
+        }
+      });
+      if (p?.category_wise_items) {
+        Object.values(p.category_wise_items).forEach((catItems) => {
+          if (Array.isArray(catItems)) {
+            catItems.forEach((item) => {
+              if (item?.id != null && !seen.has(item.id)) {
+                seen.add(item.id);
+                list.push(item);
+              }
+            });
+          }
+        });
+      }
+    });
+    (state.data?.products || []).forEach((item) => {
+      if (item?.id != null && !seen.has(item.id)) {
+        seen.add(item.id);
+        list.push(item);
+      }
+    });
+    return list;
+  }, [data?.pages, state.data?.products]);
+
+  const isSearchActive = Boolean((searchInputValue || state.searchKey || "").trim());
+  const normalizedQuery = (searchInputValue || state.searchKey || "").trim().toLowerCase();
+
+  const searchFilteredProducts = useMemo(() => {
+    if (!isSearchActive) return [];
+    const apiProducts = state.searchKey ? (state.data?.products || []) : [];
+    const localMatches = allStoreProducts.filter((item) => {
+      const name = (item?.name || "").toLowerCase();
+      const desc = (item?.description || "").toLowerCase();
+      return name.includes(normalizedQuery) || desc.includes(normalizedQuery);
+    });
+    const map = new Map();
+    [...apiProducts, ...localMatches].forEach((p) => {
+      if (p?.id != null && !map.has(p.id)) {
+        map.set(p.id, p);
+      }
+    });
+    return Array.from(map.values());
+  }, [isSearchActive, normalizedQuery, allStoreProducts, state.searchKey, state.data?.products]);
+
   // React-Query automatically queries when pageParams/query keys change.
   useEffect(() => {
     if (state.searchKey) {
@@ -607,7 +660,7 @@ const MiddleSection = (props) => {
     dispatch({ type: ACTION.setIsSidebarOpen, payload: false });
   };
 
-  // Debounce search input → dispatch to state after 500ms
+  // Debounce search input → dispatch to state after 180ms (optimized for fast search)
   useEffect(() => {
     const timer = setTimeout(() => {
       setOffset(1);
@@ -617,7 +670,7 @@ const MiddleSection = (props) => {
       } else {
         dispatch({ type: ACTION.setSearchKey, payload: null });
       }
-    }, 500);
+    }, 180);
     return () => clearTimeout(timer);
   }, [searchInputValue]);
 
@@ -898,57 +951,7 @@ const MiddleSection = (props) => {
                 </Stack>
               ) : (
                 (() => {
-                  const allStoreProducts = (() => {
-                    const seen = new Set();
-                    const list = [];
-                    (data?.pages || []).forEach((p) => {
-                      (p?.products || []).forEach((item) => {
-                        if (item?.id != null && !seen.has(item.id)) {
-                          seen.add(item.id);
-                          list.push(item);
-                        }
-                      });
-                      if (p?.category_wise_items) {
-                        Object.values(p.category_wise_items).forEach((catItems) => {
-                          if (Array.isArray(catItems)) {
-                            catItems.forEach((item) => {
-                              if (item?.id != null && !seen.has(item.id)) {
-                                seen.add(item.id);
-                                list.push(item);
-                              }
-                            });
-                          }
-                        });
-                      }
-                    });
-                    (state.data?.products || []).forEach((item) => {
-                      if (item?.id != null && !seen.has(item.id)) {
-                        seen.add(item.id);
-                        list.push(item);
-                      }
-                    });
-                    return list;
-                  })();
-
-                  const isSearchActive = Boolean((searchInputValue || state.searchKey || "").trim());
-                  const normalizedQuery = (searchInputValue || state.searchKey || "").trim().toLowerCase();
-
-                  const searchFilteredProducts = (() => {
-                    if (!isSearchActive) return [];
-                    const apiProducts = state.searchKey ? (state.data?.products || []) : [];
-                    const localMatches = allStoreProducts.filter((item) => {
-                      const name = (item?.name || "").toLowerCase();
-                      const desc = (item?.description || "").toLowerCase();
-                      return name.includes(normalizedQuery) || desc.includes(normalizedQuery);
-                    });
-                    const map = new Map();
-                    [...apiProducts, ...localMatches].forEach((p) => {
-                      if (p?.id != null && !map.has(p.id)) {
-                        map.set(p.id, p);
-                      }
-                    });
-                    return Array.from(map.values());
-                  })();
+                  // Using top-level memoized allStoreProducts & searchFilteredProducts for instant search responsiveness
 
                   // If search is active, render the dedicated search results view!
                   if (isSearchActive) {
