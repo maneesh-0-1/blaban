@@ -22,9 +22,13 @@ const IncDecAddOn = ({ changeAddOns, add_on, selectedAddons }) => {
 
   useEffect(() => {
     if (selectedAddons?.length > 0) {
-      const existedAddOn = selectedAddons?.find(
-        (item) => item?.id === add_on?.id && item?.store_id === add_on?.store_id
-      );
+      const existedAddOn = selectedAddons?.find((item) => {
+        if (String(item?.id) !== String(add_on?.id)) return false;
+        if (item?.store_id != null && add_on?.store_id != null) {
+          return String(item.store_id) === String(add_on.store_id);
+        }
+        return true;
+      });
       if (existedAddOn) {
         setAddOn({ ...existedAddOn });
       } else {

@@ -961,7 +961,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
           : Number(item?.price) || 0;
     }
     // Addons are priced by the addon's own quantity, independent of item qty.
-    const addons = item?.selectedAddons ?? item?.addons ?? [];
+    const addons = item?.selectedAddons ?? [];
     const addonTotal = addons.reduce(
       (t, a) => t + (Number(a?.price) || 0) * (Number(a?.quantity) || 0),
       0

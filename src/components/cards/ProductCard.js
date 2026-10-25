@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Box, Stack } from "@mui/system";
-import { getAmountWithSign } from "helper-functions/CardHelpers";
+import { getAmountWithSign, getSelectedAddonsFromCartItem } from "helper-functions/CardHelpers";
 import { useRouter } from "next/router";
 import { handleProductRedirect } from "helper-functions/handleProductRedirect";
 
@@ -481,7 +481,7 @@ const ProductCard = (props) => {
             totalPrice: item?.price,
             quantity: item?.quantity,
             food_variations: item?.item?.food_variations,
-            selectedAddons: item?.item?.addons,
+            selectedAddons: getSelectedAddonsFromCartItem(item),
             itemBasePrice: item?.item?.price,
             selectedOption: item?.variation,
           };
@@ -500,7 +500,7 @@ const ProductCard = (props) => {
           totalPrice: item?.price,
           quantity: item?.quantity,
           food_variations: item?.item?.food_variations,
-          selectedAddons: item?.item?.addons,
+          selectedAddons: getSelectedAddonsFromCartItem(item),
           itemBasePrice: item?.item?.price,
           selectedOption: item?.variation,
         };

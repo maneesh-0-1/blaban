@@ -5,6 +5,7 @@ import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
 import {
   getAmountWithSign,
   getDiscountedAmount,
+  getSelectedAddonsFromCartItem,
 } from "helper-functions/CardHelpers";
 import { Stack } from "@mui/system";
 import AddIcon from "@mui/icons-material/Add";
@@ -66,7 +67,7 @@ const CartContent = (props) => {
             totalPrice: item?.price,
             quantity: item?.quantity,
             food_variations: item?.item?.food_variations,
-            selectedAddons: item?.item?.addons,
+            selectedAddons: getSelectedAddonsFromCartItem(item),
             itemBasePrice: item?.item?.price,
             selectedOption: item?.variation,
           };
@@ -86,7 +87,7 @@ const CartContent = (props) => {
             totalPrice: item?.price,
             quantity: item?.quantity,
             food_variations: item?.item?.food_variations,
-            selectedAddons: item?.item?.addons,
+            selectedAddons: getSelectedAddonsFromCartItem(item),
             itemBasePrice: item?.item?.price,
             selectedOption: item?.variation,
           };

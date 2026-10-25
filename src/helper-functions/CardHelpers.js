@@ -93,15 +93,92 @@ export const getDiscountedAmount = (
 };
 export const getSelectedAddOn = (add_ons) => {
   let add_on = "";
-  if (add_ons?.length > 0) {
-    add_ons?.map((item, index) => {
-      if (item?.isChecked) {
-        add_on += `${index !== 0 ? ", " : ""}${item.name}`;
-      }
+  if (Array.isArray(add_ons) && add_ons.length > 0) {
+    add_ons.forEach((item) => {
+      if (!item || !item.name) return;
+      if (item.isChecked === false || (item.quantity != null && Number(item.quantity) <= 0)) return;
+      const qty = Number(item.quantity);
+      const qtyStr = qty && qty > 1 ? ` (${qty})` : "";
+      add_on += `${add_on ? ", " : ""}${item.name}${qtyStr}`;
     });
   }
   return add_on;
 };
+
+export const getSelectedAddonsFromCartItem = (cartRow) => {
+  if (!cartRow) return [];
+
+  let addOnIds = cartRow?.add_on_ids;
+  if (typeof addOnIds === "string") {
+    try {
+      addOnIds = JSON.parse(addOnIds);
+    } catch {
+      addOnIds = [];
+    }
+  }
+
+  let addOnQtys = cartRow?.add_on_qtys;
+  if (typeof addOnQtys === "string") {
+    try {
+      addOnQtys = JSON.parse(addOnQtys);
+    } catch {
+      addOnQtys = [];
+    }
+  }
+
+  const catalogAddons =
+    cartRow?.item?.addons ??
+    cartRow?.item?.add_ons ??
+    cartRow?.addons ??
+    cartRow?.add_ons ??
+    [];
+
+  if (Array.isArray(addOnIds) && addOnIds.length > 0) {
+    const result = [];
+    addOnIds.forEach((id, index) => {
+      const match = Array.isArray(catalogAddons)
+        ? catalogAddons.find((a) => String(a?.id) === String(id))
+        : null;
+      const qty =
+        Array.isArray(addOnQtys) && addOnQtys[index] != null
+          ? Number(addOnQtys[index]) || 1
+          : 1;
+
+      if (match) {
+        result.push({
+          ...match,
+          store_id:
+            match?.store_id ??
+            cartRow?.store_id ??
+            cartRow?.item?.store_id,
+          quantity: qty,
+          isChecked: true,
+        });
+      } else {
+        result.push({
+          id: typeof id === "number" ? id : Number(id) || id,
+          name: `Addon #${id}`,
+          price: 0,
+          quantity: qty,
+          isChecked: true,
+        });
+      }
+    });
+    return result;
+  }
+
+  if (Array.isArray(cartRow?.selectedAddons) && cartRow.selectedAddons.length > 0) {
+    return cartRow.selectedAddons.filter(
+      (a) =>
+        a &&
+        a.isChecked !== false &&
+        (a.quantity == null || Number(a.quantity) > 0)
+    );
+  }
+
+  return [];
+};
+
 
 // export const getDiscountAmount = (
 //   price,

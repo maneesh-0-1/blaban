@@ -18,7 +18,7 @@ import {
   cartItemsTotalAmount,
   handleProductValueWithOutDiscount,
 } from "../../utils/CustomFunctions";
-import { getAmountWithSign } from "../../helper-functions/CardHelpers";
+import { getAmountWithSign, getSelectedAddonsFromCartItem } from "../../helper-functions/CardHelpers";
 import AccountLanguageButton from "components/header/second-navbar/account-popover/AccountLanguageButton";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getToken } from "helper-functions/getToken";
@@ -317,7 +317,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
         module_type: item?.item?.module_type ?? moduleType,
         totalPrice:
          item?.price,
-        selectedAddons: item?.item?.addons,
+        selectedAddons: getSelectedAddonsFromCartItem(item),
         quantity: item?.quantity,
         food_variations: item?.item?.food_variations,
         itemBasePrice: item?.item?.price,

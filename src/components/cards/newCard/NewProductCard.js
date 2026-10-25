@@ -22,7 +22,7 @@ import useCartItemUpdate from "api-manage/hooks/react-query/add-cart/useCartItem
 import useDeleteCartItem from "api-manage/hooks/react-query/add-cart/useDeleteCartItem";
 import { useAddToWishlist } from "api-manage/hooks/react-query/wish-list/useAddWishList";
 import { useWishListDelete } from "api-manage/hooks/react-query/wish-list/useWishListDelete";
-import { getAmountWithSign } from "helper-functions/CardHelpers";
+import { getAmountWithSign, getSelectedAddonsFromCartItem } from "helper-functions/CardHelpers";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getLanguage } from "helper-functions/getLanguage";
 import { getGuestId, getToken } from "helper-functions/getToken";
@@ -1419,7 +1419,7 @@ const NewProductCard = ({
             totalPrice: i?.price,
             quantity: i?.quantity,
             food_variations: i?.item?.food_variations,
-            selectedAddons: i?.item?.addons,
+            selectedAddons: getSelectedAddonsFromCartItem(i),
             itemBasePrice: i?.item?.price,
             selectedOption: i?.variation,
           })
@@ -1439,7 +1439,7 @@ const NewProductCard = ({
           totalPrice: i?.price,
           quantity: i?.quantity,
           food_variations: i?.item?.food_variations,
-          selectedAddons: i?.item?.addons,
+          selectedAddons: getSelectedAddonsFromCartItem(i),
           itemBasePrice: i?.item?.price,
           selectedOption: i?.variation,
         })

@@ -28,6 +28,7 @@ import {
   formatPhoneNumber,
   handleProductValueWithOutDiscount,
 } from "utils/CustomFunctions";
+import { getSelectedAddonsFromCartItem } from "helper-functions/CardHelpers";
 import {
   loginSuccessFull,
   moduleSelected,
@@ -141,7 +142,7 @@ const SignIn = ({
         cartItemId: item?.id,
         totalPrice:
           handleProductValueWithOutDiscount(item?.item) * item?.quantity,
-        selectedAddons: item?.item?.addons,
+        selectedAddons: getSelectedAddonsFromCartItem(item),
         quantity: item?.quantity,
         food_variations: item?.item?.food_variations,
         itemBasePrice: item?.item?.price,

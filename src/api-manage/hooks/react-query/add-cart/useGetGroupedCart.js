@@ -4,6 +4,7 @@ import MainApi from "../../../MainApi";
 import { cart_get_all } from "../../../ApiRoutes";
 import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponses";
 import { getGuestId, getToken } from "helper-functions/getToken";
+import { getSelectedAddonsFromCartItem } from "helper-functions/CardHelpers";
 import { setCartGroups, setCartList } from "redux/slices/cart";
 
 const fetchGroupedCart = async () => {
@@ -38,7 +39,7 @@ const flattenGroupsToCartList = (groups = []) => {
         quantity,
         totalPrice,
         itemBasePrice: product?.price,
-        selectedAddons: product?.addons,
+        selectedAddons: getSelectedAddonsFromCartItem(row),
         food_variations: product?.food_variations,
         selectedOption: row?.variation,
         store_id: row?.store_id ?? product?.store_id ?? storeId,
