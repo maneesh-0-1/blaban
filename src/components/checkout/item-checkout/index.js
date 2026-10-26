@@ -1596,7 +1596,7 @@ if (prescriptionImages?.length > 0) {
                     setUsePartialPayment={setUsePartialPayment}
                   />
                 )}
-              {storeData && token && (
+              {storeData && (
                 <HaveCoupon
                   store_id={storeData?.id}
                   setCouponDiscount={setCouponDiscount}
