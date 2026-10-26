@@ -6,7 +6,7 @@ import ractangle from "../../../../public/static/footer/Rectangle.svg";
 import magnifying from "../../../../public/static/footer/magnifying.svg";
 import phone from "../../../../public/static/footer/phone.svg";
 import CustomImageContainer from "../../CustomImageContainer";
-import LocationViewOnMap from "../../Map/location-view/LocationViewOnMap";
+import BranchesModal from "../BranchesModal";
 import AppLinks from "./AppLinks";
 import RouteLinks from "./RouteLinks";
 import SomeInfo from "./SomeInfo";
@@ -107,7 +107,7 @@ const FooterMiddle = ({ configData, landingPageData }) => {
             />
           </Box>
 {/* Contact phone removed */}
-          <Box sx={{ flex: "1 0 0", minWidth: "140px" }} onClick={() => setOpen(true)}>
+          <Box sx={{ flex: "1 0 0", minWidth: "140px", cursor: "pointer" }} onClick={() => setOpen(true)}>
             <SomeInfo
               image={magnifying}
               alt="location"
@@ -197,11 +197,20 @@ const FooterMiddle = ({ configData, landingPageData }) => {
             />
           </Box>
 {/* Contact phone removed */}
-          {/* Location map removed from footer */}
+          <Box sx={{ minWidth: "130px", flex: "1 1 130px", cursor: "pointer" }} onClick={() => setOpen(true)}>
+            <SomeInfo
+              image={magnifying}
+              alt="location"
+              title="Find us here"
+              info={configData?.address}
+              t={t}
+              href={false}
+            />
+          </Box>
         </Box>
       </Box>
 
-      
+      <BranchesModal open={open} handleClose={() => setOpen(false)} />
     </Box>
   );
 };
@@ -209,3 +218,4 @@ const FooterMiddle = ({ configData, landingPageData }) => {
 FooterMiddle.propTypes = {};
 
 export default FooterMiddle;
+

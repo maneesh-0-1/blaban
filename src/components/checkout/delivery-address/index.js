@@ -58,7 +58,7 @@ const getZoneWiseAddresses = (addresses, restaurantId) => {
 
 const DEFAULT_INSTRUCTIONS = [
   "Leave at the door",
-  "Avoid ringing bell",
+  "Avoid ringing the bell",
   "Leave with security",
   "Hand it to me",
 ];

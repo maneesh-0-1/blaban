@@ -495,6 +495,7 @@ const ImageOverlay = ({
   isWishlisted,
   onWishlist,
   showVeg,
+  showWishlist,
   ...cartProps
 }) => {
   const theme = useTheme();
@@ -555,21 +556,23 @@ const ImageOverlay = ({
         )}
         
       </Box>
-      <WishlistBtn
-        variant={isHorizontal ? "horizontal" : "vertical"}
-        onClick={onWishlist}
-        sx={{ width: btnSize, height: btnSize }}
-      >
-        <i
-          className={isWishlisted ? "fi fi-sr-heart" : "fi fi-br-heart"}
-          style={{
-            fontSize: "13px",
-            lineHeight: 1,
-            display: "flex",
-            color: theme.palette.error.red,
-          }}
-        />
-      </WishlistBtn>
+      {showWishlist && (
+        <WishlistBtn
+          variant={isHorizontal ? "horizontal" : "vertical"}
+          onClick={onWishlist}
+          sx={{ width: btnSize, height: btnSize }}
+        >
+          <i
+            className={isWishlisted ? "fi fi-sr-heart" : "fi fi-br-heart"}
+            style={{
+              fontSize: "13px",
+              lineHeight: 1,
+              display: "flex",
+              color: theme.palette.error.red,
+            }}
+          />
+        </WishlistBtn>
+      )}
       <CartControls isHorizontal={isHorizontal} {...cartProps} />
     </>
   );
@@ -583,6 +586,7 @@ const PharmacyImageOverlay = ({
   item,
   isWishlisted,
   onWishlist,
+  showWishlist,
   ...cartProps
 }) => {
   const theme = useTheme();
@@ -642,21 +646,23 @@ const PharmacyImageOverlay = ({
           </Box>
         )}
       </Box>
-      <WishlistBtn
-        variant={isHorizontal ? "horizontal" : "vertical"}
-        onClick={onWishlist}
-        sx={{ width: btnSize, height: btnSize }}
-      >
-        <i
-          className={isWishlisted ? "fi fi-sr-heart" : "fi fi-br-heart"}
-          style={{
-            fontSize: "13px",
-            lineHeight: 1,
-            display: "flex",
-            color: theme.palette.error.red,
-          }}
-        />
-      </WishlistBtn>
+      {showWishlist && (
+        <WishlistBtn
+          variant={isHorizontal ? "horizontal" : "vertical"}
+          onClick={onWishlist}
+          sx={{ width: btnSize, height: btnSize }}
+        >
+          <i
+            className={isWishlisted ? "fi fi-sr-heart" : "fi fi-br-heart"}
+            style={{
+              fontSize: "13px",
+              lineHeight: 1,
+              display: "flex",
+              color: theme.palette.error.red,
+            }}
+          />
+        </WishlistBtn>
+      )}
       <CartControls isHorizontal={isHorizontal} {...cartProps} />
     </>
   );
@@ -1096,21 +1102,23 @@ export const RentalImageOverlay = ({
       )}
 
       {/* Wishlist — top-right */}
-      <WishlistBtn
-        variant="vertical"
-        onClick={onWishlist}
-        sx={{ top: 9, right: 9, width: 26, height: 26 }}
-      >
-        <i
-          className={isWishlisted ? "fi fi-sr-heart" : "fi fi-br-heart"}
-          style={{
-            fontSize: "13px",
-            lineHeight: 1,
-            display: "flex",
-            color: theme.palette.error.red,
-          }}
-        />
-      </WishlistBtn>
+      {showWishlist && (
+        <WishlistBtn
+          variant="vertical"
+          onClick={onWishlist}
+          sx={{ top: 9, right: 9, width: 26, height: 26 }}
+        >
+          <i
+            className={isWishlisted ? "fi fi-sr-heart" : "fi fi-br-heart"}
+            style={{
+              fontSize: "13px",
+              lineHeight: 1,
+              display: "flex",
+              color: theme.palette.error.red,
+            }}
+          />
+        </WishlistBtn>
+      )}
 
       {/* Info button — only shown when there are more similar vehicles.
           Expands on hover to reveal "N More Similar Vehicle(s)". */}
@@ -1855,6 +1863,7 @@ const NewProductCard = ({
               item={item}
               isWishlisted={isWishlisted}
               onWishlist={toggleWishlist}
+              showWishlist={!!token}
             />
           </Box>
           <RentalInfoSection
@@ -1913,6 +1922,7 @@ const NewProductCard = ({
               item={item}
               isWishlisted={isWishlisted}
               onWishlist={toggleWishlist}
+              showWishlist={!!token}
               {...cartControlProps}
             />
           </ImageContainer>
@@ -2003,6 +2013,7 @@ const NewProductCard = ({
               item={item}
               isWishlisted={isWishlisted}
               onWishlist={toggleWishlist}
+              showWishlist={!!token}
               {...cartControlProps}
             />
           </ImageContainer>
@@ -2055,6 +2066,7 @@ const NewProductCard = ({
               item={item}
               isWishlisted={isWishlisted}
               onWishlist={toggleWishlist}
+              showWishlist={!!token}
               showVeg={
                 !!configData?.toggle_veg_non_veg &&
                 getCurrentModuleType() === ModuleTypes.FOOD
@@ -2148,6 +2160,7 @@ const NewProductCard = ({
               item={item}
               isWishlisted={isWishlisted}
               onWishlist={toggleWishlist}
+              showWishlist={!!token}
               showVeg={
                 !!configData?.toggle_veg_non_veg &&
                 getCurrentModuleType() === ModuleTypes.FOOD

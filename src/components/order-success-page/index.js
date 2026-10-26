@@ -33,6 +33,21 @@ import { getAmountWithSign } from "../../helper-functions/CardHelpers";
 import { getToken } from "../../helper-functions/getToken";
 import CheckoutFailed from "../checkout/CheckoutFailed";
 
+const renderFormattedMessage = (msg) => {
+  if (!msg) return null;
+  const parts = msg.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} style={{ fontWeight: 700 }}>
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+};
+
 const OrderSuccessPage = ({ configData }) => {
   const router = useRouter();
   const theme = useTheme();
@@ -223,11 +238,14 @@ const OrderSuccessPage = ({ configData }) => {
               fontSize: { xs: "14px", sm: "15px" },
               maxWidth: 480,
               mx: "auto",
-              lineHeight: 1.5,
+              lineHeight: 1.6,
+              whiteSpace: "pre-line",
             }}
           >
-            {t(
-              "Thank you for your order! We have received your order and are currently preparing it."
+            {renderFormattedMessage(
+              t(
+                "Thank you for your order! We have received your order and are currently preparing it."
+              )
             )}
           </Typography>
 

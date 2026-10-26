@@ -249,9 +249,11 @@ const NewStoreCard = ({
     handleStoreRedirect(variant === "ads" ? ad?.store : item, router);
 
   // ── Wishlist button (shared) ──
-  const WishlistBtn = ({ size = 24 }) => (
-    <IconButton
-      onClick={toggleWishlist}
+  const WishlistBtn = ({ size = 24 }) => {
+    if (!token) return null;
+    return (
+      <IconButton
+        onClick={toggleWishlist}
       sx={{
         width: size,
         height: size,
@@ -281,8 +283,9 @@ const NewStoreCard = ({
           }}
         />
       )}
-    </IconButton>
-  );
+      </IconButton>
+    );
+  };
 
   // ─────────────────────────────────────────────────────────────────────────
   // ADS VARIANT — uses `ad` prop (full ad object)
