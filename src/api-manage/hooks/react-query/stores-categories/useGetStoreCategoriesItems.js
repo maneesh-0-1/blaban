@@ -158,6 +158,7 @@ export default function useGetStoreCategoriesItems(pageParams) {
       retry: 2,
       cacheTime: 1000 * 60 * 5,
       staleTime: 1000 * 60 * 10,
+      refetchOnWindowFocus: false,
       onError: onSingleErrorResponse,
       getNextPageParam: (lastPage, allPages) => {
         const totalSize = lastPage?.total_size || 0;

@@ -120,10 +120,7 @@ export default function useGetModule() {
   });
   const { refetch } = query;
 
-  useEffect(() => {
-    if (!zoneIdsKey) return;
-    refetch();
-  }, [zoneIdsKey, refetch]);
+  // Redundant refetch effect removed - query key ['module-list', zoneIdsKey] automatically tracks changes
 
   return query;
 }

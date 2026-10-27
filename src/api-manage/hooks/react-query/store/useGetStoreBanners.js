@@ -10,8 +10,11 @@ const getBanners = async (id) => {
 };
 
 export default function useGetItemOrStore(id) {
-  return useQuery("store-banners", () => getBanners(id), {
-    enabled: false,
+  return useQuery(["store-banners", id], () => getBanners(id), {
+    enabled: Boolean(id),
+    staleTime: 10 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
     onError: onSingleErrorResponse,
   });
 }

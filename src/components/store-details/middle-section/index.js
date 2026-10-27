@@ -758,7 +758,12 @@ const MiddleSection = (props) => {
     return () => clearTimeout(timer);
   }, [searchInputValue]);
 
+  const isInitialMountRef = useRef(true);
   useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
     if (state.searchKey && state.searchKey !== "") {
       if (offset === 1) {
         refetchSearchData();

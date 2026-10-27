@@ -349,11 +349,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
   } = useGetAllCartList(guestId, cartListSuccessHandler, storeDetails?.id);
   const isCartLoading = cartListLoading || cartListFetching;
 
-  useEffect(() => {
-    refetchModule();
-    refetch();
-    cartListRefetch();
-  }, [refetchModule, refetch]);
+  // Redundant refetch effect removed - React Query hooks handle initial fetch with caching
 
   useEffect(() => {
     if (moduleDataFromApi) {
