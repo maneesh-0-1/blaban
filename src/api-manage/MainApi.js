@@ -67,7 +67,8 @@ MainApi.interceptors.request.use(function (config) {
     })();
   if (zoneidIsValid) {
     config.headers.zoneid = zoneid;
-  } else if (!config.headers.zoneid) {
+    config.headers.zoneId = zoneid;
+  } else if (!config.headers.zoneid && !config.headers.zoneId) {
     try {
       const storedModule = JSON.parse(
         typeof window !== "undefined"
@@ -76,12 +77,18 @@ MainApi.interceptors.request.use(function (config) {
       );
       const moduleZones = storedModule?.zones?.map((z) => z.id).filter(Boolean);
       if (moduleZones && moduleZones.length > 0) {
-        config.headers.zoneid = JSON.stringify(moduleZones);
+        const zStr = JSON.stringify(moduleZones);
+        config.headers.zoneid = zStr;
+        config.headers.zoneId = zStr;
       } else {
-        config.headers.zoneid = JSON.stringify([6, 5, 2, 3, 4]);
+        const defaultZones = JSON.stringify([6, 7, 8, 9, 10]);
+        config.headers.zoneid = defaultZones;
+        config.headers.zoneId = defaultZones;
       }
     } catch {
-      config.headers.zoneid = JSON.stringify([6, 5, 2, 3, 4]);
+      const defaultZones = JSON.stringify([6, 7, 8, 9, 10]);
+      config.headers.zoneid = defaultZones;
+      config.headers.zoneId = defaultZones;
     }
   }
 
@@ -95,7 +102,7 @@ MainApi.interceptors.request.use(function (config) {
   if (moduleid && !config.headers.moduleId) {
     config.headers.moduleId = moduleid;
   } else if (!config.headers.moduleId) {
-    config.headers.moduleId = "blaban";
+    config.headers.moduleId = 2;
   }
 
   // Explicitly identify guest authentication endpoints that must never carry auth headers

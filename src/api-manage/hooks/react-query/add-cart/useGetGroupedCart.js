@@ -9,11 +9,21 @@ import { getSelectedAddonsFromCartItem } from "helper-functions/CardHelpers";
 import { setCartGroups, setCartList } from "redux/slices/cart";
 
 const fetchGroupedCart = async () => {
-  const token = getToken();
-  const guestId = getGuestId();
-  const params = !token && guestId ? `?guest_id=${guestId}` : "";
-  const { data } = await MainApi.get(`${cart_get_all}${params}`);
-  return data;
+  try {
+    const token = getToken();
+    const guestId = getGuestId();
+    const params = !token && guestId ? `?guest_id=${guestId}` : "";
+    const { data } = await MainApi.get(`${cart_get_all}${params}`);
+    return data;
+  } catch (err) {
+    if (err?.response?.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+      }
+      return [];
+    }
+    throw err;
+  }
 };
 
 // Flatten server-grouped cart payload into the same row shape the local
@@ -89,7 +99,15 @@ export default function useGetGroupedCart(options = {}) {
     // either 4xxs or returns the wrong module's cart.
     enabled: Boolean(canFetch && (token || guestId) && moduleId && (options?.enabled ?? true)),
     refetchOnWindowFocus: false,
-    onError: onSingleErrorResponse,
+    onError: (err) => {
+      if (err?.response?.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+        }
+        return;
+      }
+      onSingleErrorResponse(err);
+    },
     onSuccess: (data) => {
       const groups = Array.isArray(data) ? data : data?.data ?? [];
       dispatch(setCartGroups(groups));
