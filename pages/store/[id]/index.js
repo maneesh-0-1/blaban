@@ -189,15 +189,11 @@ export const getServerSideProps = async (context) => {
       };
     }
 
-    let configData = null;
-    let storeDetails = null;
-
-    if (configRes.ok) {
-      configData = await configRes.json();
-    }
-    if (storeDetailsRes.ok) {
-      storeDetails = await storeDetailsRes.json();
-    }
+    // Parse independent responses in parallel with Promise.all
+    const [configData, storeDetails] = await Promise.all([
+      configRes.ok ? configRes.json() : Promise.resolve(null),
+      storeDetailsRes.ok ? storeDetailsRes.json() : Promise.resolve(null),
+    ]);
 
     if (configData && checkMaintenanceMode(configData)) {
       return {

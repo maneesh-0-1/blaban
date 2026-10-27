@@ -17,6 +17,7 @@ export default function useGetBanners(feature) {
       enabled: true, // run always, but handles missing feature internally
       cacheTime: 300000, // 5 mins
       cacheTime: 60 * 1000,
+      refetchOnWindowFocus: false,
       onError: onSingleErrorResponse,
     }
   );

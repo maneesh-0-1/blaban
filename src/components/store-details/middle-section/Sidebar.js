@@ -206,7 +206,12 @@ const Sidebar = (props) => {
     handleOnSuccess,
     queryKey
   );
+  const isSidebarInitialMount = useRef(true);
   useEffect(() => {
+    if (isSidebarInitialMount.current) {
+      isSidebarInitialMount.current = false;
+      return;
+    }
     refetch();
   }, [storeId]);
 
