@@ -110,6 +110,19 @@ MainApi.interceptors.request.use(function (config) {
     typeof config.url === "string" &&
     config.url.includes("auth/guest/request");
 
+  if (typeof window !== "undefined") {
+    const storedGuestId = localStorage.getItem("guest_id");
+    if (storedGuestId && storedGuestId !== "null" && storedGuestId !== "undefined") {
+      config.params = config.params || {};
+      if (!token && !config.params.guest_id) {
+        config.params.guest_id = storedGuestId;
+      }
+      if (!token) {
+        config.headers.guest_id = storedGuestId;
+      }
+    }
+  }
+
   if (token && !isGuestAuthEndpoint) {
     config.headers.authorization = `Bearer ${token}`;
     delete config.headers.Authorization;

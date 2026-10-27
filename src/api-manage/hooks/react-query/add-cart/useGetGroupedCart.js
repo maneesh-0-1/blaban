@@ -12,9 +12,15 @@ const fetchGroupedCart = async () => {
   try {
     const token = getToken();
     const guestId = getGuestId();
-    const params = !token && guestId ? `?guest_id=${guestId}` : "";
-    const { data } = await MainApi.get(`${cart_get_all}${params}`);
-    return data;
+    if (!token && !guestId) {
+      return [];
+    }
+    const query = new URLSearchParams();
+    if (guestId) query.set("guest_id", guestId);
+    const queryString = query.toString();
+    const url = queryString ? `${cart_get_all}?${queryString}` : cart_get_all;
+    const { data } = await MainApi.get(url);
+    return data || [];
   } catch (err) {
     if (err?.response?.status === 401) {
       if (typeof window !== "undefined") {
@@ -22,7 +28,7 @@ const fetchGroupedCart = async () => {
       }
       return [];
     }
-    throw err;
+    return [];
   }
 };
 
@@ -99,6 +105,7 @@ export default function useGetGroupedCart(options = {}) {
     // either 4xxs or returns the wrong module's cart.
     enabled: Boolean(canFetch && (token || guestId) && moduleId && (options?.enabled ?? true)),
     refetchOnWindowFocus: false,
+    retry: false,
     onError: (err) => {
       if (err?.response?.status === 401) {
         if (typeof window !== "undefined") {
@@ -106,7 +113,6 @@ export default function useGetGroupedCart(options = {}) {
         }
         return;
       }
-      onSingleErrorResponse(err);
     },
     onSuccess: (data) => {
       const groups = Array.isArray(data) ? data : data?.data ?? [];
