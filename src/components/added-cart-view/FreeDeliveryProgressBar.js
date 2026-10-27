@@ -26,11 +26,15 @@ export const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 }));
 const FreeDeliveryProgressBar = ({ configData, cartList }) => {
   const theme = useTheme();
+  const freeDeliveryThreshold =
+    Number(configData?.admin_free_delivery?.free_delivery_over) ||
+    Number(configData?.free_delivery_over) ||
+    100;
   const freeDeliveryTargetAmount = (configData, cartList) => {
     let lessAmount =
-      Number(configData?.free_delivery_over) - cartItemsTotalAmount(cartList);
+      freeDeliveryThreshold - cartItemsTotalAmount(cartList);
     if (
-      cartItemsTotalAmount(cartList) >= Number(configData?.free_delivery_over)
+      cartItemsTotalAmount(cartList) >= freeDeliveryThreshold
     ) {
       return 0;
     } else {
@@ -39,7 +43,7 @@ const FreeDeliveryProgressBar = ({ configData, cartList }) => {
   };
   const reamingAmount = freeDeliveryTargetAmount(configData, cartList);
   const convertedNumberToHundred = Math.round(
-    (100 / configData?.free_delivery_over) * cartItemsTotalAmount(cartList)
+    (100 / freeDeliveryThreshold) * cartItemsTotalAmount(cartList)
   );
   const convertedValueToHundred = Math.min(
     Math.max(convertedNumberToHundred, 0),

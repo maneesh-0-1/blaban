@@ -1320,7 +1320,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
                       color: theme.palette.warning?.dark || "#C2410C",
                     }}
                   >
-                    {getAmountWithSign(configData?.free_delivery_over ?? 500)}
+                    {getAmountWithSign(configData?.admin_free_delivery?.free_delivery_over ?? configData?.free_delivery_over ?? 100)}
                   </Box>{" "}
                   {t("to get free delivery")}
                 </Typography>

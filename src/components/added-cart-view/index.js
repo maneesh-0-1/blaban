@@ -174,7 +174,7 @@ const CardView = (props) => {
         )}
 
         {getCartListModuleWise(cartList).length > 0 &&
-          configData?.free_delivery_over && (
+          (configData?.admin_free_delivery?.free_delivery_over || configData?.free_delivery_over || configData?.admin_free_delivery?.status) && (
             <>
               <FreeDeliveryProgressBar
                 configData={configData}

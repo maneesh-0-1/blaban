@@ -89,7 +89,7 @@ const PrescriptionOrderCalculation = ({
 
     const isFreeDeliveryToAllStores =
       freeDeliveryType === "free_delivery_to_all_store";
-    const globalFreeDeliveryThreshold = configData?.free_delivery_over;
+    const globalFreeDeliveryThreshold = configData?.admin_free_delivery?.free_delivery_over ?? configData?.free_delivery_over ?? 100;
     let deliveryFee = convertedDistance * configData?.per_km_shipping_charge;
     if (Number.parseInt(storeData?.self_delivery_system) === 1) {
       if (storeData?.free_delivery || isFreeDeliveryToAllStores) {
