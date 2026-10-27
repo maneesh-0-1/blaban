@@ -67,7 +67,7 @@ const MainLayout = ({ children, configData }) => {
   const [rerenderUi, setRerenderUi] = useState(false);
   const { data, refetch } = useGetModule();
   const theme = useTheme();
-  const isSmall = useMediaQuery("(max-width:1180px)");
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const { direction, scrollY } = useScrollDirection({ threshold: 8 });
   const isCollapsed = isSmall && scrollY > 40 && direction === "down";
   const router = useRouter();
@@ -171,7 +171,7 @@ const MainLayout = ({ children, configData }) => {
   return (
     <MainLayoutRoot justifyContent="space-between" key={rerenderUi}>
       <header>
-        <HeaderComponent />
+        <HeaderComponent configData={configData} />
       </header>
       <CustomStackFullWidth
         sx={{

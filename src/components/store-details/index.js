@@ -276,7 +276,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
   const logo = storeDetails?.logo_full_url;
   const [rerender] = useState(false);
   const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const storeZoneId = useMemo(() => {
     const rawValue = router.query.store_zone_id ?? storeDetails?.zone_id;

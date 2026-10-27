@@ -235,7 +235,7 @@ const NewNavBar = ({ configData }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const router = useRouter();
-  const isSmall = useMediaQuery("(max-width:1180px)");
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const _scrollTrigger = useScrollTrigger({
     disableHysteresis: true,
     threshold: 60,

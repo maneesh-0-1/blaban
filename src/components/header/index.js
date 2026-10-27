@@ -6,12 +6,22 @@ import { useSelector } from "react-redux";
 import NewNavBar from "./new-navbar/NewNavBar";
 import useGetZoneId from "api-manage/hooks/react-query/google-api/useGetZone";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
-const HeaderComponent = () => {
-  const { configData } = useSelector((state) => state.configData);
+const FULL_BLEED_MOBILE_PAGES = new Set([
+  "/store/[id]",
+  "/product/[id]",
+  "/checkout",
+  "/profile",
+]);
+
+const HeaderComponent = ({ configData: propConfigData }) => {
+  const { configData: reduxConfigData } = useSelector((state) => state.configData);
+  const configData = propConfigData || reduxConfigData;
 
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
 
   const [currentLocation] = useState(() => {
     if (typeof window === "undefined") return null;
@@ -32,6 +42,11 @@ const HeaderComponent = () => {
       localStorage.setItem("zoneid", zoneData.zone_id);
     }
   }, [zoneData]);
+
+  // On mobile (< md), pages with dedicated mobile sticky headers should not render an empty fixed AppBar
+  if (isSmall && FULL_BLEED_MOBILE_PAGES.has(router.pathname)) {
+    return null;
+  }
 
   return (
     <AppBarStyle scrolling={false} isSmall={isSmall}>

@@ -7,7 +7,7 @@ const FloatingLanguageButton = () => {
   const theme = useTheme();
   const router = useRouter();
   // Mobile / small screens (<= 1180px) where the desktop header is replaced by the mobile layout
-  const isSmallScreen = useMediaQuery("(max-width:1180px)");
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const isPageWithoutBottomNav =
     router.pathname === "/store/[id]" ||
     router.pathname === "/product/[id]" ||
