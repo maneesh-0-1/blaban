@@ -34,10 +34,7 @@ const TopNavBar = () => {
 		(state) => state.configData
 	);
 	const { i18n } = useTranslation();
-	const [tempLocation, setTempLocation] = useState(() => {
-		if (typeof window === "undefined") return null;
-		return getLocalizedLocation(i18n?.language, localStorage.getItem("location"));
-	});
+	const [tempLocation, setTempLocation] = useState(null);
 	const [openDrawer, setOpenDrawer] = useState(false);
 	const isSmall = useMediaQuery("(max-width:1180px)");
 

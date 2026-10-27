@@ -10,39 +10,6 @@ class CustomDocument extends Document {
     return (
       <Html lang="en" suppressHydrationWarning>
         <Head>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function () {
-                  try {
-                    var mode = "light";
-                    var cookieMatch = document.cookie.match(/(?:^|;\s*)themeMode=(dark|light)(?:;|$)/);
-
-                    if (cookieMatch && cookieMatch[1]) {
-                      mode = cookieMatch[1];
-                    } else {
-                      var stored = localStorage.getItem("settings");
-                      if (stored) {
-                        var parsed = JSON.parse(stored);
-                        if (parsed && parsed.theme === "dark") mode = "dark";
-                      } else if (
-                        window.matchMedia &&
-                        window.matchMedia("(prefers-color-scheme: dark)").matches
-                      ) {
-                        mode = "dark";
-                      }
-                    }
-
-                    var root = document.documentElement;
-                    var pageBackground = mode === "dark" ? "#0B0F19" : "#FFFFFF";
-                    root.setAttribute("data-theme", mode);
-                    root.style.colorScheme = mode;
-                    root.style.backgroundColor = pageBackground;
-                  } catch (e) {}
-                })();
-              `,
-            }}
-          />
           {/* API backend preconnect to eliminate DNS and TLS handshake latency */}
           <link rel="preconnect" href="https://admin.blabankw.com" />
           <link rel="dns-prefetch" href="https://admin.blabankw.com" />

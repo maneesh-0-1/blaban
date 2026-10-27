@@ -13,12 +13,7 @@ const DeliveryPlace = () => {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const theme = useTheme();
-  const [currentLocation, setCurrentLocation] = useState(() => {
-    if (typeof window !== "undefined") {
-      return getLocalizedLocation(i18n?.language, localStorage.getItem("location"));
-    }
-    return null;
-  });
+  const [currentLocation, setCurrentLocation] = useState(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

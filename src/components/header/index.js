@@ -43,13 +43,10 @@ const HeaderComponent = ({ configData: propConfigData }) => {
     }
   }, [zoneData]);
 
-  // On mobile (< md), pages with dedicated mobile sticky headers should not render an empty fixed AppBar
-  if (isSmall && FULL_BLEED_MOBILE_PAGES.has(router.pathname)) {
-    return null;
-  }
+  const hideOnMobile = FULL_BLEED_MOBILE_PAGES.has(router.pathname);
 
   return (
-    <AppBarStyle scrolling={false} isSmall={isSmall}>
+    <AppBarStyle scrolling={false} isSmall={isSmall} sx={hideOnMobile ? { display: { xs: "none", md: "block" } } : undefined}>
       <Box sx={{ width: "100%" }}>
         <NoSsr>
           <NewNavBar configData={configData} />

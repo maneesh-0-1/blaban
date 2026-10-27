@@ -283,10 +283,7 @@ const NewNavBar = ({ configData }) => {
   const anchorRef = useRef(null);
 
   // â”€â”€ localStorage (client-side only) â”€â”€
-  const [location, setLocation] = useState(() => {
-    if (typeof window === "undefined") return null;
-    return getLocalizedLocation(i18n?.language, localStorage.getItem("location"));
-  });
+  const [location, setLocation] = useState(null);
 
   let token, zoneId, guestId;
   if (typeof window !== "undefined") {

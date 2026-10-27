@@ -14,12 +14,7 @@ const AddressReselect = ({ location, setOpenDrawer }) => {
   const { t } = useTranslation();
   const [openBranchModal, setOpenBranchModal] = useState(false);
   const { i18n } = useTranslation();
-  const [currentLocationName, setCurrentLocationName] = useState(() => {
-    if (typeof window !== "undefined") {
-      return getLocalizedLocation(i18n?.language, location);
-    }
-    return location || "";
-  });
+  const [currentLocationName, setCurrentLocationName] = useState(location || "");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -53,7 +48,7 @@ const AddressReselect = ({ location, setOpenDrawer }) => {
     setOpenDrawer?.(false);
   };
 
-  const activeDisplay = getLocalizedLocation(i18n?.language, currentLocationName || location);
+  const activeDisplay = currentLocationName || location;
 
   return (
     <>
