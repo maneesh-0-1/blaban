@@ -5,11 +5,11 @@ import { getModuleId } from "helper-functions/getModuleId";
 
 const getBanners = async (feature) => {
   try {
-    const url = feature ? `${banners}?feature=${feature}` : banners;
+    const featuredParam = feature || "all";
+    const url = `${banners}?featured=${featuredParam}`;
     const { data } = await MainApi.get(url);
     return data || { campaigns: [], banners: [] };
   } catch (err) {
-    console.warn("Banners fetch handled:", err?.message);
     return { campaigns: [], banners: [] };
   }
 };
@@ -22,7 +22,7 @@ export default function useGetBanners(feature) {
       enabled: true,
       cacheTime: 60 * 1000,
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: false,
     }
   );
 }

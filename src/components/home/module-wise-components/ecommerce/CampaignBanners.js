@@ -47,10 +47,10 @@ const CampaignBanners = () => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    if (banners.campaigns.length === 0) {
+    if (!isFetched && banners.campaigns.length === 0) {
       refetchBannerData();
     }
-  }, [banners]);
+  }, [banners, isFetched]);
   useEffect(() => {
     if (data?.campaigns) {
       dispatch(setBanners(data));

@@ -63,11 +63,10 @@ const Banners = ({ feature }) => {
   const { configData } = useSelector((state) => state.configData);
   const dispatch = useDispatch();
   useEffect(() => {
-    if (banners?.banners?.length === 0) {
+    if (!isFetched && banners?.banners?.length === 0) {
       refetchBannerData();
     }
-  }, [banners]);
-  console.log({ data, bannersData });
+  }, [banners, isFetched]);
   useEffect(() => {
     if (data) {
       dispatch(setBanners(data));
