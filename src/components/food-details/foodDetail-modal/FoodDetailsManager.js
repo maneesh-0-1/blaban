@@ -27,6 +27,7 @@ import FoodModalMediaPreview from "./FoodModalMediaPreview";
 import {
   getAmountWithSign,
   getDiscountedAmount,
+  resolveProductImageUrl,
 } from "../../../helper-functions/CardHelpers";
 
 const RemainingStock = ({ qty = 0 }) => {
@@ -98,9 +99,15 @@ const FoodDetailsManager = (props) => {
     return showWarning ? <RemainingStock qty={currentStock} /> : <InStockTag />;
   };
 
+  const currentItem = modalData?.[0] || product;
+  const resolvedMainImage = resolveProductImageUrl(currentItem || product, configData);
+  const extraImages = (
+    currentItem?.images_full_url ?? product?.images_full_url ?? []
+  ).filter((img) => img && !/blank\.jpg|def\.png/i.test(img));
+
   const allImages = [
-    ...(item?.images_full_url ?? []),
-    item?.image_full_url,
+    ...extraImages,
+    resolvedMainImage,
   ].filter(Boolean);
 
   const hasVideoPreview =
@@ -200,11 +207,11 @@ const FoodDetailsManager = (props) => {
 
         <FoodModalMediaPreview
           imageUrl={allImages}
-          product={item}
+          product={item || product}
           height="282px"
           aspectRatio="1/1"
           borderRadius={isMobile ? "0px" : "12px"}
-          alt={item?.name}
+          alt={currentItem?.name || product?.name || item?.name}
           activeIndex={activeThumb + videoOffset}
           onSlideChange={(idx) => {
             const mapped = idx - videoOffset;

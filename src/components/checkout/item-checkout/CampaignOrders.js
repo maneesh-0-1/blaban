@@ -6,6 +6,7 @@ import {
 	OrderFoodSubtitle,
 } from "../CheckOut.style";
 import CustomImageContainer from "../../CustomImageContainer";
+import { resolveProductImageUrl } from "helper-functions/CardHelpers";
 import { getAmountWithSign } from "helper-functions/CardHelpers";
 
 const CampaignOrders = ({ configData, campaignItemList, t }) => {
@@ -25,9 +26,11 @@ const CampaignOrders = ({ configData, campaignItemList, t }) => {
 						<CustomImageContainer
 							height="90px"
 							width="90px"
-							src={item?.image_full_url}
+							src={resolveProductImageUrl(item, configData)}
+							alt={item?.name}
 							loading="lazy"
 							borderRadius="10px"
+							objectfit="cover"
 						/>
 					</Grid>
 					<Grid item md={8} xs={8}>

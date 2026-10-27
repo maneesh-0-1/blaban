@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Typography, useMediaQuery } from "@mui/material";
 import CustomImageContainer from "../CustomImageContainer";
+import { resolveProductImageUrl } from "helper-functions/CardHelpers";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
 import {
   getAmountWithSign,
@@ -249,7 +250,8 @@ const CartContent = (props) => {
             width="80px"
             smWidth="65px"
             smHeight="65px"
-            src={cartItem?.image_full_url}
+            src={resolveProductImageUrl(cartItem, configData)}
+            alt={cartItem?.name}
             borderRadius=".7rem"
             objectfit="cover"
           />

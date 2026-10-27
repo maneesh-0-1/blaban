@@ -215,3 +215,86 @@ export const getReferDiscount = (
     return refDiscount;
   }
 };
+
+
+export const S3_PRODUCT_BASE =
+  "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/product";
+
+export const KNOWN_FAMILY_IMAGES = [
+  {
+    pattern: /(?:جيلاتو|روما|gelato|roma|cono|كونو)/i,
+    url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/product/2026-10-19-6ad5e87205846.webp",
+  },
+  {
+    pattern: /(?:ماتيلدا|matelda)/i,
+    url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/product/2026-10-19-6ad5eb77d4734.webp",
+  },
+  {
+    pattern: /(?:مسحب|masahab)/i,
+    url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/product/2026-10-19-6ad600728dfcf.webp",
+  },
+  {
+    pattern: /(?:قشطوطة|qashtota)/i,
+    url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/product/2026-10-19-6ad603e4d9b23.webp",
+  },
+  {
+    pattern: /(?:الغوريلا|كينج كونج|gorilla)/i,
+    url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/product/2026-10-19-6ad5e87205846.webp",
+  },
+];
+
+export const getFamilyImageFallback = (name) => {
+  if (!name || typeof name !== "string") return null;
+  for (const item of KNOWN_FAMILY_IMAGES) {
+    if (item.pattern.test(name)) {
+      return item.url;
+    }
+  }
+  return null;
+};
+
+export const resolveProductImageUrl = (item, configData) => {
+  if (!item) return "";
+  const name =
+    item?.name ||
+    item?.title ||
+    item?.item?.name ||
+    item?.item?.title ||
+    "";
+
+  const rawCandidate =
+    item?.image_full_url ||
+    item?.item?.image_full_url ||
+    (Array.isArray(item?.images_full_url) && item.images_full_url[0]) ||
+    item?.image ||
+    item?.item?.image ||
+    "";
+
+  const fallback = getFamilyImageFallback(name) || "";
+
+  if (!rawCandidate) {
+    return fallback;
+  }
+
+  const str = String(rawCandidate).trim();
+
+  // If candidate is a known 403 / blank placeholder on S3
+  if (/blank\.jpg|def\.png/i.test(str)) {
+    return fallback || str;
+  }
+
+  // If it's already an absolute URL
+  if (/^https?:\/\//i.test(str)) {
+    return str;
+  }
+
+  // If it's a root-relative path or data URI
+  if (str.startsWith("/") || str.startsWith("data:") || str.startsWith("blob:")) {
+    return str;
+  }
+
+  // Bare filename like "2026-10-18-6ad4fbdb46b51.webp"
+  const baseUrl =
+    configData?.base_urls?.item_image_url || S3_PRODUCT_BASE;
+  return baseUrl.replace(/\/+$/, "") + "/" + str.replace(/^\/+/, "");
+};

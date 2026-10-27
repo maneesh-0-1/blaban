@@ -1894,7 +1894,7 @@ const NewProductCard = ({
         >
           <ImageContainer variant="vertical" className="card-img">
             <NextImage
-              src={item?.image_full_url}
+              src={resolveProductImageUrl(item, configData)}
               alt={item?.name}
               width="190"
               height="190"
@@ -1985,7 +1985,7 @@ const NewProductCard = ({
             }}
           >
             <NextImage
-              src={item?.image_full_url}
+              src={resolveProductImageUrl(item, configData)}
               alt={item?.name}
               width="126"
               height="126"
@@ -2039,7 +2039,7 @@ const NewProductCard = ({
         >
           <ImageContainer variant="vertical" className="card-img">
             <NextImage
-              src={item?.image_full_url}
+              src={resolveProductImageUrl(item, configData)}
               alt={item?.name}
               width="190"
               height="190"
@@ -2133,7 +2133,7 @@ const NewProductCard = ({
             }}
           >
             <NextImage
-              src={item?.image_full_url}
+              src={resolveProductImageUrl(item, configData)}
               alt={item?.name}
               width="126"
               height="126"

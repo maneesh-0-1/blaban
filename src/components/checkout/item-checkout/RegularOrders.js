@@ -19,6 +19,7 @@ import { getAmountWithSign } from "../../../helper-functions/CardHelpers";
 import { CustomStackFullWidth } from "../../../styled-components/CustomStyles.style";
 import { handleProductValueWithOutDiscount } from "../../../utils/CustomFunctions";
 import CustomImageContainer from "../../CustomImageContainer";
+import { resolveProductImageUrl } from "helper-functions/CardHelpers";
 import VariationContent from "../../added-cart-view/VariationContent";
 
 export const VegNonveg = ({ theme, item, t }) => {
@@ -218,8 +219,9 @@ const RegularOrders = (props) => {
 						<CustomImageContainer
 							height="100%"
 							width="100%"
-							src={item?.image_full_url}
-							objectFit="cover"
+							src={resolveProductImageUrl(item, configData)}
+							alt={item?.name}
+							objectfit="cover"
 							borderRadius="8px"
 							loading="lazy"
 						/>

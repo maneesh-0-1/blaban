@@ -150,6 +150,19 @@ const FoodDetailModal = ({
           setSelectedAddOns,
           setOtherSelectedOption
         );
+      } else if (fromCard && modalData.length === 0) {
+        handleInitialTotalPriceVarPriceQuantitySet(
+          fromCard,
+          setModalData,
+          productUpdate,
+          setTotalPrice,
+          setVarPrice,
+          setQuantity,
+          setSelectedOptions,
+          setTotalWithoutDiscount,
+          setSelectedAddOns,
+          setOtherSelectedOption
+        );
       }
     }
 

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import placeholder from "../../public/static/no-image-found.png";
+import { getFamilyImageFallback } from "helper-functions/CardHelpers";
 
 const shimmer = (w, h) => `
 <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -27,11 +28,14 @@ const toBase64 = (str) =>
 // root-relative ("/foo.png"). Some backend responses come back as a bare
 // filename like "2025-12-28-...webp" — surface those as the placeholder
 // instead of letting next/image throw "Failed to parse src ..." at runtime.
-const sanitizeSrc = (raw, fallback) => {
-  if (!raw) return fallback;
+const sanitizeSrc = (raw, fallback, alt) => {
+  const family = getFamilyImageFallback(alt);
+  if (!raw) return family || fallback;
   if (typeof raw !== "string") return raw; // StaticImageData / import — leave as-is
   const trimmed = raw.trim();
-  if (!trimmed) return fallback;
+  if (!trimmed || /blank\.jpg|def\.png/i.test(trimmed)) {
+    return family || fallback;
+  }
   if (trimmed.startsWith("/")) return trimmed;
   if (trimmed.startsWith("data:")) return trimmed;
   if (trimmed.startsWith("blob:")) return trimmed;
@@ -50,11 +54,11 @@ const NextImage = ({
   aspectRatio,
   ...props
 }) => {
-  const [currentSrc, setCurrentSrc] = useState(sanitizeSrc(src, altSrc));
+  const [currentSrc, setCurrentSrc] = useState(sanitizeSrc(src, altSrc, alt));
 
   useEffect(() => {
-    setCurrentSrc(sanitizeSrc(src, altSrc));
-  }, [src, altSrc]);
+    setCurrentSrc(sanitizeSrc(src, altSrc, alt));
+  }, [src, altSrc, alt]);
 
   const handleError = () => {
     if (altSrc && currentSrc !== altSrc) {

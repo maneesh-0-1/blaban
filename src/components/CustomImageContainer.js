@@ -2,6 +2,17 @@
 import { CustomImageContainerStyled } from "styled-components/CustomStyles.style";
 import placeholder from "../../public/static/no-image-found.png";
 import { Box } from "@mui/system";
+import { getFamilyImageFallback } from "helper-functions/CardHelpers";
+
+const resolveSafeSrc = (rawSrc, altText) => {
+  if (!rawSrc) {
+    return getFamilyImageFallback(altText) || placeholder?.src || "";
+  }
+  if (typeof rawSrc === "string" && /blank\.jpg|def\.png/i.test(rawSrc)) {
+    return getFamilyImageFallback(altText) || placeholder?.src || "";
+  }
+  return rawSrc;
+};
 
 const CustomImageContainer = ({
   cursor = undefined,
@@ -10,6 +21,7 @@ const CustomImageContainer = ({
   height = undefined,
   width = undefined,
   objectfit = undefined,
+  objectFit = undefined,
   minwidth = undefined,
   src = undefined,
   alt = undefined,
@@ -28,12 +40,12 @@ const CustomImageContainer = ({
   borderBottomRightRadius = undefined,
   ...rest
 }) => {
-  const initialSrc = src ? src : (placeholder?.src || "");
+  const initialSrc = resolveSafeSrc(src, alt);
   const [imageFile, setState] = useState(initialSrc);
 
   useEffect(() => {
-    setState(src ? src : (placeholder?.src || ""));
-  }, [src]);
+    setState(resolveSafeSrc(src, alt));
+  }, [src, alt]);
 
   const effectiveLoading = priority ? "eager" : (loading || "lazy");
   const effectiveFetchPriority = fetchpriority || (priority ? "high" : undefined);
@@ -42,7 +54,7 @@ const CustomImageContainer = ({
     <CustomImageContainerStyled
       height={height}
       width={width}
-      objectfit={objectfit}
+      objectfit={objectfit || objectFit || "cover"}
       minwidth={minwidth}
       border_radius={borderRadius}
       margin_bottom={marginBottom}
@@ -72,7 +84,12 @@ const CustomImageContainer = ({
           src={imageFile}
           alt={alt || "image"}
           onError={() => {
-            setState(placeholder?.src);
+            const familyFallback = getFamilyImageFallback(alt);
+            if (familyFallback && imageFile !== familyFallback) {
+              setState(familyFallback);
+            } else {
+              setState(placeholder?.src);
+            }
           }}
           loading={effectiveLoading}
           decoding="async"

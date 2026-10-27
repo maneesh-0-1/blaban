@@ -40,6 +40,7 @@ import dynamic from "next/dynamic";
 
 import { CustomStackFullWidth } from "../../styled-components/CustomStyles.style";
 import CustomImageContainer from "../CustomImageContainer";
+import { resolveProductImageUrl } from "helper-functions/CardHelpers";
 import { getAmountWithSign } from "../../helper-functions/CardHelpers";
 import { getCartListModuleWise } from "../../helper-functions/getCartListModuleWise";
 import { getCurrentModuleType } from "../../helper-functions/getCurrentModuleType";
@@ -337,7 +338,8 @@ const CartItemRow = ({ cartItem }) => {
             sx={{ cursor: "pointer", flexShrink: 0 }}
           >
             <CustomImageContainer
-              src={cartItem?.image_full_url}
+              src={resolveProductImageUrl(cartItem, configData)}
+              alt={cartItem?.name}
               width="48px"
               height="48px"
               borderRadius="8px"
