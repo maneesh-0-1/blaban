@@ -1,3 +1,4 @@
+import { syncLocationForLanguage } from "utils/deliveryLocationHelper";
 import React, { useEffect, useRef, useState } from "react";
 
 import { ListItemIcon, MenuItem, Stack, Typography } from "@mui/material";
@@ -83,6 +84,7 @@ const CustomLanguage = ({ formmobilemenu }) => {
         direction: "rtl",
       });
     }
+    try { syncLocationForLanguage(lan); } catch (_) {}
     toast.success(t("Language changed"));
 
     window.location.reload();

@@ -1,3 +1,4 @@
+import { getLocalizedLocation } from "../../../utils/deliveryLocationHelper";
 import {
 	Box,
 	NoSsr,
@@ -32,9 +33,10 @@ const TopNavBar = () => {
 	const { configData, countryCode, language } = useSelector(
 		(state) => state.configData
 	);
+	const { i18n } = useTranslation();
 	const [tempLocation, setTempLocation] = useState(() => {
 		if (typeof window === "undefined") return null;
-		return localStorage.getItem("location");
+		return getLocalizedLocation(i18n?.language, localStorage.getItem("location"));
 	});
 	const [openDrawer, setOpenDrawer] = useState(false);
 	const isSmall = useMediaQuery("(max-width:1180px)");
@@ -42,7 +44,7 @@ const TopNavBar = () => {
 	useEffect(() => {
 		if (typeof window === "undefined") return;
 
-		const readLocation = () => localStorage.getItem("location");
+		const readLocation = () => getLocalizedLocation(i18n?.language, localStorage.getItem("location"));
 		let prevLocation = readLocation();
 
 		const syncLocation = () => {
@@ -57,11 +59,13 @@ const TopNavBar = () => {
 		window.addEventListener("storage", syncLocation);
 		window.addEventListener("focus", syncLocation);
 		window.addEventListener("onLocalStorageChange", syncLocation);
+		window.addEventListener("deliveryAreaChanged", syncLocation);
 
 		return () => {
 			window.removeEventListener("storage", syncLocation);
 			window.removeEventListener("focus", syncLocation);
 			window.removeEventListener("onLocalStorageChange", syncLocation);
+			window.removeEventListener("deliveryAreaChanged", syncLocation);
 		};
 	}, []);
 

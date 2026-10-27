@@ -60,7 +60,8 @@ const DeliveryDetails = (props) => {
     deliveryFee,
     couponDiscount,
   } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n?.language === "ar" || i18n?.language?.startsWith("ar-");
   const theme = useTheme();
   const isSmall = useMediaQuery("(max-width:490px)");
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -335,7 +336,7 @@ const DeliveryDetails = (props) => {
               }}
             >
               <Typography sx={{ fontWeight: 700, fontSize: "15px", color: "#0F172A" }}>
-                🏬 {selectedBranch.name} {selectedBranch.name_ar ? `(${selectedBranch.name_ar})` : ""}
+                🏬 {isAr ? (selectedBranch.name_ar || selectedBranch.name) : (selectedBranch.name || selectedBranch.name_ar)}
               </Typography>
               {selectedBranch.address && (
                 <Typography sx={{ fontSize: "13px", color: "#475569", mt: 0.5 }}>
@@ -377,12 +378,12 @@ const DeliveryDetails = (props) => {
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Box>
                 <Typography sx={{ fontWeight: 700, fontSize: "15px", color: "#0F172A" }}>
-                  📍 {selectedArea.name} {selectedArea.name_ar ? `(${selectedArea.name_ar})` : ""}
+                  📍 {isAr ? (selectedArea.name_ar || selectedArea.name) : (selectedArea.name || selectedArea.name_ar)}
                 </Typography>
                 <Typography sx={{ fontSize: "12px", color: "#475569", mt: 0.25 }}>
                   {selectedArea.governorate?.name || "Kuwait"}
                   {selectedArea.branch && (
-                    <> • {t("Fulfilled by")}: {selectedArea.branch.name}</>
+                    <> • {t("Fulfilled by")}: {isAr ? (selectedArea.branch.name_ar || selectedArea.branch.name) : (selectedArea.branch.name || selectedArea.branch.name_ar)}</>
                   )}
                 </Typography>
               </Box>

@@ -1,8 +1,9 @@
+import { getLocalizedLocation } from "../../../utils/deliveryLocationHelper";
 import { Box, Button, IconButton, Stack, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 
 import AddressReselectPopover from "../top-navbar/address-reselect/AddressReselectPopover";
@@ -41,6 +42,7 @@ import { useGetCategories } from "api-manage/hooks/react-query/all-category/all-
  *   - Scrolling up â†’ all three sections become visible again.
  */
 const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -493,7 +495,7 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
                       textOverflow: "ellipsis",
                     }}
                   >
-                    {location || t("Set your location")}
+                    {getLocalizedLocation(i18n?.language, location) || t("Set your location")}
                   </Typography>
                   <i
                     className="fi fi-rr-angle-small-down"

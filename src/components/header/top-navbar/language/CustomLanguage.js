@@ -1,3 +1,4 @@
+import { syncLocationForLanguage } from "../../../../utils/deliveryLocationHelper";
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -115,6 +116,7 @@ const CustomLanguage = ({
       id: "lan",
     });
 
+    try { syncLocationForLanguage(lan?.languageCode); } catch (_) {}
     saveSettings({
       ...values,
       direction: isRTLLanguage(lan?.languageCode) ? "rtl" : "ltr",

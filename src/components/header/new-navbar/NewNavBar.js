@@ -1,3 +1,4 @@
+import { getLocalizedLocation } from "../../../utils/deliveryLocationHelper";
 ﻿import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
 import {
   Avatar,
@@ -12,6 +13,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 import { t } from "i18next";
 import cookie from "js-cookie";
 import dynamic from "next/dynamic";
@@ -233,6 +235,7 @@ const WishListIcon = ({ totalWishList }) => {
 
 const NewNavBar = ({ configData }) => {
   const theme = useTheme();
+  const { i18n } = useTranslation();
   const dispatch = useDispatch();
   const router = useRouter();
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
@@ -282,7 +285,7 @@ const NewNavBar = ({ configData }) => {
   // â”€â”€ localStorage (client-side only) â”€â”€
   const [location, setLocation] = useState(() => {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("location");
+    return getLocalizedLocation(i18n?.language, localStorage.getItem("location"));
   });
 
   let token, zoneId, guestId;
@@ -313,16 +316,19 @@ const NewNavBar = ({ configData }) => {
   // sync location from storage
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const sync = () => setLocation(localStorage.getItem("location"));
+    const sync = () => setLocation(getLocalizedLocation(i18n?.language, localStorage.getItem("location")));
+    sync();
     window.addEventListener("storage", sync);
     window.addEventListener("focus", sync);
     window.addEventListener("onLocalStorageChange", sync);
+    window.addEventListener("deliveryAreaChanged", sync);
     return () => {
       window.removeEventListener("storage", sync);
       window.removeEventListener("focus", sync);
       window.removeEventListener("onLocalStorageChange", sync);
+      window.removeEventListener("deliveryAreaChanged", sync);
     };
-  }, []);
+  }, [i18n?.language]);
 
   // â”€â”€ Data hooks â”€â”€
   const { data: guestData, refetch: guestRefetch } = useGetGuest();

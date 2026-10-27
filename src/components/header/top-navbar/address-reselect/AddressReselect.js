@@ -1,3 +1,4 @@
+import { getLocalizedLocation } from "../../../../utils/deliveryLocationHelper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { ClickAwayListener, Grid, Stack, Tooltip, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
@@ -12,21 +13,31 @@ const AddressReselect = ({ location, setOpenDrawer }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const [openBranchModal, setOpenBranchModal] = useState(false);
-  const [currentLocationName, setCurrentLocationName] = useState(location || "");
+  const { i18n } = useTranslation();
+  const [currentLocationName, setCurrentLocationName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return getLocalizedLocation(i18n?.language, location);
+    }
+    return location || "";
+  });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedLocation = localStorage.getItem("location");
-      if (storedLocation) {
-        setCurrentLocationName(storedLocation);
+      const localized = getLocalizedLocation(i18n?.language, location);
+      if (localized) {
+        setCurrentLocationName(localized);
+        if (localStorage.getItem("location") !== localized) {
+          localStorage.setItem("location", localized);
+        }
       }
     }
-  }, [location]);
+  }, [location, i18n?.language]);
 
   useEffect(() => {
     const handleLocationChange = (e) => {
       if (e?.detail?.displayName) {
-        setCurrentLocationName(e.detail.displayName);
+        const localized = getLocalizedLocation(i18n?.language, e.detail.displayName);
+        setCurrentLocationName(localized);
       }
     };
     if (typeof window !== "undefined") {
@@ -42,7 +53,7 @@ const AddressReselect = ({ location, setOpenDrawer }) => {
     setOpenDrawer?.(false);
   };
 
-  const activeDisplay = currentLocationName || location;
+  const activeDisplay = getLocalizedLocation(i18n?.language, currentLocationName || location);
 
   return (
     <>

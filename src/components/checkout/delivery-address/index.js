@@ -1,3 +1,4 @@
+import { getLocalizedLocation } from "../../../utils/deliveryLocationHelper";
 import React, { useEffect, useReducer, useState } from "react";
 
 import { useTranslation } from "react-i18next";
@@ -87,7 +88,7 @@ const DeliveryAddress = ({
   setCheck,
 }) => {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [allAddress, setAllAddress] = useState();
   const [data, setData] = useState(null);
   const reduxDispatch = useDispatch();
@@ -1057,13 +1058,7 @@ const DeliveryAddress = ({
                         textOverflow: "ellipsis",
                       }}
                     >
-                      {address?.address || (() => {
-                        try {
-                          const a = localStorage.getItem("selectedArea");
-                          if (a) return JSON.parse(a)?.name || "";
-                        } catch (e) {}
-                        return "";
-                      })() || (typeof window !== "undefined" ? localStorage.getItem("location") : "") || t("No area selected (Required)")}
+                      {address?.address || getLocalizedLocation(i18n?.language) || t("No area selected (Required)")}
                     </Typography>
                   </Box>
                 </Stack>
