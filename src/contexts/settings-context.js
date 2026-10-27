@@ -69,9 +69,17 @@ export const SettingsContext = createContext({
 
 export const SettingsProvider = (props) => {
   const { children, initialSettings: initialSettingsFromServer } = props;
-  const [settings, setSettings] = useState(() =>
-    restoreSettings(initialSettingsFromServer)
+  const [settings, setSettings] = useState(
+    initialSettingsFromServer || initialSettings
   );
+
+  useEffect(() => {
+    // Restore client settings from localStorage only after initial hydration completes
+    const restored = restoreSettings(initialSettingsFromServer);
+    if (restored) {
+      setSettings(restored);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") return;

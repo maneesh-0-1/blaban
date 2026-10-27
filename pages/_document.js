@@ -8,7 +8,7 @@ class CustomDocument extends Document {
     const { analyticsConfig = {} } = this.props;
 
     return (
-      <Html lang="en">
+      <Html lang="en" suppressHydrationWarning>
         <Head>
           <script
             dangerouslySetInnerHTML={{
@@ -159,7 +159,7 @@ class CustomDocument extends Document {
           )}
           </Head>
 
-        <body>
+        <body suppressHydrationWarning>
           <Main />
           <NextScript />
         </body>
