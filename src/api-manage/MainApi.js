@@ -5,7 +5,7 @@ import { getCleanToken, isValidToken } from "../helper-functions/getToken";
 export const baseUrl =
   typeof window !== "undefined"
     ? "/backend-api"
-    : process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
+    : (process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com").replace(/\/+$/, "");
 const MainApi = axios.create({
   baseURL: baseUrl,
 });
@@ -17,6 +17,7 @@ MainApi.interceptors.request.use(function (config) {
   let software_id = 33571750;
   let hostname = process.env.NEXT_CLIENT_HOST_URL;
   let moduleid = undefined;
+  let moduleSlug = "blaban";
 
   // Discard any malformed Authorization header that might have been manually passed in config
   if (config.headers) {
@@ -41,7 +42,9 @@ MainApi.interceptors.request.use(function (config) {
     }
     language = JSON.parse(localStorage.getItem("language-setting"));
     currentLocation = JSON.parse(localStorage.getItem("currentLatLng"));
-    moduleid = JSON.parse(localStorage.getItem("module"))?.id;
+    const storedModule = JSON.parse(localStorage.getItem("module") || "null");
+    moduleid = storedModule?.id || localStorage.getItem("selectedModuleId") || 2;
+    moduleSlug = storedModule?.slug || localStorage.getItem("selectedModuleIdentifier") || "blaban";
   }
   config.headers.latitude = currentLocation?.lat || 0
     config.headers.longitude = currentLocation?.lng || 0
@@ -82,10 +85,17 @@ MainApi.interceptors.request.use(function (config) {
     }
   }
 
+  if (config.url && !config.url.startsWith("/") && !config.url.startsWith("http")) {
+    config.url = "/" + config.url;
+  }
+  config.params = config.params || {};
+  if (!config.params.module) {
+    config.params.module = moduleSlug || "blaban";
+  }
   if (moduleid && !config.headers.moduleId) {
     config.headers.moduleId = moduleid;
   } else if (!config.headers.moduleId) {
-    config.headers.moduleId = 2;
+    config.headers.moduleId = "blaban";
   }
 
   // Explicitly identify guest authentication endpoints that must never carry auth headers

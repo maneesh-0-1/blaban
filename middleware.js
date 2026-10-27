@@ -5,6 +5,8 @@ const protectedRoutes = ["/rental/cart"];
 
 // Routes where module parameter should NOT be added automatically
 const excludeModuleRoutes = [
+  "/backend-api",
+  "/api",
   "/",
   "/404",
   "/500",
@@ -26,6 +28,11 @@ const excludeModuleRoutes = [
 
 export function middleware(request) {
   const { pathname, searchParams } = request.nextUrl;
+
+  // Bypass all API and backend proxy requests immediately - never redirect API calls
+  if (pathname.startsWith("/api") || pathname.startsWith("/backend-api")) {
+    return NextResponse.next();
+  }
 
   // Get module parameter from cookie (set on client)
   const moduleFromCookie = request.cookies.get("selectedModule")?.value;
@@ -103,6 +110,6 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.sw\\.js|firebase-messaging-sw\\.js|workbox-.*\\.js|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|otf|eot|mp4|webm|mp3|wav|pdf|zip)).*)",
+    "/((?!api|backend-api|_next/static|_next/image|favicon.ico|.*\\.sw\\.js|firebase-messaging-sw\\.js|workbox-.*\\.js|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|otf|eot|mp4|webm|mp3|wav|pdf|zip)).*)",
   ],
 };
