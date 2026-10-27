@@ -43,6 +43,10 @@ class CustomDocument extends Document {
               `,
             }}
           />
+          {/* API backend preconnect to eliminate DNS and TLS handshake latency */}
+          <link rel="preconnect" href="https://admin.blabankw.com" />
+          <link rel="dns-prefetch" href="https://admin.blabankw.com" />
+
           {/* Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
