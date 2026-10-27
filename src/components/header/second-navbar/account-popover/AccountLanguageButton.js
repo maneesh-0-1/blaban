@@ -112,7 +112,7 @@ const AccountLanguageButton = ({
     languageList?.[0];
   const currentLang = compact
     ? (currentLangObj?.languageCode?.toUpperCase() ?? "EN")
-    : (currentLangObj?.languageName ?? "English");
+    : (currentLangObj?.languageCode === "ar" ? "العربية" : (currentLangObj?.languageName ?? "English"));
 
   const isMenuOpen = Boolean(anchorEl);
   const isSmall = size === "small";
@@ -200,7 +200,7 @@ const AccountLanguageButton = ({
             <ListItemIcon>
               <img width="20" src={lan?.countryFlag} alt="flag" />
             </ListItemIcon>
-            {lan.languageName}
+            {lan.languageCode === "ar" ? "العربية" : lan.languageName}
           </MenuItem>
         ))}
       </StyledMenu>
@@ -266,7 +266,7 @@ const AccountLanguageButton = ({
                     }}
                   >
                     {t("You're about to switch to")}{" "}
-                    <b>{selectedLanguage?.languageName}</b>.
+                    <b>{selectedLanguage?.languageCode === "ar" ? "العربية" : selectedLanguage?.languageName}</b>.
                   </Typography>
                 </CustomStackFullWidth>
 
