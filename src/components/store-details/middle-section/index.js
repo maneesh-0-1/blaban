@@ -221,6 +221,7 @@ const MiddleSection = (props) => {
   // Keep the latest categoryList accessible inside the (mount-once) scroll
   // spy effect's closure.
   const categoryListRef = useRef([]);
+  const pendingScrollCategoryRef = useRef(null);
   useEffect(() => {
     categoryListRef.current = categoryList;
   }, [categoryList]);
@@ -349,7 +350,7 @@ const MiddleSection = (props) => {
   // large page instead of paging by offset. The search endpoint still uses
   // the same `offset` state but the inView-driven bump effect below is
   // also disabled, so neither path keeps requesting more.
-  const limit = 100;
+  const limit = 20;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {
@@ -525,6 +526,31 @@ const MiddleSection = (props) => {
 
   // categoriesLoading kept for the CategoryTabs skeleton; mirrors the items
   // loading state since both come from the same request now.
+  // Auto-scroll to selected category if it was pending on a subsequent page fetch
+  useEffect(() => {
+    if (pendingScrollCategoryRef.current) {
+      const targetKey = pendingScrollCategoryRef.current;
+      const node = sectionRefs.current[targetKey];
+      if (node) {
+        pendingScrollCategoryRef.current = null;
+        const offset = 190;
+        const top = node.getBoundingClientRect().top + window.scrollY - offset;
+        programmaticScrollRef.current = true;
+        if (programmaticScrollTimeoutRef.current) {
+          clearTimeout(programmaticScrollTimeoutRef.current);
+        }
+        window.scrollTo({ top, behavior: "smooth" });
+        programmaticScrollTimeoutRef.current = setTimeout(() => {
+          programmaticScrollRef.current = false;
+        }, 800);
+      } else if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      } else {
+        pendingScrollCategoryRef.current = null;
+      }
+    }
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const categoriesLoading = isLoading;
 
   // offset is part of the query key, so each page increment creates a NEW
