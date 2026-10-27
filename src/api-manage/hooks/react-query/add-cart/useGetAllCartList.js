@@ -26,7 +26,8 @@ const getData = async (guestId, store_id) => {
 export default function useGetAllCartList(
   guestId,
   cartListSuccessHandler,
-  store_id
+  store_id,
+  enabled = true
 ) {
   const token = getToken();
   // Include store_id AND token so re-login triggers a fresh fetch for the
@@ -36,7 +37,8 @@ export default function useGetAllCartList(
     () => getData(guestId, store_id),
     {
       onSuccess: cartListSuccessHandler,
-      enabled: Boolean(store_id && (token || guestId)),
+      enabled: Boolean(enabled && store_id && (token || guestId)),
+      refetchOnWindowFocus: false,
       onError: onSingleErrorResponse,
     }
   );

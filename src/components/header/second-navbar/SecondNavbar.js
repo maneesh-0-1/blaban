@@ -270,19 +270,23 @@ const SecondNavBar = ({ configData }) => {
   useEffect(() => {
     const fetchGuestId = async () => {
       try {
-        // Check if there is no guest ID in local storage
         if (!guestId) {
-          // Trigger API call to get guest ID
           await guestRefetch();
         }
       } catch (error) {
-        // Handle error (e.g., log it or show a notification)
         console.error("Error fetching guest ID:", error);
       }
     };
 
-    // Call the function to fetch guest ID
-    fetchGuestId();
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        const handle = window.requestIdleCallback(fetchGuestId, { timeout: 2500 });
+        return () => window.cancelIdleCallback(handle);
+      } else {
+        const timer = setTimeout(fetchGuestId, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
   }, [guestId, guestRefetch]);
 
   useEffect(() => {

@@ -341,12 +341,36 @@ const StoreDetails = ({ storeDetails, configData }) => {
     }
   };
 
+  const [canFetchCartList, setCanFetchCartList] = useState(false);
+  useEffect(() => {
+    if (cartDrawerOpen) {
+      setCanFetchCartList(true);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        const handle = window.requestIdleCallback(() => setCanFetchCartList(true), {
+          timeout: 2000,
+        });
+        return () => window.cancelIdleCallback(handle);
+      } else {
+        const timer = setTimeout(() => setCanFetchCartList(true), 1200);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [cartDrawerOpen]);
+
   const {
     data: cartData,
     isLoading: cartListLoading,
     isFetching: cartListFetching,
     refetch: cartListRefetch,
-  } = useGetAllCartList(guestId, cartListSuccessHandler, storeDetails?.id);
+  } = useGetAllCartList(
+    guestId,
+    cartListSuccessHandler,
+    storeDetails?.id,
+    canFetchCartList
+  );
   const isCartLoading = cartListLoading || cartListFetching;
 
   // Redundant refetch effect removed - React Query hooks handle initial fetch with caching

@@ -328,8 +328,21 @@ const NewNavBar = ({ configData }) => {
   const { data: guestData, refetch: guestRefetch } = useGetGuest();
 
   useEffect(() => {
-    if (!guestId) guestRefetch().catch(() => {});
-  }, [guestId]);
+    if (!guestId) {
+      if (typeof window !== "undefined") {
+        if ("requestIdleCallback" in window) {
+          const handle = window.requestIdleCallback(
+            () => guestRefetch().catch(() => {}),
+            { timeout: 2500 }
+          );
+          return () => window.cancelIdleCallback(handle);
+        } else {
+          const timer = setTimeout(() => guestRefetch().catch(() => {}), 1500);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, [guestId, guestRefetch]);
 
   useEffect(() => {
     if (guestData?.guest_id)

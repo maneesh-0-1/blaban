@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useDispatch } from "react-redux";
 import MainApi from "../../../MainApi";
@@ -63,6 +64,21 @@ export default function useGetGroupedCart(options = {}) {
   const token = getToken();
   const guestId = getGuestId();
   const moduleId = getModuleId();
+  const [canFetch, setCanFetch] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        const handle = window.requestIdleCallback(() => setCanFetch(true), {
+          timeout: 2000,
+        });
+        return () => window.cancelIdleCallback(handle);
+      } else {
+        const timer = setTimeout(() => setCanFetch(true), 1200);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   return useQuery(
     ["cart-groups", moduleId, token ? "user" : (guestId || "guest")],
@@ -71,7 +87,7 @@ export default function useGetGroupedCart(options = {}) {
     // Skip until a module is selected — MainApi sends `moduleId` as a
     // header, and the backend scopes the cart to it. Without it the call
     // either 4xxs or returns the wrong module's cart.
-    enabled: Boolean((token || guestId) && moduleId),
+    enabled: Boolean(canFetch && (token || guestId) && moduleId && (options?.enabled ?? true)),
     refetchOnWindowFocus: false,
     onError: onSingleErrorResponse,
     onSuccess: (data) => {
