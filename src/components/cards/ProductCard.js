@@ -1,4 +1,9 @@
 import { notifyItemAddedToCart } from "utils/cartFeedback";
+import {
+  setPendingCartQty,
+  getPendingCartQty,
+  clearPendingCartQty,
+} from "utils/cartUpdateQueue";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   alpha,
@@ -263,6 +268,8 @@ const ProductCard = (props) => {
   const { mutate } = useWishListDelete();
   const [isProductExist, setIsProductExist] = useState(false);
   const [count, setCount] = useState(0);
+  const updateDebounceRef = useRef(null);
+  const pendingQtyRef = useRef(null);
   const { mutate: addToMutate, isLoading } = useAddCartItem();
   const { mutate: updateMutate, isLoading: updateLoading } =
     useCartItemUpdate();
@@ -271,9 +278,21 @@ const ProductCard = (props) => {
     const isInCart = getItemFromCartlist();
     if (isInCart) {
       setIsProductExist(true);
-      setCount(isInCart?.quantity);
+      const pending =
+        getPendingCartQty(isInCart?.cartItemId) ??
+        getPendingCartQty(isInCart?.id);
+      const targetQty =
+        pending != null && pending > (isInCart?.quantity ?? 0)
+          ? pending
+          : isInCart?.quantity;
+      if (updateDebounceRef.current === null) {
+        pendingQtyRef.current = targetQty;
+      }
+      setCount(targetQty);
     } else {
       setIsProductExist(false);
+      pendingQtyRef.current = 0;
+      setCount(0);
     }
   }, [aliasCartList]);
   const getItemFromCartlist = () => {
@@ -475,11 +494,17 @@ const ProductCard = (props) => {
     if (res) {
       res?.forEach((item) => {
         if (isInCart?.cartItemId === item?.id) {
+          const pending =
+            getPendingCartQty(item?.id) ?? getPendingCartQty(isInCart?.id);
+          const resolvedQty =
+            pending != null && pending > (item?.quantity ?? 0)
+              ? pending
+              : item?.quantity;
           const product = {
             ...item?.item,
             cartItemId: item?.id,
             totalPrice: item?.price,
-            quantity: item?.quantity,
+            quantity: resolvedQty,
             food_variations: item?.item?.food_variations,
             selectedAddons: getSelectedAddonsFromCartItem(item),
             itemBasePrice: item?.item?.price,
@@ -494,11 +519,14 @@ const ProductCard = (props) => {
   const cartUpdateHandleSuccessDecrement = (res) => {
     if (res) {
       res?.forEach((item) => {
+        const pending =
+          getPendingCartQty(item?.id) ?? getPendingCartQty(isInCart?.id);
+        const resolvedQty = pending != null ? pending : item?.quantity;
         const product = {
           ...item?.item,
           cartItemId: item?.id,
           totalPrice: item?.price,
-          quantity: item?.quantity,
+          quantity: resolvedQty,
           food_variations: item?.item?.food_variations,
           selectedAddons: getSelectedAddonsFromCartItem(item),
           itemBasePrice: item?.item?.price,
@@ -510,53 +538,73 @@ const ProductCard = (props) => {
   };
   const handleIncrement = () => {
     const isExisted = getItemFromCartlist();
-    const updateQuantity = isInCart?.quantity + 1;
-    const itemObject = getItemDataForAddToCart(
-      isInCart,
-      updateQuantity,
-      getPriceAfterQuantityChange(isInCart, updateQuantity),
-      getGuestId()
-    );
-    if (isExisted) {
-      if (getCurrentModuleType() === "food") {
-        if (item?.maximum_cart_quantity) {
-          if (item?.maximum_cart_quantity <= isExisted?.quantity) {
-            toast.error(t(out_of_limits), { id: "out-of-limits" });
-          } else {
-            updateMutate(itemObject, {
-              onSuccess: cartUpdateHandleSuccess,
-              onError: onErrorResponse,
-            });
-          }
-        } else {
-          updateMutate(itemObject, {
-            onSuccess: cartUpdateHandleSuccess,
-            onError: onErrorResponse,
-          });
-        }
-      } else {
-        if (isExisted?.quantity + 1 <= item?.stock) {
-          if (item?.maximum_cart_quantity) {
-            if (item?.maximum_cart_quantity <= isExisted?.quantity) {
-              toast.error(t(out_of_limits), { id: "out-of-limits" });
-            } else {
-              updateMutate(itemObject, {
-                onSuccess: cartUpdateHandleSuccess,
-                onError: onErrorResponse,
-              });
-            }
-          } else {
-            updateMutate(itemObject, {
-              onSuccess: cartUpdateHandleSuccess,
-              onError: onErrorResponse,
-            });
-            reduxDispatch(setIncrementToCartItem(isInCart));
-          }
-        } else {
-          toast.error(t(out_of_stock));
-        }
+    if (!isExisted) return;
+    const currentQty =
+      pendingQtyRef.current ?? count ?? isExisted?.quantity ?? 1;
+    const updateQuantity = currentQty + 1;
+
+    if (getCurrentModuleType() === "food") {
+      if (
+        item?.maximum_cart_quantity &&
+        item.maximum_cart_quantity < updateQuantity
+      ) {
+        toast.error(t(out_of_limits), { id: "out-of-limits" });
+        return;
+      }
+    } else {
+      if (item?.stock && updateQuantity > item.stock) {
+        toast.error(t(out_of_stock));
+        return;
+      }
+      if (
+        item?.maximum_cart_quantity &&
+        item.maximum_cart_quantity < updateQuantity
+      ) {
+        toast.error(t(out_of_limits), { id: "out-of-limits" });
+        return;
       }
     }
+
+    pendingQtyRef.current = updateQuantity;
+    setCount(updateQuantity);
+    setPendingCartQty(isExisted?.cartItemId, updateQuantity);
+    setPendingCartQty(item?.id, updateQuantity);
+
+    const newPrice = getPriceAfterQuantityChange(isExisted, updateQuantity);
+    const itemObject = getItemDataForAddToCart(
+      isExisted,
+      updateQuantity,
+      newPrice,
+      getGuestId()
+    );
+
+    // Instant optimistic UI update
+    reduxDispatch(
+      setIncrementToCartItem({
+        ...isExisted,
+        quantity: updateQuantity,
+        totalPrice: newPrice,
+      })
+    );
+
+    if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
+    updateDebounceRef.current = setTimeout(() => {
+      updateDebounceRef.current = null;
+      updateMutate(itemObject, {
+        onSuccess: () => {
+          clearPendingCartQty(isExisted?.cartItemId);
+          clearPendingCartQty(item?.id);
+        },
+        onError: (err) => {
+          clearPendingCartQty(isExisted?.cartItemId);
+          clearPendingCartQty(item?.id);
+          pendingQtyRef.current = isExisted?.quantity;
+          setCount(isExisted?.quantity);
+          reduxDispatch(setDecrementToCartItem(isExisted));
+          onErrorResponse(err);
+        },
+      });
+    }, 350);
   };
   const handleClose = () => {
     dispatch({ type: ACTION.setOpenModal, payload: false });
@@ -567,13 +615,21 @@ const ProductCard = (props) => {
     toast.success(t("Removed from cart."));
   };
   const handleDecrement = () => {
-    const updateQuantity = isInCart?.quantity - 1;
-
     const isExisted = getItemFromCartlist();
-    if (isExisted?.quantity === 1) {
+    if (!isExisted) return;
+    const currentQty =
+      pendingQtyRef.current ?? count ?? isExisted?.quantity ?? 1;
+    if (currentQty <= 1) {
+      if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
+      updateDebounceRef.current = null;
+      pendingQtyRef.current = 0;
+      setCount(0);
+      clearPendingCartQty(isExisted?.cartItemId);
+      clearPendingCartQty(item?.id);
+
       const cartIdAndGuestId = {
-        cart_id: isInCart?.cartItemId,
-        store_id: isInCart?.store_id ?? isInCart?.store?.id,
+        cart_id: isExisted?.cartItemId,
+        store_id: isExisted?.store_id ?? isExisted?.store?.id,
         guestId: getGuestId(),
       };
       cartItemRemoveMutate(cartIdAndGuestId, {
@@ -581,16 +637,47 @@ const ProductCard = (props) => {
         onError: onErrorResponse,
       });
     } else {
+      const updateQuantity = currentQty - 1;
+      pendingQtyRef.current = updateQuantity;
+      setCount(updateQuantity);
+      setPendingCartQty(isExisted?.cartItemId, updateQuantity);
+      setPendingCartQty(item?.id, updateQuantity);
+
+      const newPrice = getPriceAfterQuantityChange(isExisted, updateQuantity);
       const itemObject = getItemDataForAddToCart(
-        isInCart,
+        isExisted,
         updateQuantity,
-        getPriceAfterQuantityChange(isInCart, updateQuantity),
+        newPrice,
         getGuestId()
       );
-      updateMutate(itemObject, {
-        onSuccess: cartUpdateHandleSuccessDecrement,
-        onError: onErrorResponse,
-      });
+
+      // Instant optimistic UI update
+      reduxDispatch(
+        setDecrementToCartItem({
+          ...isExisted,
+          quantity: updateQuantity,
+          totalPrice: newPrice,
+        })
+      );
+
+      if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
+      updateDebounceRef.current = setTimeout(() => {
+        updateDebounceRef.current = null;
+        updateMutate(itemObject, {
+          onSuccess: () => {
+            clearPendingCartQty(isExisted?.cartItemId);
+            clearPendingCartQty(item?.id);
+          },
+          onError: (err) => {
+            clearPendingCartQty(isExisted?.cartItemId);
+            clearPendingCartQty(item?.id);
+            pendingQtyRef.current = isExisted?.quantity;
+            setCount(isExisted?.quantity);
+            reduxDispatch(setIncrementToCartItem(isExisted));
+            onErrorResponse(err);
+          },
+        });
+      }, 350);
     }
   };
   const lanDirection = getLanguage() ? getLanguage() : "ltr";

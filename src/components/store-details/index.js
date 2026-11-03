@@ -56,6 +56,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useTranslation } from "react-i18next";
 import { getSelectedVariations } from "components/header/second-navbar/SecondNavbar";
 import { setCartList, setStoreCartList } from "redux/slices/cart";
+import { getPendingCartQty } from "utils/cartUpdateQueue";
 import { saveModuleParam } from "utils/moduleParamManager";
 import {
   DEFAULT_BRANCHES,
@@ -318,7 +319,10 @@ const StoreDetails = ({ storeDetails, configData }) => {
         totalPrice:
          item?.price,
         selectedAddons: getSelectedAddonsFromCartItem(item),
-        quantity: item?.quantity,
+        quantity: (() => {
+          const pending = getPendingCartQty(item?.id) ?? getPendingCartQty(item?.item?.id);
+          return pending != null ? pending : item?.quantity;
+        })(),
         food_variations: item?.item?.food_variations,
         itemBasePrice: item?.item?.price,
         selectedOption:

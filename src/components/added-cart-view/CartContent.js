@@ -24,6 +24,11 @@ import VariationContent from "./VariationContent";
 import { toast } from "react-hot-toast";
 import { t } from "i18next";
 import {
+  setPendingCartQty,
+  getPendingCartQty,
+  clearPendingCartQty,
+} from "utils/cartUpdateQueue";
+import {
   cart_item_remove,
   out_of_limits,
   out_of_stock,
@@ -57,16 +62,26 @@ const CartContent = (props) => {
   const { mutate, isLoading: removeIsLoading } = useDeleteCartItem();
   const { mutate: updateMutate, isLoading } = useCartItemUpdate();
   const debounceTimerRef = useRef(null);
+  const pendingQtyRef = useRef(null);
+  if (debounceTimerRef.current === null && !isLoading) {
+    pendingQtyRef.current = cartItem?.quantity ?? 0;
+  }
 
   const cartUpdateHandleSuccess = (res) => {
     if (res) {
       res?.forEach((item) => {
         if (cartItem?.cartItemId === item?.id) {
+          const pending =
+            getPendingCartQty(item?.id) ?? getPendingCartQty(cartItem?.id);
+          const resolvedQty =
+            pending != null && pending > (item?.quantity ?? 0)
+              ? pending
+              : item?.quantity;
           const product = {
             ...item?.item,
             cartItemId: item?.id,
             totalPrice: item?.price,
-            quantity: item?.quantity,
+            quantity: resolvedQty,
             food_variations: item?.item?.food_variations,
             selectedAddons: getSelectedAddonsFromCartItem(item),
             itemBasePrice: item?.item?.price,
@@ -82,11 +97,14 @@ const CartContent = (props) => {
     if (res) {
       res?.forEach((item) => {
         if (cartItem?.cartItemId === item?.id) {
+          const pending =
+            getPendingCartQty(item?.id) ?? getPendingCartQty(cartItem?.id);
+          const resolvedQty = pending != null ? pending : item?.quantity;
           const product = {
             ...item?.item,
             cartItemId: item?.id,
             totalPrice: item?.price,
-            quantity: item?.quantity,
+            quantity: resolvedQty,
             food_variations: item?.item?.food_variations,
             selectedAddons: getSelectedAddonsFromCartItem(item),
             itemBasePrice: item?.item?.price,
@@ -97,8 +115,36 @@ const CartContent = (props) => {
       });
     }
   };
-  const handleIncrement = (cartItem) => {
-    const updateQuantity = Number(cartItem?.quantity || 1) + 1;
+  const handleIncrement = () => {
+    const currentQty = pendingQtyRef.current ?? cartItem?.quantity ?? 1;
+    const updateQuantity = currentQty + 1;
+
+    if (getCurrentModuleType() !== "food") {
+      if (cartItem?.stock && cartItem.stock < updateQuantity) {
+        toast.error(t(out_of_stock));
+        return;
+      }
+      if (
+        cartItem?.maximum_cart_quantity &&
+        cartItem?.maximum_cart_quantity < updateQuantity
+      ) {
+        toast.error(t(out_of_limits), { id: "out-of-limits" });
+        return;
+      }
+    } else {
+      if (
+        cartItem?.maximum_cart_quantity &&
+        cartItem?.maximum_cart_quantity < updateQuantity
+      ) {
+        toast.error(t(out_of_limits));
+        return;
+      }
+    }
+
+    pendingQtyRef.current = updateQuantity;
+    setPendingCartQty(cartItem?.cartItemId, updateQuantity);
+    setPendingCartQty(cartItem?.id, updateQuantity);
+
     const price =
       cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
     const productPrice = price * updateQuantity;
@@ -116,28 +162,6 @@ const CartContent = (props) => {
       guestId
     );
 
-    if (getCurrentModuleType() !== "food") {
-      if (cartItem?.stock <= cartItem?.quantity) {
-        toast.error(t(out_of_stock));
-        return;
-      }
-      if (
-        cartItem?.maximum_cart_quantity &&
-        cartItem?.maximum_cart_quantity <= cartItem?.quantity
-      ) {
-        toast.error(t(out_of_limits), { id: "out-of-limits" });
-        return;
-      }
-    } else {
-      if (
-        cartItem?.maximum_cart_quantity &&
-        cartItem?.maximum_cart_quantity <= cartItem?.quantity
-      ) {
-        toast.error(t(out_of_limits));
-        return;
-      }
-    }
-
     // ── Instant Optimistic Update (0ms) ──
     dispatch(
       setIncrementToCartItem({
@@ -149,21 +173,39 @@ const CartContent = (props) => {
 
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null;
       updateMutate(itemObject, {
+        onSuccess: () => {
+          clearPendingCartQty(cartItem?.cartItemId);
+          clearPendingCartQty(cartItem?.id);
+        },
         onError: (err) => {
+          clearPendingCartQty(cartItem?.cartItemId);
+          clearPendingCartQty(cartItem?.id);
+          pendingQtyRef.current = cartItem?.quantity;
           dispatch(setDecrementToCartItem(cartItem));
           onErrorResponse(err);
         },
       });
-    }, 250);
+    }, 350);
   };
 
   const handleDecrement = () => {
-    if (cartItem?.quantity <= 1) {
+    const currentQty = pendingQtyRef.current ?? cartItem?.quantity ?? 1;
+    if (currentQty <= 1) {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+      pendingQtyRef.current = 0;
+      clearPendingCartQty(cartItem?.cartItemId);
+      clearPendingCartQty(cartItem?.id);
       handleRemove();
       return;
     }
-    const updateQuantity = cartItem?.quantity - 1;
+    const updateQuantity = currentQty - 1;
+    pendingQtyRef.current = updateQuantity;
+    setPendingCartQty(cartItem?.cartItemId, updateQuantity);
+    setPendingCartQty(cartItem?.id, updateQuantity);
+
     const price =
       cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
     const productPrice = price * updateQuantity;
@@ -191,13 +233,21 @@ const CartContent = (props) => {
 
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null;
       updateMutate(itemObject, {
+        onSuccess: () => {
+          clearPendingCartQty(cartItem?.cartItemId);
+          clearPendingCartQty(cartItem?.id);
+        },
         onError: (err) => {
+          clearPendingCartQty(cartItem?.cartItemId);
+          clearPendingCartQty(cartItem?.id);
+          pendingQtyRef.current = cartItem?.quantity;
           dispatch(setIncrementToCartItem(cartItem));
           onErrorResponse(err);
         },
       });
-    }, 250);
+    }, 350);
   };
 
   const handleSuccess = () => {
@@ -345,7 +395,7 @@ const CartContent = (props) => {
             </IconButton>
           )}
           <Typography fontSize="12px" fontWeight="500">
-            {cartItem?.quantity}
+            {pendingQtyRef.current ?? cartItem?.quantity}
           </Typography>
 
           <IconButton
@@ -359,7 +409,7 @@ const CartContent = (props) => {
                 width: "16px",
               }}
               size="small"
-              onClick={() => handleIncrement(cartItem)}
+              onClick={() => handleIncrement()}
             />
           </IconButton>
         </CartIncrementStack>

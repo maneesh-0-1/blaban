@@ -1,4 +1,9 @@
 import { notifyItemAddedToCart } from "utils/cartFeedback";
+import {
+  setPendingCartQty,
+  getPendingCartQty,
+  clearPendingCartQty,
+} from "utils/cartUpdateQueue";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import StarIcon from "@mui/icons-material/Star";
@@ -476,7 +481,7 @@ const CartControls = ({
           flexShrink: 0,
         }}
       >
-        {updateLoading ? <CircularProgress size={12} /> : count}
+        {count}
       </Typography>
       <Box sx={sideSx}>
         <IncDecBtn onClick={onIncrement}>
@@ -1393,6 +1398,11 @@ const NewProductCard = ({
   const { mutate: wishlistDeleteMutate } = useWishListDelete();
   const wishlistPending = useRef(false);
   const updateDebounceRef = useRef(null);
+  const pendingQtyRef = useRef(null);
+  if (updateDebounceRef.current === null && !updateLoading) {
+    pendingQtyRef.current = isInCart?.quantity ?? 0;
+  }
+  const displayCount = pendingQtyRef.current ?? count;
 
   // ── Cart add success handler ──
   const handleAddSuccess = (res) => {
@@ -1420,12 +1430,17 @@ const NewProductCard = ({
     if (!res) return;
     res.forEach((i) => {
       if (isInCart?.cartItemId === i?.id) {
+        const pending = getPendingCartQty(i?.id) ?? getPendingCartQty(item?.id);
+        const resolvedQty =
+          pending != null && pending > (i?.quantity ?? 0)
+            ? pending
+            : i?.quantity;
         reduxDispatch(
           setIncrementToCartItem({
             ...i?.item,
             cartItemId: i?.id,
             totalPrice: i?.price,
-            quantity: i?.quantity,
+            quantity: resolvedQty,
             food_variations: i?.item?.food_variations,
             selectedAddons: getSelectedAddonsFromCartItem(i),
             itemBasePrice: i?.item?.price,
@@ -1440,18 +1455,22 @@ const NewProductCard = ({
   const cartUpdateHandleSuccessDecrement = (res) => {
     if (!res) return;
     res.forEach((i) => {
-      reduxDispatch(
-        setDecrementToCartItem({
-          ...i?.item,
-          cartItemId: i?.id,
-          totalPrice: i?.price,
-          quantity: i?.quantity,
-          food_variations: i?.item?.food_variations,
-          selectedAddons: getSelectedAddonsFromCartItem(i),
-          itemBasePrice: i?.item?.price,
-          selectedOption: i?.variation,
-        })
-      );
+      if (isInCart?.cartItemId === i?.id) {
+        const pending = getPendingCartQty(i?.id) ?? getPendingCartQty(item?.id);
+        const resolvedQty = pending != null ? pending : i?.quantity;
+        reduxDispatch(
+          setDecrementToCartItem({
+            ...i?.item,
+            cartItemId: i?.id,
+            totalPrice: i?.price,
+            quantity: resolvedQty,
+            food_variations: i?.item?.food_variations,
+            selectedAddons: getSelectedAddonsFromCartItem(i),
+            itemBasePrice: i?.item?.price,
+            selectedOption: i?.variation,
+          })
+        );
+      }
     });
   };
 
@@ -1522,19 +1541,13 @@ const NewProductCard = ({
   // ── Increment — instant optimistic update + debounced server sync ──
   const handleIncrement = () => {
     if (!isInCart) return;
-    const updateQuantity = Number(isInCart.quantity || 1) + 1;
-    const newPrice = getPriceAfterQuantityChange(isInCart, updateQuantity);
-    const itemObject = getItemDataForAddToCart(
-      isInCart,
-      updateQuantity,
-      newPrice,
-      getGuestId()
-    );
+    const currentQty = pendingQtyRef.current ?? isInCart.quantity ?? 1;
+    const updateQuantity = currentQty + 1;
 
     if (getCurrentModuleType() === ModuleTypes.FOOD) {
       if (
         item?.maximum_cart_quantity &&
-        item.maximum_cart_quantity <= isInCart.quantity
+        item.maximum_cart_quantity < updateQuantity
       ) {
         toast.error(t(out_of_limits), { id: "out-of-limits" });
         return;
@@ -1547,19 +1560,31 @@ const NewProductCard = ({
           : isInCart.stock ?? item?.stock;
       if (
         stockValue != null &&
-        (stockValue <= 0 || isInCart.quantity + 1 > stockValue)
+        (stockValue <= 0 || updateQuantity > stockValue)
       ) {
         toast.error(t(out_of_stock), { id: "out-of-stock" });
         return;
       }
       if (
         item?.maximum_cart_quantity &&
-        item.maximum_cart_quantity <= isInCart.quantity
+        item.maximum_cart_quantity < updateQuantity
       ) {
         toast.error(t(out_of_limits), { id: "out-of-limits" });
         return;
       }
     }
+
+    pendingQtyRef.current = updateQuantity;
+    setPendingCartQty(isInCart.cartItemId, updateQuantity);
+    setPendingCartQty(item?.id, updateQuantity);
+
+    const newPrice = getPriceAfterQuantityChange(isInCart, updateQuantity);
+    const itemObject = getItemDataForAddToCart(
+      isInCart,
+      updateQuantity,
+      newPrice,
+      getGuestId()
+    );
 
     // ── Instant optimistic UI update (0ms) ──
     reduxDispatch(
@@ -1572,19 +1597,34 @@ const NewProductCard = ({
 
     if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
     updateDebounceRef.current = setTimeout(() => {
+      updateDebounceRef.current = null;
       updateMutate(itemObject, {
+        onSuccess: () => {
+          clearPendingCartQty(isInCart.cartItemId);
+          clearPendingCartQty(item?.id);
+        },
         onError: (err) => {
+          clearPendingCartQty(isInCart.cartItemId);
+          clearPendingCartQty(item?.id);
+          pendingQtyRef.current = isInCart.quantity;
           reduxDispatch(setDecrementToCartItem(isInCart));
           onErrorResponse(err);
         },
       });
-    }, 250);
+    }, 350);
   };
 
   // ── Decrement — instant optimistic update + debounced server sync ──
   const handleDecrement = () => {
     if (!isInCart) return;
-    if (isInCart.quantity === 1) {
+    const currentQty = pendingQtyRef.current ?? isInCart.quantity ?? 1;
+    if (currentQty <= 1) {
+      if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
+      updateDebounceRef.current = null;
+      pendingQtyRef.current = 0;
+      clearPendingCartQty(isInCart.cartItemId);
+      clearPendingCartQty(item?.id);
+
       reduxDispatch(setRemoveItemFromCart(isInCart));
       cartItemRemoveMutate(
         {
@@ -1603,7 +1643,11 @@ const NewProductCard = ({
         }
       );
     } else {
-      const updateQuantity = isInCart.quantity - 1;
+      const updateQuantity = currentQty - 1;
+      pendingQtyRef.current = updateQuantity;
+      setPendingCartQty(isInCart.cartItemId, updateQuantity);
+      setPendingCartQty(item?.id, updateQuantity);
+
       const newPrice = getPriceAfterQuantityChange(isInCart, updateQuantity);
 
       // ── Instant optimistic UI update (0ms) ──
@@ -1617,6 +1661,7 @@ const NewProductCard = ({
 
       if (updateDebounceRef.current) clearTimeout(updateDebounceRef.current);
       updateDebounceRef.current = setTimeout(() => {
+        updateDebounceRef.current = null;
         updateMutate(
           getItemDataForAddToCart(
             isInCart,
@@ -1625,13 +1670,20 @@ const NewProductCard = ({
             getGuestId()
           ),
           {
+            onSuccess: () => {
+              clearPendingCartQty(isInCart.cartItemId);
+              clearPendingCartQty(item?.id);
+            },
             onError: (err) => {
+              clearPendingCartQty(isInCart.cartItemId);
+              clearPendingCartQty(item?.id);
+              pendingQtyRef.current = isInCart.quantity;
               reduxDispatch(setIncrementToCartItem(isInCart));
               onErrorResponse(err);
             },
           }
         );
-      }, 250);
+      }, 350);
     }
   };
 
@@ -1742,7 +1794,7 @@ const NewProductCard = ({
 
   const cartControlProps = {
     isProductExist,
-    count,
+    count: displayCount,
     updateLoading,
     isLoading,
     onDecrement: (e) => {

@@ -66,6 +66,11 @@ import useDeleteCartItem from "../../api-manage/hooks/react-query/add-cart/useDe
 import useCartItemUpdate from "../../api-manage/hooks/react-query/add-cart/useCartItemUpdate";
 import useClearCart from "../../api-manage/hooks/react-query/add-cart/useClearCart";
 import { onErrorResponse } from "../../api-manage/api-error-response/ErrorResponses";
+import {
+  setPendingCartQty,
+  getPendingCartQty,
+  clearPendingCartQty,
+} from "../../utils/cartUpdateQueue";
 import { getItemDataForAddToCart } from "../product-details/product-details-section/helperFunction";
 import VariationContent from "../added-cart-view/VariationContent";
 import CartIcon from "../added-cart-view/assets/CartIcon";
@@ -158,7 +163,16 @@ const CartItemRow = ({ cartItem }) => {
     useDeleteCartItem();
   const { mutate: updateMutate, isLoading } = useCartItemUpdate();
 
+  const key = cartItem?.cartItemId || cartItem?.id;
   const debounceTimerRef = useRef(null);
+  const pendingQtyRef = useRef(null);
+
+  useEffect(() => {
+    const pending = getPendingCartQty(key);
+    if (pending == null) {
+      pendingQtyRef.current = Number(cartItem?.quantity || 1);
+    }
+  }, [cartItem?.quantity, key]);
 
   useEffect(() => {
     return () => {
@@ -167,42 +181,36 @@ const CartItemRow = ({ cartItem }) => {
   }, []);
 
   const handleIncrement = () => {
-    const updateQuantity = Number(cartItem?.quantity || 1) + 1;
-    const price =
-      cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
-    const productPrice = price * updateQuantity;
-    const mainPrice =
-      getCurrentModuleType() === "food"
-        ? productPrice
-        : (cartItem?.selectedOption?.length > 0
-            ? cartItem?.selectedOption?.[0]?.price
-            : cartItem?.price) * updateQuantity;
-    const itemObject = getItemDataForAddToCart(
-      cartItem,
-      updateQuantity,
-      mainPrice,
-      guestId
-    );
+    const currentQty = pendingQtyRef.current ?? Number(cartItem?.quantity || 1);
+    const updateQuantity = currentQty + 1;
 
     if (getCurrentModuleType() !== "food") {
-      if (cartItem?.stock <= cartItem?.quantity) {
+      if (cartItem?.stock <= currentQty) {
         toast.error(t(out_of_stock));
         return;
       }
       if (
         cartItem?.maximum_cart_quantity &&
-        cartItem?.maximum_cart_quantity <= cartItem?.quantity
+        cartItem?.maximum_cart_quantity <= currentQty
       ) {
         toast.error(t(out_of_limits), { id: "out-of-limits" });
         return;
       }
     } else if (
       cartItem?.maximum_cart_quantity &&
-      cartItem?.maximum_cart_quantity <= cartItem?.quantity
+      cartItem?.maximum_cart_quantity <= currentQty
     ) {
       toast.error(t(out_of_limits));
       return;
     }
+
+    pendingQtyRef.current = updateQuantity;
+    setPendingCartQty(key, updateQuantity);
+    setPendingCartQty(cartItem?.id, updateQuantity);
+
+    const price =
+      cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
+    const productPrice = price * updateQuantity;
 
     // ── Instant Optimistic Update (0ms) ──
     const optimisticProduct = {
@@ -212,39 +220,57 @@ const CartItemRow = ({ cartItem }) => {
     };
     dispatch(setIncrementToCartItem(optimisticProduct));
 
-    // ── Debounced Server Sync (250ms) ──
+    // ── Debounced Server Sync (350ms) ──
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
+      const finalQty = pendingQtyRef.current ?? updateQuantity;
+      const finalPrice =
+        cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
+      const finalProductPrice = finalPrice * finalQty;
+      const finalMainPrice =
+        getCurrentModuleType() === "food"
+          ? finalProductPrice
+          : (cartItem?.selectedOption?.length > 0
+              ? cartItem?.selectedOption?.[0]?.price
+              : cartItem?.price) * finalQty;
+
+      const itemObject = getItemDataForAddToCart(
+        cartItem,
+        finalQty,
+        finalMainPrice,
+        guestId
+      );
+
       updateMutate(itemObject, {
+        onSuccess: () => {
+          clearPendingCartQty(key);
+          clearPendingCartQty(cartItem?.id);
+        },
         onError: (err) => {
+          clearPendingCartQty(key);
+          clearPendingCartQty(cartItem?.id);
+          pendingQtyRef.current = Number(cartItem?.quantity || 1);
           dispatch(setDecrementToCartItem(cartItem));
           onErrorResponse(err);
         },
       });
-    }, 250);
+    }, 350);
   };
 
   const handleDecrement = () => {
-    if (cartItem?.quantity <= 1) {
+    const currentQty = pendingQtyRef.current ?? Number(cartItem?.quantity || 1);
+    if (currentQty <= 1) {
       handleRemove();
       return;
     }
-    const updateQuantity = cartItem?.quantity - 1;
+    const updateQuantity = currentQty - 1;
+    pendingQtyRef.current = updateQuantity;
+    setPendingCartQty(key, updateQuantity);
+    setPendingCartQty(cartItem?.id, updateQuantity);
+
     const price =
       cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
     const productPrice = price * updateQuantity;
-    const mainPrice =
-      getCurrentModuleType() === "food"
-        ? productPrice
-        : (cartItem?.selectedOption?.length > 0
-            ? cartItem?.selectedOption?.[0]?.price
-            : cartItem?.price) * updateQuantity;
-    const itemObject = getItemDataForAddToCart(
-      cartItem,
-      updateQuantity,
-      mainPrice,
-      guestId
-    );
 
     // ── Instant Optimistic Update (0ms) ──
     const optimisticProduct = {
@@ -254,16 +280,41 @@ const CartItemRow = ({ cartItem }) => {
     };
     dispatch(setDecrementToCartItem(optimisticProduct));
 
-    // ── Debounced Server Sync (250ms) ──
+    // ── Debounced Server Sync (350ms) ──
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
+      const finalQty = pendingQtyRef.current ?? updateQuantity;
+      const finalPrice =
+        cartItem?.price + getTotalVariationsPrice(cartItem?.food_variations);
+      const finalProductPrice = finalPrice * finalQty;
+      const finalMainPrice =
+        getCurrentModuleType() === "food"
+          ? finalProductPrice
+          : (cartItem?.selectedOption?.length > 0
+              ? cartItem?.selectedOption?.[0]?.price
+              : cartItem?.price) * finalQty;
+
+      const itemObject = getItemDataForAddToCart(
+        cartItem,
+        finalQty,
+        finalMainPrice,
+        guestId
+      );
+
       updateMutate(itemObject, {
+        onSuccess: () => {
+          clearPendingCartQty(key);
+          clearPendingCartQty(cartItem?.id);
+        },
         onError: (err) => {
+          clearPendingCartQty(key);
+          clearPendingCartQty(cartItem?.id);
+          pendingQtyRef.current = Number(cartItem?.quantity || 1);
           dispatch(setIncrementToCartItem(cartItem));
           onErrorResponse(err);
         },
       });
-    }, 250);
+    }, 350);
   };
 
   const handleRemove = () => {
@@ -418,7 +469,7 @@ const CartItemRow = ({ cartItem }) => {
                   flexShrink: 0,
                 }}
               >
-                {cartItem?.quantity}
+                {pendingQtyRef.current ?? cartItem?.quantity}
               </Typography>
               <QtyButton onClick={handleIncrement} title={t("Increase")}>
                 <AddIcon sx={{ fontSize: 18 }} />

@@ -7,6 +7,7 @@ import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponse
 import { getGuestId, getToken } from "helper-functions/getToken";
 import { getSelectedAddonsFromCartItem } from "helper-functions/CardHelpers";
 import { setCartGroups, setCartList } from "redux/slices/cart";
+import { getPendingCartQty } from "utils/cartUpdateQueue";
 
 const fetchGroupedCart = async () => {
   try {
@@ -48,7 +49,8 @@ const flattenGroupsToCartList = (groups = []) => {
     const storeId = g?.store?.id ?? g?.restaurant?.id;
     return carts.map((row) => {
       const product = row?.item ?? {};
-      const quantity = row?.quantity ?? 1;
+      const pending = getPendingCartQty(row?.id) ?? getPendingCartQty(product?.id);
+      const quantity = pending != null ? pending : (row?.quantity ?? 1);
       const totalPrice = row?.price ?? (product?.price ?? 0) * quantity;
       return {
         ...product,
