@@ -605,12 +605,18 @@ const OrderSummery = (props) => {
               md={12}
               pl={{ xs: "0px", sm: "20px", md: "25px" }}
             >
-              {trackOrderData?.unavailable_item_note && (
-                <InstructionBox
-                  title="Unavailable item Note"
-                  note={trackOrderData?.unavailable_item_note}
-                />
-              )}
+              {trackOrderData?.unavailable_item_note &&
+                trackOrderData.unavailable_item_note !== "remove" &&
+                trackOrderData.unavailable_item_note !== "null" && (
+                  <InstructionBox
+                    title="Unavailable item Note"
+                    note={
+                      trackOrderData.unavailable_item_note === "call"
+                        ? t("Call me ASAP")
+                        : t(trackOrderData.unavailable_item_note)
+                    }
+                  />
+                )}
               {trackOrderData?.delivery_instruction && (
                 <InstructionBox
                   title="delivery instruction"

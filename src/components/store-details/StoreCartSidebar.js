@@ -730,7 +730,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
   const [extraPackaging, setExtraPackaging] = useState(false);
   const [addCutlery, setAddCutlery] = useState(true);
   const [unavailableExpanded, setUnavailableExpanded] = useState(false);
-  const [unavailableChoice, setUnavailableChoice] = useState("remove");
+  const [unavailableChoice, setUnavailableChoice] = useState(null);
   const [subtotalCollapsed, setSubtotalCollapsed] = useState(false);
 
   // Mirror the sidebar's packaging / cutlery / unavailable-item preferences
@@ -1563,7 +1563,9 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
                         >
                           {unavailableChoice === "remove"
                             ? t("Remove it form my cart")
-                            : t("Call me ASAP")}
+                            : unavailableChoice === "call"
+                            ? t("Call me ASAP")
+                            : t("Optional — select preference")}
                         </Typography>
                       </Stack>
                       {unavailableExpanded ? (
@@ -1587,45 +1589,49 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
                         {[
                           ["remove", t("Remove it form my cart")],
                           ["call", t("Call me ASAP")],
-                        ].map(([key, label]) => (
-                          <Stack
-                            key={key}
-                            direction="row"
-                            alignItems="center"
-                            spacing={1}
-                            sx={{ cursor: "pointer" }}
-                            onClick={() => setUnavailableChoice(key)}
-                          >
-                            <Box
-                              sx={{
-                                width: 14,
-                                height: 14,
-                                borderRadius: "50%",
-                                border: `2px solid ${
-                                  unavailableChoice === key
-                                    ? theme.palette.primary.main
-                                    : theme.palette.divider
-                                }`,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                flexShrink: 0,
-                              }}
+                          ["none", t("No instruction / None")],
+                        ].map(([key, label]) => {
+                          const isSelected = key === "none" ? !unavailableChoice : unavailableChoice === key;
+                          return (
+                            <Stack
+                              key={key}
+                              direction="row"
+                              alignItems="center"
+                              spacing={1}
+                              sx={{ cursor: "pointer" }}
+                              onClick={() => setUnavailableChoice(key === "none" ? null : (unavailableChoice === key ? null : key))}
                             >
-                              {unavailableChoice === key && (
-                                <Box
-                                  sx={{
-                                    width: 6,
-                                    height: 6,
-                                    borderRadius: "50%",
-                                    backgroundColor: theme.palette.primary.main,
-                                  }}
-                                />
-                              )}
-                            </Box>
-                            <Typography fontSize={12.5}>{label}</Typography>
-                          </Stack>
-                        ))}
+                              <Box
+                                sx={{
+                                  width: 14,
+                                  height: 14,
+                                  borderRadius: "50%",
+                                  border: `2px solid ${
+                                    isSelected
+                                      ? theme.palette.primary.main
+                                      : theme.palette.divider
+                                  }`,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {isSelected && (
+                                  <Box
+                                    sx={{
+                                      width: 6,
+                                      height: 6,
+                                      borderRadius: "50%",
+                                      backgroundColor: theme.palette.primary.main,
+                                    }}
+                                  />
+                                )}
+                              </Box>
+                              <Typography fontSize={12.5}>{label}</Typography>
+                            </Stack>
+                          );
+                        })}
                       </Stack>
                     )}
                   </Stack>

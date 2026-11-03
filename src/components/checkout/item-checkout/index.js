@@ -230,7 +230,7 @@ const ItemCheckout = (props) => {
   const cartPrefs = useSelector((state) => state.cart?.cartPrefs) || {
     extraPackaging: false,
     addCutlery: false,
-    unavailableChoice: "remove",
+    unavailableChoice: null,
   };
   const [dDistance, setDDistance] = useState(null);
   const token = getToken();
@@ -691,10 +691,16 @@ if (prescriptionImages?.length > 0) {
         : 0;
       formData.append("extra_packaging_amount", resolvedPackagingAmount);
       formData.append("cutlery", cartPrefs?.addCutlery ? 1 : cutlery ? 1 : 0);
-      formData.append(
-        "unavailable_item_note",
-        cartPrefs?.unavailableChoice ?? unavailable_item_note ?? ""
-      );
+      const formatUnavailableChoice = (choice) => {
+        if (!choice || choice === "none" || choice === "remove_note") return "";
+        if (choice === "remove") return "Remove it from my cart";
+        if (choice === "call") return "Call me ASAP";
+        return choice;
+      };
+      const noteToSend = formatUnavailableChoice(cartPrefs?.unavailableChoice) || formatUnavailableChoice(unavailable_item_note);
+      if (noteToSend) {
+        formData.append("unavailable_item_note", noteToSend);
+      }
       if (cartPrefs?.monthlySubscribe) {
         formData.append("monthly_subscribe", 1);
       }
@@ -703,9 +709,16 @@ if (prescriptionImages?.length > 0) {
       formData.append("password", formik.values.password);
       return formData;
     } else {
+      const formatUnavailableChoice = (choice) => {
+        if (!choice || choice === "none" || choice === "remove_note") return null;
+        if (choice === "remove") return "Remove it from my cart";
+        if (choice === "call") return "Call me ASAP";
+        return choice;
+      };
       const resolvedCutlery = cartPrefs?.addCutlery ? 1 : cutlery ? 1 : 0;
       const resolvedUnavailableNote =
-        cartPrefs?.unavailableChoice ?? unavailable_item_note;
+        formatUnavailableChoice(cartPrefs?.unavailableChoice) ||
+        formatUnavailableChoice(unavailable_item_note);
       const resolvedPackagingAmount = cartPrefs?.extraPackaging
         ? packagingCharge > 0
           ? packagingCharge
@@ -730,7 +743,7 @@ if (prescriptionImages?.length > 0) {
         order_amount: totalAmount,
         dm_tips: deliveryTip,
         cutlery: resolvedCutlery,
-        unavailable_item_note: resolvedUnavailableNote,
+        unavailable_item_note: resolvedUnavailableNote || null,
         delivery_instruction: orderType === "take_away"
           ? (() => {
               let bName = "";

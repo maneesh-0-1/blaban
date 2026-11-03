@@ -23,7 +23,7 @@ const initialState = {
   cartPrefs: {
     extraPackaging: true,
     addCutlery: true,
-    unavailableChoice: "remove",
+    unavailableChoice: null,
     monthlySubscribe: false,
   },
 };
