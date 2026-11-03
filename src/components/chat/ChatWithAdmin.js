@@ -21,16 +21,17 @@ const ChatWithAdmin = ({ handleChannelOnClick, configData }) => {
 				handleChannelOnClick({
 					receiver_type: "admin",
 					sender_type: "customer",
-					// receiver:{
-					//     f_name:"Admin",l_name:""
-					// }
+					receiver: {
+						f_name: configData?.business_name || "Admin",
+						l_name: "",
+						image_full_url: configData?.logo_full_url,
+					},
 				})
 			}
 		>
 			<StyledBadge
 				overlap="circular"
 				anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-				//variant="dot"
 			>
 				<Avatar
 					src={configData?.logo_full_url}
@@ -48,45 +49,6 @@ const ChatWithAdmin = ({ handleChannelOnClick, configData }) => {
 						{configData?.business_name}
 					</Typography>
 				</Stack>
-				{/*<Stack*/}
-				{/*  direction="row"*/}
-				{/*  justifyContent="space-between"*/}
-				{/*  color={*/}
-				{/*    selectedId === currentId*/}
-				{/*      ? theme.palette.neutral[100]*/}
-				{/*      : theme.palette.neutral[1000]*/}
-				{/*  }*/}
-				{/*>*/}
-				{/*  <CustomTypographyEllipsis*/}
-				{/*    sx={{*/}
-				{/*      maxWidth: "130px",*/}
-				{/*      color: (theme) => theme.palette.neutral[400],*/}
-				{/*      textTransform: "capitalize ",*/}
-				{/*    }}*/}
-				{/*    fontSize={isRead > 0 ? "15px" : "12px"}*/}
-				{/*    fontWeight={isRead > 0 ? "700" : "400"}*/}
-				{/*    color={*/}
-				{/*      isRead > 0*/}
-				{/*        ? theme.palette.neutral[1000]*/}
-				{/*        : theme.palette.neutral[500]*/}
-				{/*    }*/}
-				{/*  >*/}
-				{/*    {last_message?.message && last_message?.message}{" "}*/}
-				{/*  </CustomTypographyEllipsis>*/}
-				{/*  /!*{!isLoading && !isSender && unRead > 0 && (*!/*/}
-				{/*  /!*  <Stack*!/*/}
-				{/*  /!*    width="16px"*!/*/}
-				{/*  /!*    height="16px"*!/*/}
-				{/*  /!*    backgroundColor={theme.palette.primary.main}*!/*/}
-				{/*  /!*    justifyContent="center"*!/*/}
-				{/*  /!*    alignItems="center"*!/*/}
-				{/*  /!*    borderRadius="50%"*!/*/}
-				{/*  /!*    color={theme.palette.neutral[100]}*!/*/}
-				{/*  /!*  >*!/*/}
-				{/*  /!*    <Typography fontSize="12px">{unRead}</Typography>*!/*/}
-				{/*  /!*  </Stack>*!/*/}
-				{/*  /!*)}*!/*/}
-				{/*</Stack>*/}
 			</CustomStackFullWidth>
 		</CustomStackFullWidth>
 	);

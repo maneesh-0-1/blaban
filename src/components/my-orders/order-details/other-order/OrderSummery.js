@@ -286,7 +286,9 @@ const OrderSummery = (props) => {
                           theme.palette.text.secondary,
                       }}
                     >
-                      {t("Delivery Address")}
+                      {trackOrderData?.order_type === "take_away"
+                        ? t("Pickup Location")
+                        : t("Delivery Address")}
                     </Typography>
                     {trackOrderData?.delivery_address?.contact_person_name && (
                       <Typography
@@ -309,7 +311,13 @@ const OrderSummery = (props) => {
                         wordBreak: "break-word",
                       }}
                     >
-                      {trackOrderData?.delivery_address?.address || "—"}
+                      {trackOrderData?.order_type === "take_away"
+                        ? (trackOrderData?.branch_name
+                            ? (trackOrderData?.delivery_address?.address && trackOrderData.delivery_address.address.includes(trackOrderData.branch_name)
+                                ? trackOrderData.delivery_address.address
+                                : `${trackOrderData.branch_name}${trackOrderData?.delivery_address?.address ? ` - ${trackOrderData.delivery_address.address}` : ""}`)
+                            : trackOrderData?.delivery_address?.address || "—")
+                        : (trackOrderData?.delivery_address?.address || "—")}
                     </Typography>
                   </Stack>
 

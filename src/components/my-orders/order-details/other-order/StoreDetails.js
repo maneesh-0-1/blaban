@@ -35,7 +35,10 @@ export const hasChatAndReview = (storeData) => {
   return { isReview, isChat };
 };
 const StoreDetails = (props) => {
-  const { storeData, configData, t } = props;
+  const { storeData, configData, t, branchName } = props;
+  const displayStoreData = branchName
+    ? { ...storeData, name: `${storeData?.name || "B.Laban"} (${branchName})` }
+    : storeData;
   const router = useRouter();
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
@@ -68,7 +71,7 @@ const StoreDetails = (props) => {
         <Grid container item md={12} xs={12} spacing={2}>
           <Stack direction="row" width="100%" spacing={1}>
             <StoreAndDeliveryManCommon
-              data={storeData}
+              data={displayStoreData}
               configData={configData}
               imageUrl={configData?.base_urls?.store_cover_photo_url}
               image={storeData?.cover_photo_full_url}

@@ -73,7 +73,7 @@ const InfoCard = ({
 		userList.receiver_type === "admin"
 			? adminImage
 			: userList?.receiver?.image;
-	const isSender = data?.userinfo?.id === userList.last_message.sender_id;
+	const isSender = data?.userinfo?.id === userList?.last_message?.sender_id;
 	const isRead = !isLoading && !isSender && unRead > 0;
 	const language_direction = localStorage.getItem("direction");
 

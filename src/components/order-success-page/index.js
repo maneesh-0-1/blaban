@@ -61,6 +61,7 @@ const OrderSuccessPage = ({ configData }) => {
   const [attributeId, setAttributeId] = useState("");
   const [copied, setCopied] = useState(false);
   const [storedOrder, setStoredOrder] = useState(null);
+  const [fallbackBranch, setFallbackBranch] = useState(null);
 
   // 1. Decode token if returned from payment gateway
   useEffect(() => {
@@ -83,25 +84,48 @@ const OrderSuccessPage = ({ configData }) => {
     }
   }, [token]);
 
-  // 2. Read stored order snapshot from localStorage
+  // 2. Read stored order snapshot and fallback branch from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const raw = localStorage.getItem("lastPlacedOrder");
+        const targetId = order_id || orderId || id;
+        let raw = null;
+        if (targetId) {
+          raw = localStorage.getItem(`order_summary_snapshot_${targetId}`);
+        }
+        if (!raw) {
+          raw = localStorage.getItem("lastPlacedOrder");
+        }
         if (raw) {
           const parsed = JSON.parse(raw);
           setStoredOrder(parsed);
         }
+
+        const rawBranch = localStorage.getItem("selectedBranch");
+        if (rawBranch) {
+          const parsedB = JSON.parse(rawBranch);
+          if (parsedB && typeof parsedB === "object" && parsedB.name) {
+            setFallbackBranch(parsedB);
+          }
+        }
       } catch (e) {
-        console.error("Error reading lastPlacedOrder:", e);
+        console.error("Error reading order snapshot / branch:", e);
       }
     }
-  }, []);
+  }, [order_id, orderId, id]);
 
   // 3. Clear cart completely on mount
   useEffect(() => {
     clearCartOnOrderSuccess(dispatch, queryClient);
-  }, [dispatch, queryClient]);
+    if (typeof window !== "undefined") {
+      try {
+        if (!flag && status !== "fail") {
+          sessionStorage.removeItem("pending_digital_order_id");
+          sessionStorage.removeItem("pending_digital_order_time");
+        }
+      } catch (e) {}
+    }
+  }, [dispatch, queryClient, flag, status]);
 
   const activeOrderId =
     order_id ||
@@ -470,21 +494,47 @@ const OrderSuccessPage = ({ configData }) => {
                     {isTakeAway ? t("Pickup Location") : t("Delivery Address")}
                   </Typography>
                 </Stack>
-                <Typography fontSize="14px" fontWeight={600} color="neutral.1050">
-                  {storedOrder?.delivery_address ||
-                    (isTakeAway ? t("Self Pickup at Store") : t("Selected Delivery Address"))}
-                </Typography>
-                {!isTakeAway && (storedOrder?.block || storedOrder?.road || storedOrder?.house) && (
-                  <Typography fontSize="12px" color="text.secondary" mt={0.5}>
-                    {[
-                      storedOrder?.block && `${t("Block")} ${storedOrder.block}`,
-                      storedOrder?.road && `${t("Street")} ${storedOrder.road}`,
-                      storedOrder?.house && `${t("Building/House")} ${storedOrder.house}`,
-                      storedOrder?.floor && `${t("Floor")} ${storedOrder.floor}`,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </Typography>
+                {isTakeAway ? (
+                  <Box>
+                    <Typography fontSize="14px" fontWeight={700} color="neutral.1050">
+                      {storedOrder?.branch_name ||
+                        (storedOrder?.delivery_address ? storedOrder.delivery_address.split(" - ")[0] : null) ||
+                        fallbackBranch?.name ||
+                        storedOrder?.store_name ||
+                        t("Self Pickup Branch")}
+                    </Typography>
+                    <Typography fontSize="13px" color="text.secondary" mt={0.25}>
+                      {storedOrder?.branch_address ||
+                        (storedOrder?.delivery_address && storedOrder.delivery_address.includes(" - ")
+                          ? storedOrder.delivery_address.split(" - ").slice(1).join(" - ")
+                          : storedOrder?.delivery_address) ||
+                        fallbackBranch?.address ||
+                        t("Self Pickup at Store")}
+                    </Typography>
+                    {(storedOrder?.branch_phone || fallbackBranch?.phone) && (
+                      <Typography fontSize="12px" color="primary.main" fontWeight={600} mt={0.5}>
+                        📞 {storedOrder?.branch_phone || fallbackBranch?.phone}
+                      </Typography>
+                    )}
+                  </Box>
+                ) : (
+                  <Box>
+                    <Typography fontSize="14px" fontWeight={600} color="neutral.1050">
+                      {storedOrder?.delivery_address || t("Selected Delivery Address")}
+                    </Typography>
+                    {(storedOrder?.block || storedOrder?.road || storedOrder?.house || storedOrder?.floor) && (
+                      <Typography fontSize="12px" color="text.secondary" mt={0.5}>
+                        {[
+                          storedOrder?.block && `${t("Block")} ${storedOrder.block}`,
+                          storedOrder?.road && `${t("Street")} ${storedOrder.road}`,
+                          storedOrder?.house && `${t("Building/House")} ${storedOrder.house}`,
+                          storedOrder?.floor && `${t("Floor")} ${storedOrder.floor}`,
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </Typography>
+                    )}
+                  </Box>
                 )}
               </Paper>
             </Grid>

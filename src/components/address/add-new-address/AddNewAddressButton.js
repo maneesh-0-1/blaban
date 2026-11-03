@@ -1,10 +1,9 @@
 import React from "react";
 import { CustomIconButton } from "../../../styled-components/CustomStyles.style";
-import { Button, Typography, useMediaQuery } from "@mui/material";
+import { Button, Typography, useMediaQuery, useTheme } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { t } from "i18next";
-import { useTheme } from "@emotion/react";
 import { Box } from "@mui/system";
 import { useDispatch } from "react-redux";
 import { setOpenAddressModal } from "../../../redux/slices/addAddress";

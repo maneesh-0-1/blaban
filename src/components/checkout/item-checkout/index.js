@@ -126,9 +126,18 @@ const ItemCheckout = (props) => {
     () => isCartTakeawayOnly(activeCartItems),
     [activeCartItems]
   );
-  const [orderType, setOrderType] = useState(() =>
-    isCartTakeawayOnly(activeCartItems) ? "take_away" : "delivery"
-  );
+  const [orderType, setOrderType] = useState(() => {
+    if (isCartTakeawayOnly(activeCartItems)) return "take_away";
+    if (typeof window !== "undefined") {
+      try {
+        const storedType = localStorage.getItem("selectedDeliveryType");
+        if (storedType === "take_away" || storedType === "delivery") {
+          return storedType;
+        }
+      } catch (_) {}
+    }
+    return "delivery";
+  });
 
   useEffect(() => {
     if (isTakeawayOnly && orderType !== "take_away") {
@@ -169,11 +178,17 @@ const ItemCheckout = (props) => {
   useEffect(() => {
     const handleAreaChanged = (e) => {
       if (e?.detail) {
-        if (e.detail.type === "take_away" || orderType === "take_away") {
+        const nextType = e.detail.type || e.detail.orderType;
+        if (nextType === "take_away") {
+          setOrderType("take_away");
           setDeliveryFee(0);
-        } else {
+          setDeliveryTip(0);
+        } else if (nextType === "delivery") {
+          setOrderType("delivery");
           const fee = Number(e.detail.area?.delivery_charge ?? e.detail.deliveryCharge ?? 0);
           setDeliveryFee(fee > 0 ? fee : null);
+        } else if (orderType === "take_away") {
+          setDeliveryFee(0);
         }
       }
     };
@@ -233,21 +248,58 @@ const ItemCheckout = (props) => {
       ? (profileInfo?.email || address?.contact_person_email)
       : (address?.contact_person_email || guestUserInfo?.contact_person_email);
 
+    let sBranch = null;
+    let sArea = null;
+    try {
+      if (typeof window !== "undefined") {
+        const b = localStorage.getItem("selectedBranch");
+        const a = localStorage.getItem("selectedArea");
+        if (b) sBranch = JSON.parse(b);
+        if (a) sArea = JSON.parse(a);
+      }
+    } catch (_) {}
+
+    const pickupBranchName = sBranch?.name || sArea?.branch?.name || "";
+    const pickupBranchAddress = sBranch?.address || sArea?.branch?.address || "";
+    const pickupBranchPhone = sBranch?.phone || sArea?.branch?.phone || "";
+    const pickupBranchId = sBranch?.id || sArea?.branch?.id || null;
+
+    const resolvedPickupAddress = pickupBranchName
+      ? (pickupBranchAddress ? `${pickupBranchName} - ${pickupBranchAddress}` : pickupBranchName)
+      : (pickupBranchAddress || storeData?.address || "Pickup / Takeaway");
+
+    const resolvedDeliveryAddress =
+      (address?.address && address.address.trim()) ||
+      (sArea?.name && sArea.name.trim()) ||
+      (typeof window !== "undefined" ? localStorage.getItem("location") : "") ||
+      "Kuwait";
+
     const orderSummary = {
       order_id: placedOrderId,
       order_amount: totalAmount,
       order_type: orderType,
       payment_method: paymentMethod,
-      payment_status: paymentMethod === "cash_on_delivery" ? "unpaid" : "paid",
+      payment_status:
+        paymentMethod === "cash_on_delivery"
+          ? "unpaid"
+          : paymentMethod === "digital_payment" || (paymentMethod !== "offline_payment" && paymentMethod !== "wallet")
+          ? "unpaid"
+          : "paid",
       created_at: new Date().toISOString(),
-      store_name: storeData?.name || "B.Laban",
+      store_name: orderType === "take_away" ? (pickupBranchName || storeData?.name || "B.Laban") : (storeData?.name || "B.Laban"),
+      branch_id: pickupBranchId,
+      branch_name: pickupBranchName,
+      branch_address: pickupBranchAddress,
+      branch_phone: pickupBranchPhone,
+      delivery_area_id: sArea?.id || null,
+      delivery_area_name: sArea?.name || "",
       customer_name: activeName || "",
       customer_phone: activePhone || "",
       customer_email: activeEmail || "",
       delivery_address:
         orderType === "take_away"
-          ? (storeData?.address || "Pickup / Takeaway")
-          : (address?.address || ""),
+          ? resolvedPickupAddress
+          : resolvedDeliveryAddress,
       block: address?.block || guestUserInfo?.block || "",
       road: address?.road || guestUserInfo?.road || "",
       house: address?.house || guestUserInfo?.house || "",
@@ -267,6 +319,9 @@ const ItemCheckout = (props) => {
 
     try {
       localStorage.setItem("lastPlacedOrder", JSON.stringify(orderSummary));
+      if (placedOrderId) {
+        localStorage.setItem(`order_summary_snapshot_${placedOrderId}`, JSON.stringify(orderSummary));
+      }
     } catch (e) {
       console.error("Error saving lastPlacedOrder:", e);
     }
@@ -310,7 +365,7 @@ const ItemCheckout = (props) => {
          cartList?.[0]?.item?.store_id ??
          (router?.query?.store_id ? Number(router.query.store_id) : null) ??
          storedBranchId ??
-         4);
+         2);
 
   const clearMonthlySubKey = (sid) => {
     if (typeof window === "undefined") return;
@@ -666,19 +721,7 @@ if (prescriptionImages?.length > 0) {
         // order_time: scheduleAt,
         payment_method: isDigital,
         order_type: orderType === "schedule_order" ? "delivery" : orderType,
-        store_id: (() => {
-          let sBranch = null;
-          let sArea = null;
-          try {
-            if (typeof window !== "undefined") {
-              const b = localStorage.getItem("selectedBranch");
-              const a = localStorage.getItem("selectedArea");
-              if (b) sBranch = JSON.parse(b);
-              if (a) sArea = JSON.parse(a);
-            }
-          } catch (e) {}
-          return sBranch?.store_id || sArea?.branch?.store_id || sArea?.store_id || carts?.[0]?.store_id || productList?.[0]?.store_id || storeId || 2;
-        })(),
+        store_id: storeData?.id || carts?.[0]?.store_id || 2,
         coupon_code: couponDiscount?.code,
         coupon_discount_amount: couponDiscount?.discount,
         coupon_discount_title: couponDiscount?.title,
@@ -737,21 +780,48 @@ if (prescriptionImages?.length > 0) {
               if (a) sArea = JSON.parse(a);
             }
           } catch (e) {}
+          const branchId = sBranch?.id || sArea?.branch_id || sArea?.branch?.id || null;
+          const branchName = sBranch?.name || sArea?.branch?.name || null;
+          const branchAddress = sBranch?.address || sArea?.branch?.address || null;
           return {
-            ...(sBranch?.name && {
-              branch_name: sBranch.name,
-            }),
+            ...(branchId && { branch_id: branchId }),
+            ...(branchName && { branch_name: branchName }),
+            ...(branchAddress && { branch_address: branchAddress }),
+            ...(orderType === "take_away" && branchAddress && { pickup_location: branchAddress }),
+            ...(sArea?.id && { delivery_area_id: sArea.id }),
             ...(sArea?.name && {
               delivery_area_name: sArea.name,
-              ...(sArea?.branch?.name && {
-                branch_name: sArea.branch.name,
-              }),
             }),
           };
         })(),
         latitude: address?.latitude || "29.3759",
         longitude: address?.longitude || "47.9774",
-        address: address?.address || (typeof window !== "undefined" ? localStorage.getItem("location") : "") || "Kuwait",
+        address:
+          orderType === "take_away"
+            ? (() => {
+                let sBranch = null;
+                try {
+                  const b = localStorage.getItem("selectedBranch");
+                  if (b) sBranch = JSON.parse(b);
+                } catch (e) {}
+                if (sBranch?.name) {
+                  return sBranch.address
+                    ? `${sBranch.name} - ${sBranch.address}`
+                    : sBranch.name;
+                }
+                return sBranch?.address || "Pickup / Takeaway";
+              })()
+            : (address?.address && address.address.trim()) ||
+              (typeof window !== "undefined"
+                ? (() => {
+                    try {
+                      const a = localStorage.getItem("selectedArea");
+                      if (a) return JSON.parse(a)?.name;
+                    } catch (_) {}
+                    return localStorage.getItem("location");
+                  })()
+                : "") ||
+              "Kuwait",
 
       };
     }
@@ -924,6 +994,12 @@ if (prescriptionImages?.length > 0) {
               if (paymentMethod === "digital_payment") {
                 toast.success(response?.data?.message);
                 saveOrderSummarySnapshot(response?.data?.order_id);
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.setItem("pending_digital_order_id", String(response?.data?.order_id));
+                    sessionStorage.setItem("pending_digital_order_time", Date.now().toString());
+                  } catch (e) {}
+                }
                 clearCartOnOrderSuccess(dispatch, queryClient, storeId);
                 const paymentBaseUrl =
                   process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
@@ -995,6 +1071,12 @@ if (prescriptionImages?.length > 0) {
             if (isDigital) {
               toast.loading(t("Redirecting to payment gateway..."), { id: "payment-redirect" });
               saveOrderSummarySnapshot(response?.data?.order_id);
+              if (typeof window !== "undefined") {
+                try {
+                  sessionStorage.setItem("pending_digital_order_id", String(response?.data?.order_id));
+                  sessionStorage.setItem("pending_digital_order_time", Date.now().toString());
+                } catch (e) {}
+              }
               clearCartOnOrderSuccess(dispatch, queryClient, storeId);
               const payment_platform = "web";
               const callBackUrl = `${window.location.origin}/order-success?order_id=${response?.data?.order_id}&payment_method=${paymentMethod}`;

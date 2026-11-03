@@ -15,6 +15,7 @@ import {
 } from "redux/slices/categoryIds";
 import CategoryMobilePageBar from "./CategoryMobilePageBar";
 import TabbedSectionResult from "components/home/section-page/TabbedSectionResult";
+import { isAllProductsCategory } from "utils/categoryOrder";
 
 const TAB_ALL = "all";
 const TAB_ITEMS = "items";
@@ -107,6 +108,13 @@ const CategoryPageContent = () => {
     return matched?.id ? String(matched.id) : (slug || undefined);
   }, [rawId, slug, categoriesResponse]);
 
+  const isAllProducts = useMemo(() => {
+    if (slug === "all-products") return true;
+    if (id && isAllProductsCategory(id)) return true;
+    if (rawId && isAllProductsCategory(rawId)) return true;
+    return false;
+  }, [id, slug, rawId]);
+
   const q = typeof router.query.q === "string" ? router.query.q.trim() : "";
   const moduleParam =
     typeof router.query.module === "string" ? router.query.module : undefined;
@@ -124,11 +132,12 @@ const CategoryPageContent = () => {
   }, [categoriesResponse, id]);
 
   const currentCategoryName = useMemo(() => {
+    if (isAllProducts) return t("All Products");
     const cats = categoriesResponse?.data ?? [];
     const allCats = cats.flatMap((c) => [c, ...(c?.childes ?? [])]);
     const currentCat = allCats.find((c) => String(c?.id) === String(id));
     return currentCat?.name || "";
-  }, [categoriesResponse, id]);
+  }, [categoriesResponse, id, isAllProducts, t]);
 
   const breadcrumbItems = useMemo(() => {
     const homeHref = moduleParam ? `/home?module=${moduleParam}` : "/home";
@@ -145,6 +154,10 @@ const CategoryPageContent = () => {
         onRedirect: homeHref,
       },
     ];
+    if (isAllProducts) {
+      items.push({ key: "current-category", label: t("All Products") });
+      return items;
+    }
     const cats = categoriesResponse?.data ?? [];
     let parent = null;
     for (const cat of cats) {
@@ -168,16 +181,22 @@ const CategoryPageContent = () => {
       items.push({ key: "current-category", label: currentCategoryName });
     }
     return items;
-  }, [categoriesResponse, id, moduleParam, currentCategoryName, t]);
+  }, [categoriesResponse, id, moduleParam, currentCategoryName, isAllProducts, t]);
 
   // Init Redux with category id
   useEffect(() => {
-    if (!router.isReady || !id) return;
+    if (!router.isReady) return;
+    if (isAllProducts) {
+      dispatch(setSelectedCategories([]));
+      dispatch(setStoreSelectedItems([]));
+      return;
+    }
+    if (!id) return;
     const parsedId = Number(id);
     const ids = Number.isFinite(parsedId) ? [parsedId] : [];
     dispatch(setSelectedCategories(ids));
     dispatch(setStoreSelectedItems(ids));
-  }, [router.isReady, id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [router.isReady, id, isAllProducts]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubCatClick = (subId) => {
     const next = activeSubCatId === subId ? null : subId;
@@ -209,18 +228,20 @@ const CategoryPageContent = () => {
   const isAllTab = activeTab === TAB_ALL;
   const isItemsTab = activeTab === TAB_ITEMS;
   const isStoresTab = activeTab === TAB_STORES;
-  const isReady = router.isReady && !!id;
+  const isReady = router.isReady && (isAllProducts || !!id);
 
   const selectedCategoriesIds = activeSubCatId
     ? [activeSubCatId]
+    : isAllProducts
+    ? []
     : id
     ? [Number(id)]
     : [];
 
   const baseParams = {
-    data_type: q ? "searched" : "category",
+    data_type: q ? "searched" : isAllProducts ? "all" : "category",
     searchValue: q || "",
-    category_id: id,
+    category_id: isAllProducts ? undefined : id,
     selectedCategoriesIds,
     selectedBrands: [],
     offset: 0,

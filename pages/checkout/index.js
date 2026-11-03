@@ -19,6 +19,8 @@ import { getServerSideProps } from "../index";
 import { getImageUrl } from "utils/CustomFunctions";
 import useScrollToTop from "api-manage/hooks/custom-hooks/useScrollToTop";
 import { setConfigData } from "redux/slices/configData";
+import { useGetFailedPayment } from "../../src/api-manage/hooks/react-query/useGetFailedPayment";
+import { getToken } from "../../src/helper-functions/getToken";
 import { useGetConfigData } from "../../src/api-manage/hooks/useGetConfigData";
 import useGetLandingPage from "../../src/api-manage/hooks/react-query/useGetLandingPage";
 import AccountLanguageButton from "../../src/components/header/second-navbar/account-popover/AccountLanguageButton";
@@ -113,6 +115,62 @@ const CheckOutPage = () => {
       })
     : moduleCartList;
   const cartList = (filteredCartList && filteredCartList.length > 0) ? filteredCartList : moduleCartList;
+  const token = getToken();
+  const { refetch: refetchFailedPayment } = useGetFailedPayment("", (res) => {
+    if (res?.order_id && (!cartList || cartList.length === 0) && page === "cart") {
+      router.replace({
+        pathname: "/order-success",
+        query: { order_id: res.order_id, flag: "cancel" },
+      });
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (cartList && cartList.length > 0) return;
+    if (page !== "cart") return;
+
+    // 1. Check sessionStorage for pending order from current session (browser back button)
+    const pendingOrderId = sessionStorage.getItem("pending_digital_order_id");
+    if (pendingOrderId) {
+      router.replace({
+        pathname: "/order-success",
+        query: { order_id: pendingOrderId, flag: "cancel" },
+      });
+      return;
+    }
+
+    // 2. Check localStorage lastPlacedOrder if recent (<30 mins) and unpaid
+    try {
+      const raw = localStorage.getItem("lastPlacedOrder");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const orderTime = parsed?.created_at ? new Date(parsed.created_at).getTime() : 0;
+        const isRecent = Date.now() - orderTime < 30 * 60 * 1000;
+        if (
+          isRecent &&
+          parsed?.order_id &&
+          parsed?.payment_method !== "cash_on_delivery" &&
+          parsed?.payment_method !== "wallet" &&
+          parsed?.payment_status === "unpaid"
+        ) {
+          router.replace({
+            pathname: "/order-success",
+            query: { order_id: parsed.order_id, flag: "cancel" },
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Error reading lastPlacedOrder on checkout:", e);
+    }
+
+    // 3. For logged-in users, query backend for any unpaid order
+    if (token) {
+      refetchFailedPayment();
+    }
+  }, [cartList, page, router, token]);
+
   const { data: dataConfig, refetch: configRefetch } = useGetConfigData();
   useEffect(() => {
     if (!configData) {

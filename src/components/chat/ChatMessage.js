@@ -64,37 +64,25 @@ const ChatMessage = (props) => {
 		userType = conversationData?.conversation?.receiver?.id;
 	}
 	const nameHandler = () => {
+		const senderFName = conversationData?.conversation?.sender?.f_name || "";
+		const senderLName = conversationData?.conversation?.sender?.l_name || "";
+		const senderFullName = `${senderFName} ${senderLName}`.trim();
+
+		const receiverFName = conversationData?.conversation?.receiver?.f_name || "";
+		const receiverLName = conversationData?.conversation?.receiver?.l_name || "";
+		const receiverFullName = `${receiverFName} ${receiverLName}`.trim();
+
 		if (conversationData?.conversation?.sender_type === "customer") {
 			if (authorType === userType) {
-				return conversationData?.conversation?.sender?.f_name.concat(
-					" ",
-					conversationData?.conversation?.sender?.l_name
-				);
+				return senderFullName || "Me";
 			} else {
-				if (conversationData?.conversation?.receiver?.f_name) {
-					return conversationData?.conversation?.receiver?.f_name.concat(
-						" ",
-						conversationData?.conversation?.receiver?.l_name
-					);
-				} else {
-					return configData?.business_name;
-				}
+				return receiverFullName || configData?.business_name || "Admin";
 			}
 		} else {
 			if (authorType === userType) {
-				return (
-					conversationData?.conversation?.receiver?.f_name.concat(
-						" ",
-						conversationData?.conversation?.receiver?.l_name
-					) || " "
-				);
+				return receiverFullName || configData?.business_name || "Admin";
 			} else {
-				return (
-					conversationData?.conversation?.sender?.f_name.concat(
-						" ",
-						conversationData?.conversation?.sender?.l_name
-					) || " "
-				);
+				return senderFullName || " ";
 			}
 		}
 	};

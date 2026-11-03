@@ -69,8 +69,21 @@ export function persistBranchSelection(branchSlug, lat, lng, zoneId) {
 
   try {
     const slug = "blaban";
-    document.cookie = "selectedBranch=" + slug + "; path=/; max-age=604800; SameSite=Lax";
-    localStorage.setItem("selectedBranch", slug);
+    document.cookie = "storeSlug=" + slug + "; path=/; max-age=604800; SameSite=Lax";
+    // Preserve selectedBranch in localStorage if it holds a branch JSON object
+    const existing = localStorage.getItem("selectedBranch");
+    let isBranchObj = false;
+    if (existing) {
+      try {
+        const parsed = JSON.parse(existing);
+        if (parsed && typeof parsed === "object" && parsed.id) {
+          isBranchObj = true;
+        }
+      } catch (_) {}
+    }
+    if (!existing && !isBranchObj) {
+      // Do not overwrite selectedBranch
+    }
     if (lat != null && lng != null) {
       const coords = { lat: Number(lat), lng: Number(lng) };
       localStorage.setItem("currentLatLng", JSON.stringify(coords));

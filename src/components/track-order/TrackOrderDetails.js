@@ -71,7 +71,9 @@ const TrackOrderDetails = ({
 					<AddBusinessIcon color="primary" />
 					<Typography fontSize="12px">
 						{trackOrderData?.module_type !== "parcel"
-							? trackOrderData?.store?.name
+							? (trackOrderData?.branch_name
+								? `${trackOrderData?.store?.name || "B.Laban"} (${trackOrderData.branch_name})`
+								: trackOrderData?.store?.name)
 							: trackOrderData?.receiver_details?.address}
 					</Typography>
 				</Stack>
@@ -86,7 +88,13 @@ const TrackOrderDetails = ({
 				>
 					<PlaceIcon color="primary" />
 					<Typography fontSize="12px">
-						{trackOrderData?.delivery_address?.address}
+						{trackOrderData?.order_type === "take_away"
+							? (trackOrderData?.branch_name
+								? (trackOrderData?.delivery_address?.address && trackOrderData.delivery_address.address.includes(trackOrderData.branch_name)
+									? trackOrderData.delivery_address.address
+									: `${trackOrderData.branch_name}${trackOrderData?.delivery_address?.address ? ` - ${trackOrderData.delivery_address.address}` : ""}`)
+								: trackOrderData?.delivery_address?.address || "—")
+							: trackOrderData?.delivery_address?.address || "—"}
 					</Typography>
 				</Stack>
 				<Button

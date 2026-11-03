@@ -154,8 +154,12 @@ const Chatting = ({ configData }) => {
 			setChannelId("admin");
 			setScrollBottom(true);
 			setReceiverType(value.receiver_type);
-			// setReceiverName(configData.business_name);
-			setReceiverImage(value?.receiver?.image_full_url);
+			setReceiverName(
+				value?.receiver?.f_name || configData?.business_name || "Admin"
+			);
+			setReceiverImage(
+				value?.receiver?.image_full_url || configData?.logo_full_url
+			);
 			setReceiver(value);
 			setIsSidebarOpen(false);
 		} else {
@@ -163,7 +167,7 @@ const Chatting = ({ configData }) => {
 			setChannelId(value.id);
 			setScrollBottom(true);
 			setReceiverType(value.receiver_type);
-			setReceiverName(value.receiver.f_name);
+			setReceiverName(value?.receiver?.f_name || "");
 			setReceiverImage(value?.receiver?.image_full_url);
 			setReceiver(value);
 			setIsSidebarOpen(false);

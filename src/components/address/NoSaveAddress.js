@@ -1,9 +1,8 @@
 import React from "react";
 import { CustomStackFullWidth } from "../../styled-components/CustomStyles.style";
-import { Typography } from "@mui/material";
+import { Typography, useTheme } from "@mui/material";
 import { t } from "i18next";
 import { Stack } from "@mui/system";
-import { useTheme } from "@emotion/react";
 
 const NoSaveAddress = ({ title, descriptions, image }) => {
   const theme = useTheme();
@@ -19,7 +18,7 @@ const NoSaveAddress = ({ title, descriptions, image }) => {
           <Typography
             fontWeight="600"
             fontSize="16px"
-            color={theme.palette.neutral[1000]}
+            color={theme?.palette?.neutral?.[1000] || "inherit"}
           >
             {t(title)}
           </Typography>

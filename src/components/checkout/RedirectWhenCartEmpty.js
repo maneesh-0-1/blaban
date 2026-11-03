@@ -44,6 +44,32 @@ const RedirectWhenCartEmpty = ({
     if (cartListCookie === "1") return;
     if (page === "cart" && cartListCookie == null) return;
 
+    // If there is a pending digital order being resolved, do not redirect to home
+    const hasPendingOrder =
+      typeof window !== "undefined" &&
+      (Boolean(sessionStorage.getItem("pending_digital_order_id")) ||
+        (() => {
+          try {
+            const raw = localStorage.getItem("lastPlacedOrder");
+            if (!raw) return false;
+            const parsed = JSON.parse(raw);
+            const isRecent =
+              parsed?.created_at &&
+              Date.now() - new Date(parsed.created_at).getTime() < 30 * 60 * 1000;
+            return (
+              isRecent &&
+              Boolean(parsed?.order_id) &&
+              parsed?.payment_status === "unpaid" &&
+              parsed?.payment_method !== "cash_on_delivery" &&
+              parsed?.payment_method !== "wallet"
+            );
+          } catch (e) {
+            return false;
+          }
+        })());
+
+    if (hasPendingOrder) return;
+
     const timer = setTimeout(() => {
       if (cartList && cartList?.length === 0 && page === "cart") {
         router.push(targetPath);

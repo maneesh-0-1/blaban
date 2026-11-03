@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 
 import Router from "next/router";
 import { useDispatch, useSelector } from "react-redux";
-import { setClearCart } from "redux/slices/cart";
+import { setClearCart, setCartList } from "redux/slices/cart";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { toast } from "react-hot-toast";
@@ -149,6 +149,12 @@ const CheckoutFailedCard = ({
       {
         onSuccess: (response) => {
           toast.success(response?.data?.message || t("Order canceled successfully"));
+          if (typeof window !== "undefined") {
+            try {
+              sessionStorage.removeItem("pending_digital_order_id");
+              sessionStorage.removeItem("pending_digital_order_time");
+            } catch (e) {}
+          }
           clearCartOnOrderSuccess(dispatch, queryClient);
           setOpenModal(false);
           refetchTrackData?.();
@@ -178,6 +184,12 @@ const CheckoutFailedCard = ({
           toast.success(
             response?.data?.message || t("Switched to Cash On Delivery")
           );
+          if (typeof window !== "undefined") {
+            try {
+              sessionStorage.removeItem("pending_digital_order_id");
+              sessionStorage.removeItem("pending_digital_order_time");
+            } catch (e) {}
+          }
           clearCartOnOrderSuccess(dispatch, queryClient);
           setOpenModal(false);
           refetchTrackData?.();
@@ -192,6 +204,41 @@ const CheckoutFailedCard = ({
     } else {
       toast.error(cod_exceeds_message);
     }
+  };
+
+  const handleCancelAndRestoreCart = () => {
+    cancelMutate(
+      { ...formData, reason: "Order canceled by customer to modify cart" },
+      {
+        onSuccess: (response) => {
+          toast.success(t("Order canceled. Restoring your cart..."));
+          if (typeof window !== "undefined") {
+            try {
+              sessionStorage.removeItem("pending_digital_order_id");
+              sessionStorage.removeItem("pending_digital_order_time");
+              const raw = localStorage.getItem("lastPlacedOrder");
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed?.items && Array.isArray(parsed.items) && parsed.items.length > 0) {
+                  dispatch(setCartList(parsed.items));
+                  localStorage.setItem("cartList", JSON.stringify(parsed.items));
+                  document.cookie = "cart-list=1; path=/; max-age=31536000";
+                }
+              }
+            } catch (e) {
+              console.error("Error restoring cart:", e);
+            }
+          }
+          setOpenModal(false);
+          refetchTrackData?.();
+          handleOrderDetailsClose?.();
+          Router.push("/checkout");
+        },
+        onError: (err) => {
+          onErrorResponse(err);
+        },
+      }
+    );
   };
 
   return (
@@ -279,7 +326,7 @@ const CheckoutFailedCard = ({
               {t("Pay Now")}
             </Button>
           ) : null}
-          {failPayment?.cash_on_delivery && (
+          {(failPayment?.cash_on_delivery ?? true) && (
             <LoadingButton
               loading={orderLoading}
               variant="contained"
@@ -290,6 +337,18 @@ const CheckoutFailedCard = ({
               {t("Switch to Cash On Delivery")}
             </LoadingButton>
           )}
+          <LoadingButton
+            sx={{
+              maxWidth: "250px",
+            }}
+            variant="outlined"
+            color="primary"
+            fullWidth
+            onClick={() => handleCancelAndRestoreCart()}
+            loading={cancelLoading}
+          >
+            {t("Cancel & Restore Cart")}
+          </LoadingButton>
           <LoadingButton
             sx={{
               maxWidth: "250px",

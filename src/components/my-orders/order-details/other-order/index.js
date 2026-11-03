@@ -169,6 +169,7 @@ const OtherOrder = (props) => {
             {data && data.module_type !== "parcel" && (
               <StoreDetails
                 storeData={trackOrderData?.store}
+                branchName={trackOrderData?.branch_name}
                 configData={configData}
                 t={t}
               />

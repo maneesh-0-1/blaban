@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { alpha, Paper, styled, Typography } from "@mui/material";
+import { alpha, Paper, styled, Typography, Tooltip } from "@mui/material";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   CustomPaperBigCard,
   CustomStackFullWidth,
@@ -74,7 +76,7 @@ const AddressCard = (props) => {
           justifyContent="space-between"
           padding={{ xs: "4px 20px", md: "8px 20px" }}
           sx={{
-            background: (theme) => alpha(theme.palette.info.contrastText1, 0.3),
+            background: (theme) => alpha(theme?.palette?.info?.contrastText1 || "#F5F6F8", 0.3),
             borderRadius: "5px 5px 0px 0px",
           }}
         >

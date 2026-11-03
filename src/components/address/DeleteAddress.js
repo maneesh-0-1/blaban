@@ -50,11 +50,11 @@ const DeleteAddress = ({ open, handleClose, addressId, refetch }) => {
             >
               <Button
                 sx={{
-                  backgroundColor: (theme) => theme.palette.neutral[300],
-                  color: (theme) => theme.palette.neutral[1000],
+                  backgroundColor: (theme) => theme?.palette?.neutral?.[300] || "#ccc",
+                  color: (theme) => theme?.palette?.neutral?.[1000] || "#000",
                   width: "120px",
                   "&:hover": {
-                    backgroundColor: (theme) => theme.palette.neutral[400],
+                    backgroundColor: (theme) => theme?.palette?.neutral?.[400] || "#bbb",
                   },
                 }}
                 onClick={handleClose}
@@ -64,11 +64,11 @@ const DeleteAddress = ({ open, handleClose, addressId, refetch }) => {
               <LoadingButton
                 loading={isLoading}
                 sx={{
-                  background: (theme) => theme.palette.error.light,
+                  background: (theme) => theme?.palette?.error?.light || "#e57373",
                   color: "white",
                   width: "120px",
                   "&:hover": {
-                    backgroundColor: (theme) => theme.palette.error.dark,
+                    backgroundColor: (theme) => theme?.palette?.error?.dark || "#d32f2f",
                   },
                 }}
                 onClick={() => deleteAddress()}

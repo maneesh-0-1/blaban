@@ -104,14 +104,8 @@ const ConversationInfoTop = ({
                     fontWeight="600"
                   >
                     {receiver?.sender_type === "customer"
-                      ? receiver?.receiver?.f_name.concat(
-                          " ",
-                          receiver?.receiver?.l_name
-                        ) || " "
-                      : receiver?.sender?.f_name.concat(
-                          " ",
-                          receiver?.sender?.l_name
-                        ) || " "}
+                      ? `${receiver?.receiver?.f_name || ""} ${receiver?.receiver?.l_name || ""}`.trim() || " "
+                      : `${receiver?.sender?.f_name || ""} ${receiver?.sender?.l_name || ""}`.trim() || " "}
                   </Typography>
                   {receiverType === "vendor" && (
                     <VerifiedStoreBadge

@@ -157,8 +157,13 @@ const AddAddressComponent = ({
   };
   const [zoomToLocationToken, setZoomToLocationToken] = useState(0);
   const getCurrentLocation = () => {
-    setLocation({ lat: coords.latitude, lng: coords.longitude });
-    setZoomToLocationToken((prev) => prev + 1);
+    if (coords?.latitude && coords?.longitude) {
+      setLocation({ lat: coords.latitude, lng: coords.longitude });
+      setLocationEnabled(true);
+      setZoomToLocationToken((prev) => prev + 1);
+    } else {
+      getPosition?.();
+    }
   };
 
   return (

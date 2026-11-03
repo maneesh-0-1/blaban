@@ -83,10 +83,9 @@ const ContactLists = ({
 					messageTime={item.last_message_time}
 					last_message={item?.last_message}
 					receiver={
-						item?.sender?.f_name.concat(
-							" ",
-							item?.sender?.l_name
-						) || " "
+						item?.sender?.f_name
+							? `${item.sender.f_name} ${item?.sender?.l_name || ""}`.trim()
+							: " "
 					}
 					unRead={item.unread_message_count}
 					userList={item}

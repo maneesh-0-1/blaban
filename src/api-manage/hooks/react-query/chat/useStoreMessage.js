@@ -7,10 +7,14 @@ const storeData = async (cData) => {
 
   let formData = new FormData();
 
-  formData.append(
-    receiverId ? "receiver_id" : "conversation_id",
-    id === "admin" ? 0 : id
-  );
+  if (id && id !== "admin") {
+    formData.append(
+      receiverId ? "receiver_id" : "conversation_id",
+      id
+    );
+  } else if (receiverId) {
+    formData.append("receiver_id", receiverId);
+  }
   if (text === "") {
     file.forEach((file) => {
       formData.append("image[]", file);

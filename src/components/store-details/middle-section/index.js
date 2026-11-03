@@ -228,13 +228,9 @@ const MiddleSection = (props) => {
 
   const [revealedCategories, setRevealedCategories] = useState({});
 
-  const handleSelectCategoryTab = (categoryId) => {
-    const key = categoryId == null ? (categoryList[0]?.id ? String(categoryList[0].id) : "") : String(categoryId);
-    setSelectedCategoryTabId(categoryId);
-    if (key) {
-      setRevealedCategories((prev) => ({ ...prev, [key]: true }));
-    }
-    const node = sectionRefs.current[key];
+  const performScrollToCategory = (targetKey) => {
+    if (!targetKey) return false;
+    const node = sectionRefs.current[targetKey];
     if (node) {
       // Page header + sub-nav (~110px) + sticky toolbar (~70px) ≈ 180px, +10px breathing
       const offset = 190;
@@ -247,6 +243,28 @@ const MiddleSection = (props) => {
       programmaticScrollTimeoutRef.current = setTimeout(() => {
         programmaticScrollRef.current = false;
       }, 800);
+      return true;
+    }
+    return false;
+  };
+
+  const handleSelectCategoryTab = (categoryId) => {
+    // If search is active, clear search so category sections appear immediately
+    if (searchInputValue || state.searchKey) {
+      handleSearchResult("");
+    }
+    setViewAllProducts(false);
+
+    const key = categoryId == null ? (categoryList[0]?.id ? String(categoryList[0].id) : "") : String(categoryId);
+    setSelectedCategoryTabId(categoryId);
+    if (key) {
+      setRevealedCategories((prev) => ({ ...prev, [key]: true }));
+    }
+
+    if (!performScrollToCategory(key)) {
+      pendingScrollCategoryRef.current = key;
+    } else {
+      pendingScrollCategoryRef.current = null;
     }
   };
 
@@ -526,30 +544,35 @@ const MiddleSection = (props) => {
 
   // categoriesLoading kept for the CategoryTabs skeleton; mirrors the items
   // loading state since both come from the same request now.
-  // Auto-scroll to selected category if it was pending on a subsequent page fetch
+  // Auto-scroll to selected category if it was pending (e.g. after exiting search/all-products, or subsequent page fetch)
   useEffect(() => {
-    if (pendingScrollCategoryRef.current) {
+    if (pendingScrollCategoryRef.current && !isSearchActive && !viewAllProducts) {
       const targetKey = pendingScrollCategoryRef.current;
-      const node = sectionRefs.current[targetKey];
-      if (node) {
-        pendingScrollCategoryRef.current = null;
-        const offset = 190;
-        const top = node.getBoundingClientRect().top + window.scrollY - offset;
-        programmaticScrollRef.current = true;
-        if (programmaticScrollTimeoutRef.current) {
-          clearTimeout(programmaticScrollTimeoutRef.current);
+      const timer = setTimeout(() => {
+        if (performScrollToCategory(targetKey)) {
+          pendingScrollCategoryRef.current = null;
+        } else if (hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        } else {
+          requestAnimationFrame(() => {
+            if (performScrollToCategory(targetKey)) {
+              pendingScrollCategoryRef.current = null;
+            }
+          });
         }
-        window.scrollTo({ top, behavior: "smooth" });
-        programmaticScrollTimeoutRef.current = setTimeout(() => {
-          programmaticScrollRef.current = false;
-        }, 800);
-      } else if (hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      } else {
-        pendingScrollCategoryRef.current = null;
-      }
+      }, 60);
+      return () => clearTimeout(timer);
     }
-  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [
+    data,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isSearchActive,
+    viewAllProducts,
+    selectedCategoryTabId,
+    sections,
+  ]);
 
   const categoriesLoading = isLoading;
 
@@ -858,6 +881,7 @@ const MiddleSection = (props) => {
     setOffset(1);
     dispatch({ type: ACTION.setOffSet, payload: 1 });
     if (value && value !== "") {
+      setViewAllProducts(false);
       dispatch({ type: ACTION.setSearchKey, payload: value });
       dispatch({ type: ACTION.setMinMax, payload: [0, 1] });
     } else {
@@ -952,7 +976,12 @@ const MiddleSection = (props) => {
                     isLoading={categoriesLoading && categoryList.length === 0}
                     viewAllProducts={viewAllProducts}
                     onToggleAllProducts={() => {
-                      setViewAllProducts((prev) => !prev);
+                      if (searchInputValue || state.searchKey) {
+                        handleSearchResult("");
+                        setViewAllProducts(true);
+                      } else {
+                        setViewAllProducts((prev) => !prev);
+                      }
                       setSelectedCategoryTabId(null);
                     }}
                   />

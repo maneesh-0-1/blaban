@@ -8,6 +8,7 @@ import {
   styled,
   Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Box, Stack } from "@mui/system";
 import CustomEmptyResult from "../custom-empty-result";
@@ -17,14 +18,13 @@ import AddressCard from "./address-card";
 import { useDispatch, useSelector } from "react-redux";
 import { t } from "i18next";
 import { SmallDeviceIconButton } from "../profile/basic-information";
-import { useTheme } from "@emotion/react";
 import { setAllSaveAddress } from "redux/slices/storedData";
 
 export const GrayButton = styled(Button)(({ theme }) => ({
-  color: theme.palette.primary.main,
+  color: theme?.palette?.primary?.main || "inherit",
   fontSize: "12px",
   border: "1px solid",
-  borderColor: theme.palette.primary.main,
+  borderColor: theme?.palette?.primary?.main || "currentColor",
   borderRadius: "5px",
 }));
 const Address = (props) => {
@@ -40,7 +40,7 @@ const Address = (props) => {
   const { AllSaveAddress } = useSelector((state) => state.storedData);
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
+  const isSmall = useMediaQuery(theme?.breakpoints?.down ? theme.breakpoints.down("md") : "(max-width:900px)");
   const { openAddressModal } = useSelector((state) => state.addressModel);
 
   const [edit, setEdit] = useState(null);
@@ -113,19 +113,19 @@ const Address = (props) => {
                 fontSize: "48px",
                 lineHeight: 1,
                 display: "flex",
-                color: theme.palette.neutral[300],
+                color: theme?.palette?.neutral?.[300] || "#ccc",
               }}
             />
             <Typography
               fontSize="16px"
               fontWeight="600"
-              color={theme.palette.neutral[500]}
+              color={theme?.palette?.neutral?.[500] || "text.secondary"}
             >
               {t("No Address Found")}
             </Typography>
             <Typography
               fontSize="13px"
-              color={theme.palette.neutral[400]}
+              color={theme?.palette?.neutral?.[400] || "text.disabled"}
               textAlign="center"
             >
               {t("You have not added any address yet.")}
