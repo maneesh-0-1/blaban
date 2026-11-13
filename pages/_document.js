@@ -11,8 +11,8 @@ class CustomDocument extends Document {
       <Html lang="en" suppressHydrationWarning>
         <Head>
           {/* API backend preconnect to eliminate DNS and TLS handshake latency */}
-          <link rel="preconnect" href="https://admin.blabankw.com" />
-          <link rel="dns-prefetch" href="https://admin.blabankw.com" />
+          <link rel="preconnect" href="https://admin.wh1554774.ispot.cc" />
+          <link rel="dns-prefetch" href="https://admin.wh1554774.ispot.cc" />
 
           {/* Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />

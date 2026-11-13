@@ -91,11 +91,11 @@ const nextConfig = {
       },
       {
         source: '/backend-api/api/:path*',
-        destination: 'https://admin.blabankw.com/api/:path*',
+        destination: `${(process.env.NEXT_PUBLIC_BASE_URL || 'https://admin.wh1554774.ispot.cc').replace(/\/+$/, '')}/api/:path*`,
       },
       {
         source: '/backend-api/:path*',
-        destination: 'https://admin.blabankw.com/api/:path*',
+        destination: `${(process.env.NEXT_PUBLIC_BASE_URL || 'https://admin.wh1554774.ispot.cc').replace(/\/+$/, '')}/api/:path*`,
       },
     ];
   },

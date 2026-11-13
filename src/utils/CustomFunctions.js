@@ -1342,7 +1342,7 @@ export const handleFailedOrderPlace = ({
     const page = "my-orders";
     const callBackUrl = `${window.location.origin}/profile?page=${page}`;
     const paymentBaseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL || "https://admin.blabankw.com";
+      process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc";
     const url = `${paymentBaseUrl}/payment-mobile?order_id=${orderId}&customer_id=${profileInfo?.id}&payment_platform=${payment_platform}&callback=${callBackUrl}&payment_method=${paymentMethod}`;
 
     window.location.href = url;

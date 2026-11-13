@@ -5,7 +5,8 @@ export const config = {
 export default async function handler(req) {
   try {
     const url = new URL(req.url);
-    const backendUrl = new URL('https://admin.blabankw.com/api/v1/categories');
+    const base = (process.env.NEXT_PUBLIC_BASE_URL || 'https://admin.wh1554774.ispot.cc').replace(/\/+$/, '');
+    const backendUrl = new URL(`${base}/api/v1/categories`);
 
     // Language handling
     const rawLang = url.searchParams.get('locale') || url.searchParams.get('lang') || req.headers.get('x-localization') || '';
