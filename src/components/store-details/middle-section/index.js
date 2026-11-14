@@ -730,7 +730,7 @@ const MiddleSection = (props) => {
         image:
           cat?.image_full_url ||
           (cat?.image
-            ? `${configData?.base_urls?.category_image_url || `${(process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc").replace(/\/+$/, "")}/storage/app/public/category`}/${cat.image}`
+            ? `${configData?.base_urls?.category_image_url || `${(process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com").replace(/\/+$/, "")}/storage/app/public/category`}/${cat.image}`
             : null),
         items,
       };
@@ -1235,7 +1235,7 @@ const MiddleSection = (props) => {
                           section.image ||
                           section.items?.[0]?.image_full_url ||
                           (section.items?.[0]?.image
-                            ? `${(process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc").replace(/\/+$/, "")}/storage/app/public/product/${section.items[0].image}`
+                            ? `${(process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com").replace(/\/+$/, "")}/storage/app/public/product/${section.items[0].image}`
                             : null);
 
                         return (

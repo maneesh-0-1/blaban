@@ -5,7 +5,7 @@ import { getCleanToken, isValidToken } from "../helper-functions/getToken";
 export const baseUrl =
   typeof window !== "undefined"
     ? "/backend-api"
-    : (process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc").replace(/\/+$/, "");
+    : (process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com").replace(/\/+$/, "");
 const MainApi = axios.create({
   baseURL: baseUrl,
 });

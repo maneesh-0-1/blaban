@@ -5,7 +5,7 @@ export const config = {
 export default async function handler(req) {
   try {
     const url = new URL(req.url);
-    const base = (process.env.NEXT_PUBLIC_BASE_URL || 'https://admin.wh1554774.ispot.cc').replace(/\/+$/, '');
+    const base = (process.env.NEXT_PUBLIC_BASE_URL || 'https://admin.domains4gulf.com').replace(/\/+$/, '');
     const backendUrl = new URL(`${base}/api/v1/store-categories/items`);
 
     // Language handling

@@ -273,7 +273,7 @@ const CategoryShowcase = ({
               const imageUrl =
                 cat?.image_full_url ||
                 (cat?.image
-                  ? `${(process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc").replace(/\/+$/, "")}/storage/app/public/category/${cat.image}`
+                  ? `${(process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com").replace(/\/+$/, "")}/storage/app/public/category/${cat.image}`
                   : null);
 
               return (

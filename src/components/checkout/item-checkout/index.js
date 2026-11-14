@@ -1015,7 +1015,7 @@ if (prescriptionImages?.length > 0) {
                 }
                 clearCartOnOrderSuccess(dispatch, queryClient, storeId);
                 const paymentBaseUrl =
-                  process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc";
+                  process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com";
                 const callBackUrl = `${window.location.origin}/order-success?order_id=${response?.data?.order_id}&payment_method=${paymentMethod}`;
                 const resolvedCustomerId =
                   response?.data?.user_id ||
@@ -1094,7 +1094,7 @@ if (prescriptionImages?.length > 0) {
               const payment_platform = "web";
               const callBackUrl = `${window.location.origin}/order-success?order_id=${response?.data?.order_id}&payment_method=${paymentMethod}`;
               const paymentBaseUrl =
-                process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc";
+                process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com";
               const resolvedCustomerId =
                 response?.data?.user_id ||
                 customerData?.data?.id ||

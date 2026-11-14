@@ -497,7 +497,7 @@ const ParcelCheckout = () => {
             localStorage.setItem("totalAmount", res?.total_ammount);
             const callBackUrl = `${window.location.origin}/order-success?order_id=${res?.order_id}&payment_method=${paymentMethod}`;
             const paymentBaseUrl =
-              process.env.NEXT_PUBLIC_BASE_URL || "https://admin.wh1554774.ispot.cc";
+              process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com";
             const resolvedCustomerId =
               res?.user_id || profileInfo?.id || guest_id;
             const url = `${paymentBaseUrl}/payment-mobile?order_id=${

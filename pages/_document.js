@@ -1,4 +1,4 @@
-﻿import { Children } from "react";
+import { Children } from "react";
 import Document, { Head, Html, Main, NextScript } from "next/document";
 import createEmotionServer from "@emotion/server/create-instance";
 import createEmotionCache from "../src/utils/create-emotion-cache";
@@ -11,8 +11,8 @@ class CustomDocument extends Document {
       <Html lang="en" suppressHydrationWarning>
         <Head>
           {/* API backend preconnect to eliminate DNS and TLS handshake latency */}
-          <link rel="preconnect" href="https://admin.wh1554774.ispot.cc" />
-          <link rel="dns-prefetch" href="https://admin.wh1554774.ispot.cc" />
+          <link rel="preconnect" href="https://admin.domains4gulf.com" />
+          <link rel="dns-prefetch" href="https://admin.domains4gulf.com" />
 
           {/* Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
