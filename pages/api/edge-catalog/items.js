@@ -24,9 +24,9 @@ export default async function handler(req) {
     backendUrl.searchParams.delete(k);
   });
 
-  // Enforce a safe page limit (max 30) to prevent upstream database timeouts
-  const rawLimit = parseInt(backendUrl.searchParams.get('limit') || '30', 10);
-  const safeLimit = isNaN(rawLimit) || rawLimit <= 0 ? 30 : Math.min(rawLimit, 30);
+  // Allow full catalog fetch (up to 250) so all products load directly without late loading or pagination spinners
+  const rawLimit = parseInt(backendUrl.searchParams.get('limit') || '200', 10);
+  const safeLimit = isNaN(rawLimit) || rawLimit <= 0 ? 200 : Math.min(rawLimit, 250);
   backendUrl.searchParams.set('limit', String(safeLimit));
 
   const headers = new Headers();

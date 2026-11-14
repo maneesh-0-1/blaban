@@ -343,8 +343,8 @@ const MiddleSection = (props) => {
     };
   }, []);
 
-  // Page size 30: fast response from upstream backend and avoids gateway timeouts
-  const limit = 30;
+  // Page size 200: loads all products directly on first paint without late loading or pagination spinners
+  const limit = 200;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {
@@ -1042,20 +1042,7 @@ const MiddleSection = (props) => {
               {/* Overlay loader while a filter / sort / category change is
                   fetching new items. Shown only when there's already data on
                   screen (we use the full shimmer for the first load). */}
-              {/* Non-blocking background loading indicator */}
-              {(isRefetching || isRefetchingSearch) && allStoreProducts.length > 0 && (
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    zIndex: 5,
-                    pointerEvents: "none",
-                  }}
-                >
-                  <DotSpin />
-                </Box>
-              )}
+              {/* Floating background loader removed to avoid late loading visual glitches */}
               {isLoading && allStoreProducts.length === 0 ? (
                 <Stack gap={4}>{handleShimmerProducts()}</Stack>
               ) : allStoreProducts.length === 0 &&
