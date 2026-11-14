@@ -341,7 +341,7 @@ const CategoryShowcase = ({
                       <img
                         src={imageUrl}
                         alt={cat?.name || "Category"}
-                        loading="lazy"
+                        loading="eager"
                         onError={(e) => {
                           e.target.style.display = "none";
                           if (e.target.nextSibling) {

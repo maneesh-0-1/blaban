@@ -246,7 +246,7 @@ const Top = ({
                   component="img"
                   src={imgSrc}
                   alt={item?.title || `Banner ${index + 1}`}
-                  loading={index === 0 ? "eager" : "lazy"}
+                  loading="eager"
                   sx={{
                     width: "100%",
                     height: "100%",

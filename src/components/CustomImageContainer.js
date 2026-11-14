@@ -1,4 +1,4 @@
-﻿import React, { memo, useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { CustomImageContainerStyled } from "styled-components/CustomStyles.style";
 import placeholder from "../../public/static/no-image-found.png";
 import { Box } from "@mui/system";
@@ -47,8 +47,8 @@ const CustomImageContainer = ({
     setState(resolveSafeSrc(src, alt));
   }, [src, alt]);
 
-  const effectiveLoading = priority ? "eager" : (loading || "lazy");
-  const effectiveFetchPriority = fetchpriority || (priority ? "high" : undefined);
+  const effectiveLoading = loading || "eager";
+  const effectiveFetchPriority = fetchpriority || "high";
 
   return (
     <CustomImageContainerStyled

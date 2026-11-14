@@ -5,29 +5,6 @@ import { useEffect, useState } from "react";
 import placeholder from "../../public/static/no-image-found.png";
 import { getFamilyImageFallback } from "helper-functions/CardHelpers";
 
-const shimmer = (w, h) => `
-<svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <linearGradient id="g">
-      <stop stop-color="#e5e4e4" offset="20%" />
-      <stop stop-color="#ddd" offset="50%" />
-      <stop stop-color="#e5e4e4" offset="70%" />
-    </linearGradient>
-  </defs>
-  <rect width="${w}" height="${h}" fill="#e5e4e4" />
-  <rect id="r" width="${w}" height="${h}" fill="url(#g)" />
-  <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite"  />
-</svg>`;
-
-const toBase64 = (str) =>
-  typeof window === "undefined"
-    ? Buffer.from(str).toString("base64")
-    : window.btoa(str);
-
-// `next/image` rejects anything that isn't absolute (http/https) or
-// root-relative ("/foo.png"). Some backend responses come back as a bare
-// filename like "2025-12-28-...webp" — surface those as the placeholder
-// instead of letting next/image throw "Failed to parse src ..." at runtime.
 const sanitizeSrc = (raw, fallback, alt) => {
   const family = getFamilyImageFallback(alt);
   if (!raw) return family || fallback;
@@ -49,9 +26,12 @@ const NextImage = ({
   alt = "Image",
   width,
   height,
-  objectFit,
+  objectFit = "cover",
   borderRadius,
   aspectRatio,
+  style: propStyle,
+  onLoad,
+  onError,
   ...props
 }) => {
   const [currentSrc, setCurrentSrc] = useState(sanitizeSrc(src, altSrc, alt));
@@ -60,18 +40,18 @@ const NextImage = ({
     setCurrentSrc(sanitizeSrc(src, altSrc, alt));
   }, [src, altSrc, alt]);
 
-  const handleError = () => {
+  const handleImgError = (e) => {
     if (altSrc && currentSrc !== altSrc) {
       setCurrentSrc(altSrc);
     }
+    if (onError) onError(e);
   };
 
-  // Conditionally create style object
   const style = {
     objectFit,
     borderRadius,
     aspectRatio,
-    ...props.style, // allow passing additional styles
+    ...propStyle,
   };
 
   return (
@@ -80,10 +60,11 @@ const NextImage = ({
       width={width}
       height={height}
       alt={alt}
-      onError={handleError}
-      placeholder={`data:image/svg+xml;base64,${toBase64(
-        shimmer(width, height)
-      )}`}
+      onError={handleImgError}
+      onLoad={onLoad}
+      loading="eager"
+      priority={true}
+      decoding="async"
       style={style}
       {...props}
     />

@@ -127,30 +127,18 @@ export const getLowToHigh = (data) => {
     return data;
   }
 };
-// ── LazySection: Defers hydration and rendering of below-the-fold catalog sections ──
-const LazySection = ({ children, sectionKey, sectionRefs, isPriority = false }) => {
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    rootMargin: "350px 0px",
-  });
-
+// ── CatalogSection: Renders all products directly and immediately ──
+const CatalogSection = ({ children, sectionKey, sectionRefs }) => {
   return (
-    <div
-      ref={ref}
-      style={{
-        minHeight: inView || isPriority ? "auto" : 350,
+    <Box
+      ref={(el) => {
+        if (sectionRefs?.current && sectionKey) {
+          sectionRefs.current[sectionKey] = el;
+        }
       }}
     >
-      <div
-        ref={(el) => {
-          if (sectionRefs?.current && sectionKey) {
-            sectionRefs.current[sectionKey] = el;
-          }
-        }}
-      >
-        {inView || isPriority ? children : null}
-      </div>
-    </div>
+      {children}
+    </Box>
   );
 };
 
@@ -173,7 +161,6 @@ const MiddleSection = (props) => {
     non_veg: false,
   });
   const [open, setOpen] = useState(false);
-  const [categoryList, setCategoryList] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
   const { t } = useTranslation();
   const { configData } = useSelector((state) => state.configData);
@@ -222,11 +209,6 @@ const MiddleSection = (props) => {
   // spy effect's closure.
   const categoryListRef = useRef([]);
   const pendingScrollCategoryRef = useRef(null);
-  useEffect(() => {
-    categoryListRef.current = categoryList;
-  }, [categoryList]);
-
-  const [revealedCategories, setRevealedCategories] = useState({});
 
   const performScrollToCategory = (targetKey) => {
     if (!targetKey) return false;
@@ -255,11 +237,8 @@ const MiddleSection = (props) => {
     }
     setViewAllProducts(false);
 
-    const key = categoryId == null ? (categoryList[0]?.id ? String(categoryList[0].id) : "") : String(categoryId);
+    const key = categoryId == null ? (categoryListRef.current[0]?.id ? String(categoryListRef.current[0].id) : "") : String(categoryId);
     setSelectedCategoryTabId(categoryId);
-    if (key) {
-      setRevealedCategories((prev) => ({ ...prev, [key]: true }));
-    }
 
     if (!performScrollToCategory(key)) {
       pendingScrollCategoryRef.current = key;
@@ -364,11 +343,8 @@ const MiddleSection = (props) => {
     };
   }, []);
 
-  // Infinite scroll removed for /store-categories/items: fetch a single
-  // large page instead of paging by offset. The search endpoint still uses
-  // the same `offset` state but the inView-driven bump effect below is
-  // also disabled, so neither path keeps requesting more.
-  const limit = 20;
+  // Fetch all store products in one fast request so products load instantly
+  const limit = 200;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {
@@ -581,11 +557,10 @@ const MiddleSection = (props) => {
   // isLoadingMore detects this "load more" case: loading but data already exists.
   const isLoadingMore = isLoading && (state.data?.products?.length ?? 0) > 0;
 
-  // Pull categories from all loaded pages. The /store-categories/items
-  // endpoint returns categories relevant to this store.
-  useEffect(() => {
+  // Pull categories synchronously from all loaded pages for instant rendering
+  const categoryList = useMemo(() => {
     const pages = data?.pages || [];
-    if (pages.length === 0) return;
+    if (pages.length === 0) return [];
     const catMap = new Map();
     pages.forEach((p) => {
       (p?.categories || []).forEach((c) => {
@@ -601,11 +576,12 @@ const MiddleSection = (props) => {
         });
       }
     });
-    const combined = Array.from(catMap.values());
-    if (combined.length > 0) {
-      setCategoryList(combined);
-    }
+    return Array.from(catMap.values());
   }, [data]);
+
+  useEffect(() => {
+    categoryListRef.current = categoryList;
+  }, [categoryList]);
   // Memoized store products for ultra-fast instant search & rendering
   const allStoreProducts = useMemo(() => {
     const seen = new Set();
@@ -1067,7 +1043,7 @@ const MiddleSection = (props) => {
                   fetching new items. Shown only when there's already data on
                   screen (we use the full shimmer for the first load). */}
               {/* Non-blocking background loading indicator */}
-              {(isRefetching || isRefetchingSearch) && state.data?.products?.length > 0 && (
+              {(isRefetching || isRefetchingSearch) && allStoreProducts.length > 0 && (
                 <Box
                   sx={{
                     position: "absolute",
@@ -1080,9 +1056,9 @@ const MiddleSection = (props) => {
                   <DotSpin />
                 </Box>
               )}
-              {(isLoading || !state.data) && !state.data?.products?.length ? (
+              {isLoading && allStoreProducts.length === 0 ? (
                 <Stack gap={4}>{handleShimmerProducts()}</Stack>
-              ) : state.data?.products?.length === 0 &&
+              ) : allStoreProducts.length === 0 &&
                 !isRefetching &&
                 !isRefetchingSearch ? (
                 <Stack width="100%" paddingTop={{ xs: "0px", md: "30px" }}>
@@ -1239,18 +1215,13 @@ const MiddleSection = (props) => {
                             : null);
 
                         return (
-                          <LazySection
+                          <CatalogSection
                             key={section.key}
                             sectionKey={section.key}
                             sectionRefs={sectionRefs}
-                            isPriority={idx === 0 || !!revealedCategories[section.key]}
                           >
                             <Stack
                               spacing={1.5}
-                              sx={{
-                                contentVisibility: "auto",
-                                containIntrinsicSize: "0 350px",
-                              }}
                             >
                             {/* ── Category Image Banner (matching labanxlaban reference) ── */}
                             {bannerImage && (
@@ -1269,7 +1240,8 @@ const MiddleSection = (props) => {
                                   component="img"
                                   src={bannerImage}
                                   alt={section.title}
-                                  loading="lazy"
+                                  loading="eager"
+                                  decoding="async"
                                   sx={{
                                     width: "100%",
                                     height: "100%",
@@ -1384,23 +1356,25 @@ const MiddleSection = (props) => {
                               </Box>
                             )}
                           </Stack>
-                        </LazySection>
+                        </CatalogSection>
                       );
                     })}
                       {/* Scroll trigger to fetch next batch when reaching near bottom */}
-                      <Box
-                        ref={scrollTriggerRef}
-                        sx={{
-                          width: "100%",
-                          height: 40,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          py: 2,
-                        }}
-                      >
-                        {isFetchingNextPage && <DotSpin />}
-                      </Box>
+                      {hasNextPage && (
+                        <Box
+                          ref={scrollTriggerRef}
+                          sx={{
+                            width: "100%",
+                            height: 40,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            py: 2,
+                          }}
+                        >
+                          {isFetchingNextPage && <DotSpin />}
+                        </Box>
+                      )}
                     </Stack>
                   );
                 })()
