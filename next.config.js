@@ -74,7 +74,7 @@ const nextConfig = {
         ],
       },
       {
-        source: '/backend-api/api/v1/store-categories/items:path*',
+        source: '/backend-api/api/v1/store-categories/items',
         headers: [
           {
             key: 'Cache-Control',
