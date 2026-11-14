@@ -42,9 +42,9 @@ export default async function handler(req) {
 
   const cacheKey = `${backendUrl.searchParams.toString()}&zone=${zoneId}&mod=${moduleId}&lang=${lang}`;
 
-  // Fail-fast timeout: 8.5 seconds (prevents Vercel 25s FUNCTION_INVOCATION_TIMEOUT)
+  // Safe timeout: 22 seconds (allows cold upstream queries to finish within Vercel's 25s Edge limit)
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8500);
+  const timeoutId = setTimeout(() => controller.abort(), 22000);
 
   try {
     const response = await fetch(backendUrl.toString(), {
@@ -109,9 +109,23 @@ export default async function handler(req) {
       });
     }
 
-    return new Response(JSON.stringify({ error: error.name === 'AbortError' ? 'Upstream backend timed out' : error.message }), {
-      status: 504,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    // Return graceful 200 empty fallback instead of 504 to prevent frontend Axios unhandled toast "Request failed with status code 504"
+    const fallbackResponse = {
+      total_size: 0,
+      limit: safeLimit,
+      offset: parseInt(backendUrl.searchParams.get('offset') || '1', 10),
+      categories: [],
+      products: [],
+      category_wise_items: {},
+    };
+
+    return new Response(JSON.stringify(fallbackResponse), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'X-Edge-Fallback': 'EMPTY_TIMEOUT',
+      },
     });
   }
 }

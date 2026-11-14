@@ -105,7 +105,21 @@ const normalizeResponse = (data) => {
 };
 
 const fetchPage = async (params) => {
-  const { data } = await MainApi.get(buildUrl(params));
+  let data;
+  try {
+    const res = await MainApi.get(buildUrl(params));
+    data = res?.data;
+  } catch (err) {
+    console.warn("Primary store items fetch error:", err?.message || err);
+    data = {
+      total_size: 0,
+      limit: params?.limit || 30,
+      offset: params?.offset || 1,
+      categories: [],
+      products: [],
+      category_wise_items: {},
+    };
+  }
   let normalized = normalizeResponse(data);
 
   // If a branch currently has 0 products/categories in the backend,
@@ -159,7 +173,14 @@ export default function useGetStoreCategoriesItems(pageParams) {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
-      onError: onSingleErrorResponse,
+      onError: (err) => {
+        const status = err?.response?.status;
+        if (status === 504 || status === 408 || err?.message?.includes("504")) {
+          console.warn("Suppressed gateway timeout toast on catalog fetch:", err);
+          return;
+        }
+        onSingleErrorResponse(err);
+      },
       getNextPageParam: (lastPage, allPages) => {
         const totalSize = lastPage?.total_size || 0;
         const lastPageCount = lastPage?.products?.length || 0;

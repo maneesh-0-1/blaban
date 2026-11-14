@@ -742,7 +742,7 @@ const MiddleSection = (props) => {
 
   // Scroll-driven fetch: only fetch next page when user scrolls near the bottom
   const { ref: scrollTriggerRef, inView: bottomInView } = useInView({
-    rootMargin: "500px 0px",
+    rootMargin: "100px 0px",
   });
 
   useEffect(() => {
