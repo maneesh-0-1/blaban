@@ -33,16 +33,18 @@ export default async function handler(req) {
   headers.set('Accept', 'application/json');
   headers.set('X-localization', lang);
 
-  // Default to B.Laban Kuwait zones [6,7,8,9,10] if not provided or invalid
-  let zoneId = req.headers.get('zoneid') || req.headers.get('zoneId') || url.searchParams.get('zone_id');
-  if (!zoneId || zoneId === 'undefined' || zoneId === 'null' || zoneId === '[1]') {
-    zoneId = '[6,7,8,9,10]';
-  }
+  // Robust zone sanitization: extract numbers to avoid corrupt headers like "[6,7,8,9,10], [6,7,8,9,10]"
+  const rawZone = (req.headers.get('zoneId') || req.headers.get('zoneid') || url.searchParams.get('zone_id') || '').trim();
+  const zoneNums = Array.from(rawZone.matchAll(/\d+/g), (m) => Number(m[0])).filter((n) => !isNaN(n) && n > 0);
+  const zoneId = (zoneNums.length > 0 && !(zoneNums.length === 1 && zoneNums[0] === 1))
+    ? JSON.stringify(Array.from(new Set(zoneNums)))
+    : '[6,7,8,9,10]';
   headers.set('zoneId', zoneId);
 
   // Default to Module 2 (B.Laban Food module)
-  let rawModuleId = req.headers.get('moduleid') || req.headers.get('moduleId') || url.searchParams.get('module_id') || url.searchParams.get('module');
-  const moduleId = (rawModuleId && rawModuleId !== 'blaban' && !isNaN(Number(rawModuleId)) && Number(rawModuleId) > 0) ? String(rawModuleId) : '2';
+  const rawModuleId = (req.headers.get('moduleId') || req.headers.get('moduleid') || url.searchParams.get('module_id') || url.searchParams.get('module') || '').trim();
+  const modMatch = rawModuleId.match(/\d+/);
+  const moduleId = (modMatch && Number(modMatch[0]) > 0) ? String(modMatch[0]) : '2';
   headers.set('moduleId', moduleId);
 
   const cacheKey = `${backendUrl.searchParams.toString()}&zone=${zoneId}&mod=${moduleId}&lang=${lang}`;

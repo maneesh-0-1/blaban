@@ -61,7 +61,7 @@ const buildUrl = (params) => {
     parts.push(`sort_by=${SORT_MAP[sortBy] || sortBy}`);
   }
 
-  return `${store_categories_items_api}?${parts.join("&")}`;
+  return `${store_categories_items_api}?${parts.join("&")}&v=full_catalog`;
 };
 
 const normalizeResponse = (data) => {

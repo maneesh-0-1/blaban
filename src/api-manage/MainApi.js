@@ -66,9 +66,9 @@ MainApi.interceptors.request.use(function (config) {
       }
     })();
   if (zoneidIsValid) {
-    config.headers.zoneid = zoneid;
     config.headers.zoneId = zoneid;
-  } else if (!config.headers.zoneid && !config.headers.zoneId) {
+    delete config.headers.zoneid;
+  } else if (!config.headers.zoneId) {
     try {
       const storedModule = JSON.parse(
         typeof window !== "undefined"
@@ -77,19 +77,14 @@ MainApi.interceptors.request.use(function (config) {
       );
       const moduleZones = storedModule?.zones?.map((z) => z.id).filter(Boolean);
       if (moduleZones && moduleZones.length > 0) {
-        const zStr = JSON.stringify(moduleZones);
-        config.headers.zoneid = zStr;
-        config.headers.zoneId = zStr;
+        config.headers.zoneId = JSON.stringify(moduleZones);
       } else {
-        const defaultZones = JSON.stringify([6, 7, 8, 9, 10]);
-        config.headers.zoneid = defaultZones;
-        config.headers.zoneId = defaultZones;
+        config.headers.zoneId = JSON.stringify([6, 7, 8, 9, 10]);
       }
     } catch {
-      const defaultZones = JSON.stringify([6, 7, 8, 9, 10]);
-      config.headers.zoneid = defaultZones;
-      config.headers.zoneId = defaultZones;
+      config.headers.zoneId = JSON.stringify([6, 7, 8, 9, 10]);
     }
+    delete config.headers.zoneid;
   }
 
   if (config.url && !config.url.startsWith("/") && !config.url.startsWith("http")) {
@@ -104,6 +99,7 @@ MainApi.interceptors.request.use(function (config) {
   } else if (!config.headers.moduleId) {
     config.headers.moduleId = 2;
   }
+  delete config.headers.moduleid;
 
   // Explicitly identify guest authentication endpoints that must never carry auth headers
   const isGuestAuthEndpoint =

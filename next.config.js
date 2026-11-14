@@ -56,40 +56,6 @@ const nextConfig = {
           },
         ],
       },
-      {
-        source: '/api/edge-catalog/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-          {
-            key: 'Vercel-CDN-Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-        ],
-      },
-      {
-        source: '/backend-api/api/v1/store-categories/items',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-          {
-            key: 'Vercel-CDN-Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-        ],
-      },
     ];
   },
   async rewrites() {
