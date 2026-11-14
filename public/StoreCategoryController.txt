@@ -117,7 +117,7 @@ class StoreCategoryController extends Controller
 
                 $applyItemConstraints = function ($q) use ($type, $storeId, $itemsTable, $zones, $moduleId) {
                     $q->active(zone_ids: $zones, module_id: $moduleId)
-                      ->availableInStore($storeId)
+                      ->where("{$itemsTable}.store_id", $storeId)
                       ->type($type);
                 };
 
