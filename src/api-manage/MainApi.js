@@ -172,6 +172,56 @@ MainApi.interceptors.response.use(
     if (typeof window !== "undefined" && status === 422 ) {
       window.location.href = "/";
     }
+
+    // Gracefully handle 504 / 502 / timeout on read-only GET requests so the UI never crashes or toasts
+    if (
+      status === 504 ||
+      status === 502 ||
+      status === 503 ||
+      status === 408 ||
+      (typeof msg === "string" && (msg.includes("504") || msg.includes("timeout")))
+    ) {
+      const method = (error.config?.method || "get").toLowerCase();
+      const url = error.config?.url || "";
+      if (method === "get") {
+        console.warn(`Gateway error ${status || 504} on GET ${url} - resolved with safe empty fallback`);
+        if (url.includes("store-categories/items")) {
+          return Promise.resolve({
+            data: {
+              total_size: 0,
+              limit: 30,
+              offset: 1,
+              categories: [],
+              products: [],
+              category_wise_items: {},
+            },
+            status: 200,
+            statusText: "OK",
+            headers: {},
+            config: error.config,
+          });
+        }
+        if (url.includes("categories")) {
+          return Promise.resolve({
+            data: [],
+            status: 200,
+            statusText: "OK",
+            headers: {},
+            config: error.config,
+          });
+        }
+        if (url.includes("banners")) {
+          return Promise.resolve({
+            data: { campaigns: [], banners: [] },
+            status: 200,
+            statusText: "OK",
+            headers: {},
+            config: error.config,
+          });
+        }
+      }
+    }
+
     return Promise.reject(error);
   }
 );

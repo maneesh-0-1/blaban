@@ -46,6 +46,23 @@ export const onErrorResponse = (error) => {
     return;
   }
 
+  // Prevent 504, 502, 503 gateway / timeout technical errors from popping up as red toasts to customers
+  if (
+    status === 504 ||
+    status === 502 ||
+    status === 503 ||
+    status === 408 ||
+    (typeof message === "string" &&
+      (message.includes("504") ||
+        message.includes("502") ||
+        message.includes("503") ||
+        message.includes("timeout") ||
+        message.includes("Network Error")))
+  ) {
+    console.warn("Suppressed gateway error toast:", status, message);
+    return;
+  }
+
   if (Array.isArray(errors)) {
     errors.forEach((item) => {
       if (typeof item === "string") {
@@ -78,6 +95,23 @@ export const onSingleErrorResponse = (error) => {
 
   const errors = error?.response?.data?.errors;
   const message = error?.response?.data?.message || error?.message;
+
+  // Prevent 504, 502, 503 gateway / timeout technical errors from popping up as red toasts to customers
+  if (
+    status === 504 ||
+    status === 502 ||
+    status === 503 ||
+    status === 408 ||
+    (typeof message === "string" &&
+      (message.includes("504") ||
+        message.includes("502") ||
+        message.includes("503") ||
+        message.includes("timeout") ||
+        message.includes("Network Error")))
+  ) {
+    console.warn("Suppressed gateway error toast:", status, message);
+    return;
+  }
 
   if (Array.isArray(errors) && errors.length > 0) {
     return onErrorResponse(error);
