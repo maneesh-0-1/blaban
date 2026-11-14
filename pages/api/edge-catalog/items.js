@@ -47,9 +47,9 @@ export default async function handler(req) {
 
   const cacheKey = `${backendUrl.searchParams.toString()}&zone=${zoneId}&mod=${moduleId}&lang=${lang}`;
 
-  // Safe timeout: 8 seconds fast fail/fallback
+  // Timeout: 20 seconds to allow cold upstream backend queries to finish and cache
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
 
   try {
     const response = await fetch(backendUrl.toString(), {
