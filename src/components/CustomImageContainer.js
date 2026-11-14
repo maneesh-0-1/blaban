@@ -47,8 +47,8 @@ const CustomImageContainer = ({
     setState(resolveSafeSrc(src, alt));
   }, [src, alt]);
 
-  const effectiveLoading = loading || "eager";
-  const effectiveFetchPriority = fetchpriority || "high";
+  const effectiveLoading = priority ? "eager" : (loading || "lazy");
+  const effectiveFetchPriority = priority ? "high" : (fetchpriority || "auto");
 
   return (
     <CustomImageContainerStyled

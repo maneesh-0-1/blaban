@@ -19,6 +19,11 @@ export default async function handler(req) {
   });
   backendUrl.searchParams.set('locale', lang);
 
+  // Strip user/location params that do not change catalog results to maximize cache hit ratio
+  ['guest_id', 'latitude', 'longitude', 'lat', 'lng', 'distance'].forEach((k) => {
+    backendUrl.searchParams.delete(k);
+  });
+
   // Enforce a safe page limit (max 30) to prevent upstream database timeouts
   const rawLimit = parseInt(backendUrl.searchParams.get('limit') || '30', 10);
   const safeLimit = isNaN(rawLimit) || rawLimit <= 0 ? 30 : Math.min(rawLimit, 30);
@@ -42,9 +47,9 @@ export default async function handler(req) {
 
   const cacheKey = `${backendUrl.searchParams.toString()}&zone=${zoneId}&mod=${moduleId}&lang=${lang}`;
 
-  // Safe timeout: 22 seconds (allows cold upstream queries to finish within Vercel's 25s Edge limit)
+  // Safe timeout: 8 seconds fast fail/fallback
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 22000);
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
 
   try {
     const response = await fetch(backendUrl.toString(), {
@@ -62,7 +67,7 @@ export default async function handler(req) {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
+            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
             'X-Edge-Cache': 'STALE-FALLBACK',
           },
         });
@@ -84,9 +89,9 @@ export default async function handler(req) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-        'CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-        'Vercel-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        'CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        'Vercel-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
         'Cache-Tag': `catalog,products,store-items,lang-${lang}`,
         'Vary': 'X-localization, Accept-Language, locale',
         'X-Edge-Cache': 'HIT-VERCEL',
@@ -103,7 +108,7 @@ export default async function handler(req) {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
           'X-Edge-Cache': 'TIMEOUT-STALE-FALLBACK',
         },
       });
