@@ -29,9 +29,6 @@ const NextImage = ({
   objectFit = "cover",
   borderRadius,
   aspectRatio,
-  style: propStyle,
-  onLoad,
-  onError,
   ...props
 }) => {
   const [currentSrc, setCurrentSrc] = useState(sanitizeSrc(src, altSrc, alt));
@@ -44,14 +41,14 @@ const NextImage = ({
     if (altSrc && currentSrc !== altSrc) {
       setCurrentSrc(altSrc);
     }
-    if (onError) onError(e);
+    if (props.onError) props.onError(e);
   };
 
   const style = {
     objectFit,
     borderRadius,
     aspectRatio,
-    ...propStyle,
+    ...props.style,
   };
 
   return (
@@ -60,13 +57,12 @@ const NextImage = ({
       width={width}
       height={height}
       alt={alt}
-      onError={handleImgError}
-      onLoad={onLoad}
       loading="eager"
       priority={true}
       decoding="async"
-      style={style}
       {...props}
+      style={style}
+      onError={handleImgError}
     />
   );
 };
