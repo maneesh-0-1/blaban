@@ -343,8 +343,8 @@ const MiddleSection = (props) => {
     };
   }, []);
 
-  // Fetch all store products in one fast request so products load instantly
-  const limit = 200;
+  // Page size 30: fast response from upstream backend and avoids gateway timeouts
+  const limit = 30;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {
