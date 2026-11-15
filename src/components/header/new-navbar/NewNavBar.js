@@ -31,11 +31,8 @@ import ManageSearch from "../second-navbar/ManageSearch";
 import ModuleWiseNav from "../second-navbar/ModuleWiseNav";
 import MobileNavBar from "./MobileNavBar";
 import NavBarIcon from "../second-navbar/NavBarIcon";
-const AccountPopover = dynamic(() => import("../second-navbar/account-popover"), { ssr: false });
-const AddressReselect = dynamic(
-  () => import("../top-navbar/address-reselect/AddressReselect"),
-  { ssr: false }
-);
+import AccountPopover from "../second-navbar/account-popover";
+import AddressReselect from "../top-navbar/address-reselect/AddressReselect";
 
 import { getCartListModuleWise } from "helper-functions/getCartListModuleWise";
 import { getModule } from "helper-functions/getLanguage";

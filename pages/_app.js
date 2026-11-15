@@ -41,8 +41,8 @@ const rubik = Rubik({
   display: "swap",
 });
 
-const ModuleChecker = dynamic(() => import("../src/components/module-select/ModuleChecker"), { ssr: false });
-const ProSubscriptionExpiredModal = dynamic(() => import("../src/components/pro-plan/ProSubscriptionExpiredModal"), { ssr: false });
+import ModuleChecker from "../src/components/module-select/ModuleChecker";
+import ProSubscriptionExpiredModal from "../src/components/pro-plan/ProSubscriptionExpiredModal";
 
 Router.events.on("routeChangeStart", nProgress.start);
 Router.events.on("routeChangeError", nProgress.done);
@@ -70,6 +70,7 @@ if (typeof window !== "undefined") {
 }
 
 function MyApp(props) {
+  useScrollToTop();
   const {
     Component,
     emotionCache = clientSideEmotionCache,
@@ -99,7 +100,6 @@ function MyApp(props) {
 
   return (
     <>
-      {useScrollToTop()}
       <CacheProvider value={emotionCache}>
         <QueryClientProvider client={queryClient}>
           <ReduxProvider store={store}>

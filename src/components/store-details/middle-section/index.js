@@ -189,7 +189,7 @@ const MiddleSection = (props) => {
   const { configData } = useSelector((state) => state.configData);
   const router = useRouter();
   const { id } = router.query;
-  const storeId = storeDetails?.id;
+  const storeId = storeDetails?.id || 2;
 
   // Categories now come from the combined /store-categories/items endpoint.
   // Tabs use first-page `categories`; respect `ownCategories` whitelist if
@@ -980,7 +980,7 @@ const MiddleSection = (props) => {
   return (
     <NoSsr>
       <CustomStackFullWidth>
-        {Boolean(storeId || moduleId) && (
+        {Boolean(storeId || moduleId || 2) && (
           <Grid container gap={{ xs: 0, md: 0 }} sx={{ position: "relative" }}>
 
             

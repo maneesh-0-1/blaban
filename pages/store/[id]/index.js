@@ -1,13 +1,49 @@
 import React, { useEffect } from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import MainLayout from "../../../src/components/layout/MainLayout";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setConfigData } from "redux/slices/configData";
 import { banners, config_api, store_details_api } from "api-manage/ApiRoutes";
 import SEO from "../../../src/components/seo";
 import useScrollToTop from "api-manage/hooks/custom-hooks/useScrollToTop";
+import useGetStoreDetails from "api-manage/hooks/react-query/store/useGetStoreDetails";
 import { checkMaintenanceMode } from "../../../src/utils/serverSidePropsHelper";
 import StoreDetails from "../../../src/components/store-details";
+
+export const DEFAULT_CONFIG_DATA = {
+  business_name: "B.Laban",
+  logo: "2026-07-17-6a5a110f39eaa.webp",
+  logo_full_url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/business/2026-07-17-6a5a110f39eaa.webp",
+  address: "B.LABAN - Hawally, Kuwait.",
+  phone: "+9654543256757",
+  email: "support@blaban.com",
+  country: "KW",
+  default_location: { lat: "29.3759", lng: "47.9774" },
+  currency_symbol: "د.ك.‏",
+  currency_symbol_direction: "right",
+  footer_text: "© B.Laban. All rights reserved.",
+  base_urls: {
+    category_image_url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/category",
+    item_image_url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/product",
+    store_cover_photo_url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/store/cover",
+  },
+};
+
+export const DEFAULT_STORE_DETAILS = {
+  id: 2,
+  name: "B.Laban",
+  slug: "blaban",
+  cover_photo_full_url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/store/cover/2026-09-02-6a988fb780756.webp",
+  logo_full_url: "https://blaban-storage-prod-895207965108-eu-central-1-an.s3.eu-central-1.amazonaws.com/store/2026-07-20-6a5ec3f9350e1.webp",
+  module_id: 2,
+  zone_id: 6,
+  status: 1,
+  active: true,
+  delivery: true,
+  take_away: true,
+  item_section: true,
+  delivery_time: "30-60 min",
+};
 
 const StorePage = ({
   configData,
@@ -20,11 +56,17 @@ const StorePage = ({
   const dispatch = useDispatch();
   useScrollToTop();
 
-  const metaTitle = `${storeDetails?.meta_title || storeDetails?.name || "B.Laban"} - ${
-    configData?.business_name || "Kuwait"
+  const reduxConfig = useSelector((state) => state.configData?.configData);
+  const effectiveConfigData = configData || (reduxConfig && Object.keys(reduxConfig).length > 0 ? reduxConfig : null) || DEFAULT_CONFIG_DATA;
+
+  const { data: clientStoreData } = useGetStoreDetails(!storeDetails ? 2 : null);
+  const effectiveStoreDetails = storeDetails || clientStoreData || DEFAULT_STORE_DETAILS;
+
+  const metaTitle = `${effectiveStoreDetails?.meta_title || effectiveStoreDetails?.name || "B.Laban"} - ${
+    effectiveConfigData?.business_name || "Kuwait"
   }`;
   const metaImage =
-    storeDetails?.meta_image_full_url || configData?.logo_full_url;
+    effectiveStoreDetails?.meta_image_full_url || effectiveConfigData?.logo_full_url;
 
   const manageVisitedStores = () => {
     const key = "visitedStores";
@@ -33,10 +75,10 @@ const StorePage = ({
       const visitedStores = stored ? JSON.parse(stored) : [];
 
       const alreadyVisited = visitedStores.some(
-        (store) => store?.id === storeDetails?.id
+        (store) => store?.id === effectiveStoreDetails?.id
       );
       if (!alreadyVisited) {
-        visitedStores.push({ ...storeDetails, distance });
+        visitedStores.push({ ...effectiveStoreDetails, distance });
         localStorage.setItem(key, JSON.stringify(visitedStores));
       }
     } catch {
@@ -45,16 +87,16 @@ const StorePage = ({
   };
 
   useEffect(() => {
-    if (storeDetails) {
+    if (effectiveStoreDetails) {
       manageVisitedStores();
     }
-  }, [storeDetails?.id]);
+  }, [effectiveStoreDetails?.id]);
 
   useEffect(() => {
-    if (configData && Object.keys(configData).length > 0) {
-      dispatch(setConfigData(configData));
+    if (effectiveConfigData && Object.keys(effectiveConfigData).length > 0) {
+      dispatch(setConfigData(effectiveConfigData));
     }
-  }, [configData]);
+  }, [effectiveConfigData]);
 
   return (
     <>
@@ -62,14 +104,14 @@ const StorePage = ({
       <SEO
         title={metaTitle}
         image={metaImage}
-        businessName={configData?.business_name}
-        description={storeDetails?.meta_description}
-        configData={configData}
+        businessName={effectiveConfigData?.business_name}
+        description={effectiveStoreDetails?.meta_description}
+        configData={effectiveConfigData}
       />
-      <MainLayout configData={configData}>
+      <MainLayout configData={effectiveConfigData}>
         <StoreDetails
-          storeDetails={storeDetails}
-          configData={configData}
+          storeDetails={effectiveStoreDetails}
+          configData={effectiveConfigData}
           initialBanners={initialBanners}
           initialCategories={initialCategories}
           initialCatalog={initialCatalog}
@@ -197,28 +239,31 @@ export const getStaticProps = async (context) => {
   };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeout = setTimeout(() => controller.abort(), 25000);
 
   try {
-    const [configRes, storeDetailsRes, bannersRes, categoriesRes, catalogRes] = await Promise.all([
-      fetch(`${baseUrl}${config_api}`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
-      fetch(`${baseUrl}${store_details_api}/2`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
-      fetch(`${baseUrl}${banners}?featured=all`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
-      fetch(`${baseUrl}/api/v1/categories`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
-      fetch(`${baseUrl}/api/v1/store-categories/items?store_id=2&offset=1&limit=20&type=all&v=full_catalog`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
+    const fetchSafe = async (url) => {
+      try {
+        const res = await fetch(url, { headers: headersCommon, signal: controller.signal });
+        if (res.ok) return await res.json().catch(() => null);
+      } catch (e) {}
+      return null;
+    };
+
+    const [configData, storeDetails, initialBanners, initialCategories, initialCatalog] = await Promise.all([
+      fetchSafe(`${baseUrl}${config_api}`),
+      fetchSafe(`${baseUrl}${store_details_api}/2`),
+      fetchSafe(`${baseUrl}${banners}?featured=all`),
+      fetchSafe(`${baseUrl}/api/v1/categories`),
+      fetchSafe(`${baseUrl}/api/v1/store-categories/items?store_id=2&offset=1&limit=20&type=all&v=full_catalog`),
     ]);
 
     clearTimeout(timeout);
 
-    const [configData, storeDetails, initialBanners, initialCategories, initialCatalog] = await Promise.all([
-      configRes && configRes.ok ? configRes.json().catch(() => null) : Promise.resolve(null),
-      storeDetailsRes && storeDetailsRes.ok ? storeDetailsRes.json().catch(() => null) : Promise.resolve(null),
-      bannersRes && bannersRes.ok ? bannersRes.json().catch(() => null) : Promise.resolve(null),
-      categoriesRes && categoriesRes.ok ? categoriesRes.json().catch(() => null) : Promise.resolve(null),
-      catalogRes && catalogRes.ok ? catalogRes.json().catch(() => null) : Promise.resolve(null),
-    ]);
+    const safeConfig = configData || DEFAULT_CONFIG_DATA;
+    const safeStore = pruneStoreDetails(storeDetails) || DEFAULT_STORE_DETAILS;
 
-    if (configData && checkMaintenanceMode(configData)) {
+    if (safeConfig && checkMaintenanceMode(safeConfig)) {
       return {
         redirect: {
           destination: "/maintainance",
@@ -230,8 +275,8 @@ export const getStaticProps = async (context) => {
 
     return {
       props: {
-        configData: configData || null,
-        storeDetails: pruneStoreDetails(storeDetails),
+        configData: safeConfig,
+        storeDetails: safeStore,
         initialBanners: initialBanners || null,
         initialCategories: Array.isArray(initialCategories) ? initialCategories : null,
         initialCatalog: pruneCatalog(initialCatalog),
@@ -244,8 +289,8 @@ export const getStaticProps = async (context) => {
     console.error("Static props fetch failed:", error.message);
     return {
       props: {
-        configData: null,
-        storeDetails: null,
+        configData: DEFAULT_CONFIG_DATA,
+        storeDetails: DEFAULT_STORE_DETAILS,
         initialBanners: null,
         initialCategories: null,
         initialCatalog: null,

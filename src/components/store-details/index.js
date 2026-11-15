@@ -33,7 +33,7 @@ import useGetModule from "../../api-manage/hooks/react-query/useGetModule";
 import { useDispatch } from "react-redux";
 import { setSelectedModule } from "redux/slices/utils";
 import CustomModal from "components/modal";
-const StoreCartSidebar = dynamic(() => import("./StoreCartSidebar"), { ssr: false });
+import StoreCartSidebar from "./StoreCartSidebar";
 const RestaurantReviewModal = dynamic(() => import("components/store-details/ReviewModal"), { ssr: false });
 import useScrollToTop from "api-manage/hooks/custom-hooks/useScrollToTop";
 const LastOrdersSection = dynamic(() => import("components/home/module-wise-components/food/LastOrdersSection"), { ssr: false });
