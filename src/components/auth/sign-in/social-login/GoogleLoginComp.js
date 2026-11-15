@@ -1,3 +1,4 @@
+import Script from "next/script";
 import jwt_decode from "jwt-decode";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -122,20 +123,23 @@ const GoogleLoginComp = (props) => {
       },
     });
   };
-  useEffect(() => {
-    // Initialize Google button
-    if (typeof window !== undefined) {
-      window?.google?.accounts?.id?.initialize({
+  const initGoogle = () => {
+    if (typeof window !== "undefined" && window?.google?.accounts?.id && buttonDiv.current) {
+      window.google.accounts.id.initialize({
         client_id: clientId,
         callback: handleCallBackResponse,
       });
-      window?.google?.accounts?.id?.renderButton(buttonDiv.current, {
+      window.google.accounts.id.renderButton(buttonDiv.current, {
         theme: "outline",
-        size: "large", // Set button size to 'large' for better scaling
+        size: "large",
         logo_alignment: "left",
       });
     }
-  }, []);
+  };
+
+  useEffect(() => {
+    initGoogle();
+  }, [clientId]);
 
   const handleView = () => {
     // Handle conditional rendering for social login button style
@@ -225,7 +229,13 @@ const GoogleLoginComp = (props) => {
 
   if (isLandingVariant) {
     return (
-      <Box sx={{ width: "100%", position: "relative" }}>
+      <>
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+          onLoad={initGoogle}
+        />
+        <Box sx={{ width: "100%", position: "relative" }}>
         <Box
           sx={{
             display: "flex",
@@ -258,10 +268,17 @@ const GoogleLoginComp = (props) => {
           <div ref={buttonDiv} />
         </div>
       </Box>
+      </>
     );
   }
 
   return (
+    <>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initGoogle}
+      />
     <Stack
       width={socialLength === 3 && state?.status !== "social" ? "45px" : "100%"}
       maxWidth="355px"
@@ -291,6 +308,7 @@ const GoogleLoginComp = (props) => {
         {handleView()}
       </div>
     </Stack>
+    </>
   );
 };
 

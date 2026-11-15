@@ -1,3 +1,4 @@
+import Script from "next/script";
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import AppleLogin from "react-apple-login";
@@ -202,6 +203,15 @@ const AppleLoginComp = (props) => {
             : "100%",
       }}
     >
+      <Script
+        src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          if (typeof AppleID !== "undefined") {
+            setAppleSdkLoaded(true);
+          }
+        }}
+      />
       {appleSdkLoaded ? (
         <AppleLogin
           clientId={configData?.apple_login[0]?.client_id}
