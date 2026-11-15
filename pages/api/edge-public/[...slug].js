@@ -7,9 +7,15 @@ export default async function handler(req) {
     const url = new URL(req.url);
     const base = (process.env.NEXT_PUBLIC_BASE_URL || 'https://admin.domains4gulf.com').replace(/\/+$/, '');
 
-    // Extract path after /api/edge-public/
-    const pathname = url.pathname.replace(/^\/api\/edge-public\/?/, '');
-    const cleanPath = pathname.replace(/^\/+|\/+$/g, '');
+    // Robustly strip any gateway or edge prefixes to get the raw endpoint path under /api/v1/
+    let cleanPath = url.pathname
+      .replace(/^\/api\/edge-public\/?/, '')
+      .replace(/^\/backend-api\/?/, '')
+      .replace(/^api\/v1\/?/, '')
+      .replace(/^\/api\/v1\/?/, '')
+      .replace(/^api\/?/, '')
+      .replace(/^\/api\/?/, '')
+      .replace(/^\/+|\/+$/g, '');
 
     // Target backend path: /api/v1/...
     const backendUrl = new URL(`${base}/api/v1/${cleanPath}`);
@@ -24,9 +30,11 @@ export default async function handler(req) {
     const rawLang = url.searchParams.get('locale') || url.searchParams.get('lang') || req.headers.get('x-localization') || '';
     const lang = rawLang && rawLang.toLowerCase().startsWith('ar') ? 'ar' : 'en';
 
-    // Forward query params
+    // Forward query params (excluding internal Next.js router params like slug)
     url.searchParams.forEach((value, key) => {
-      backendUrl.searchParams.set(key, value);
+      if (key !== 'slug') {
+        backendUrl.searchParams.set(key, value);
+      }
     });
     backendUrl.searchParams.set('locale', lang);
 
