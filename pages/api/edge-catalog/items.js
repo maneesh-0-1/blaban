@@ -69,7 +69,7 @@ export default async function handler(req) {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
             'X-Edge-Cache': 'STALE-FALLBACK',
           },
         });
@@ -91,11 +91,11 @@ export default async function handler(req) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        'CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        'Vercel-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Vercel-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'Cache-Tag': `catalog,products,store-items,lang-${lang}`,
-        'Vary': 'X-localization, Accept-Language, locale',
+        'Vary': 'zoneId, moduleId, X-localization, Accept-Language, locale',
         'X-Edge-Cache': 'HIT-VERCEL',
         'X-Language': lang,
       },
@@ -110,7 +110,7 @@ export default async function handler(req) {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
           'X-Edge-Cache': 'TIMEOUT-STALE-FALLBACK',
         },
       });
