@@ -825,7 +825,7 @@ const StoreCartSidebar = ({ storeDetails, isCartLoading = false }) => {
     type: getCurrentModuleType(),
     recommended: 1,
     offset: 1,
-    limit: 12,
+    limit: 6,
   });
   const suggestedItems = Array.isArray(suggestedItemsRaw?.items)
     ? suggestedItemsRaw.items

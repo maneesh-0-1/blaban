@@ -127,13 +127,34 @@ export const getLowToHigh = (data) => {
     return data;
   }
 };
-// ── CatalogSection: Renders all products directly and immediately ──
-const CatalogSection = ({ children, sectionKey, sectionRefs }) => {
+// ── CatalogSection: Renders category section with scroll-driven prefetch ──
+const CatalogSection = ({
+  children,
+  sectionKey,
+  sectionRefs,
+  isNearBottom = false,
+  onNearBottom,
+}) => {
+  const { ref: inViewRef, inView } = useInView({
+    rootMargin: "300px 0px",
+    threshold: 0,
+    skip: !isNearBottom,
+  });
+
+  useEffect(() => {
+    if (inView && isNearBottom && onNearBottom) {
+      onNearBottom();
+    }
+  }, [inView, isNearBottom, onNearBottom]);
+
   return (
     <Box
       ref={(el) => {
         if (sectionRefs?.current && sectionKey) {
           sectionRefs.current[sectionKey] = el;
+        }
+        if (isNearBottom && inViewRef) {
+          inViewRef(el);
         }
       }}
     >
@@ -183,10 +204,16 @@ const MiddleSection = (props) => {
   const [viewAllProducts, setViewAllProducts] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
   const toggleCategoryExpand = (catKey) => {
-    setExpandedCategories((prev) => ({
-      ...prev,
-      [catKey]: !prev[catKey],
-    }));
+    setExpandedCategories((prev) => {
+      const willBeExpanded = !prev[catKey];
+      if (willBeExpanded && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+      return {
+        ...prev,
+        [catKey]: willBeExpanded,
+      };
+    });
   };
 
   // Detect when the toolbar is "stuck" (pinned to top) so we can show a shadow.
@@ -244,6 +271,9 @@ const MiddleSection = (props) => {
 
     if (!performScrollToCategory(key)) {
       pendingScrollCategoryRef.current = key;
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
     } else {
       pendingScrollCategoryRef.current = null;
     }
@@ -345,8 +375,8 @@ const MiddleSection = (props) => {
     };
   }, []);
 
-  // Page size 200: loads all products directly on first paint without late loading or pagination spinners
-  const limit = 200;
+  // Page size 20: loads first batch quickly and loads more on scroll / category open
+  const limit = 20;
   const { ref, inView } = useInView();
   const [offset, setOffset] = useState(1);
   const pageParams = {
@@ -1268,6 +1298,12 @@ const MiddleSection = (props) => {
                             key={section.key}
                             sectionKey={section.key}
                             sectionRefs={sectionRefs}
+                            isNearBottom={idx >= sections.length - 2}
+                            onNearBottom={() => {
+                              if (hasNextPage && !isFetchingNextPage) {
+                                fetchNextPage();
+                              }
+                            }}
                           >
                             <Stack
                               spacing={1.5}

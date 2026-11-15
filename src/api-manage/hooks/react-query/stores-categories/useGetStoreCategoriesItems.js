@@ -147,7 +147,7 @@ const fetchPage = async (params) => {
 export default function useGetStoreCategoriesItems(pageParams, options = {}) {
   const zoneid =
     typeof window !== "undefined" ? localStorage.getItem("zoneid") : null;
-  const effectiveLimit = pageParams?.limit || 200;
+  const effectiveLimit = pageParams?.limit || 20;
   return useInfiniteQuery(
     [
       "store-categories-items-v5",

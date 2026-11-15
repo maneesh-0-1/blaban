@@ -106,7 +106,7 @@ class StoreCategoryController extends Controller
 
             // 5-minute cache keyed by store, module, type, offset, limit, locale, zone, and search/sort
             $zoneKey = is_array($zones) ? implode('-', $zones) : (string) $zones;
-            $cacheVersion = (int) Cache::get('catalog_cache_version', 3);
+            $cacheVersion = (int) Cache::get('catalog_cache_version', 4);
             $cacheKey = "cat_items_v{$cacheVersion}_s{$storeId}_m{$moduleId}_t{$type}_o{$offset}_l{$limit}_loc{$locale}_z{$zoneKey}_srt{$sortBy}_q" . md5((string) $searchKey);
 
             $responseData = Cache::remember($cacheKey, 300, function () use (
@@ -193,6 +193,23 @@ class StoreCategoryController extends Controller
                     ->tap($applyItemConstraints)
                     ->tap($applyItemFilters);
 
+                $filterCatParam = $request->query('category_id');
+                if (!empty($filterCatParam)) {
+                    $filterCatIds = array_filter(array_map('intval', is_array($filterCatParam) ? $filterCatParam : explode(',', (string) $filterCatParam)));
+                    if (!empty($filterCatIds)) {
+                        $itemsBaseQuery->whereIn($categoryKeyCol, $filterCatIds);
+                    }
+                }
+
+                $totalItems = (clone $itemsBaseQuery)->reorder()->count("{$itemsTable}.id");
+
+                // Count items per category across whole store
+                $itemsCountByCategory = (clone $itemsBaseQuery)
+                    ->reorder()
+                    ->groupBy($categoryKeyCol)
+                    ->selectRaw("{$categoryKeyCol}, count(*) as cnt")
+                    ->pluck('cnt', $categoryKeyCol);
+
                 // Fetch items with eager loading
                 $items = $itemsBaseQuery
                     ->with([
@@ -215,11 +232,6 @@ class StoreCategoryController extends Controller
                     ->skip(($offset - 1) * $limit)
                     ->take($limit)
                     ->get();
-
-                $totalItems = $items->count();
-
-                // Group items count by category directly in memory (zero extra SQL queries)
-                $itemsCountByCategory = $items->groupBy(fn ($it) => (int) $it->cat_group)->map->count();
 
                 $categoriesData = $categories
                     ->map(function ($category) use ($itemsCountByCategory) {
@@ -260,10 +272,45 @@ class StoreCategoryController extends Controller
                             $itemsByCategory[$catId], true, false, $locale
                         );
 
-                        // Slim products: attach pre-loaded addons and strip bulky unused objects to reduce payload to ~120KB
+                        // Slim products: attach pre-loaded addons and strip bulky unused objects to reduce payload
                         $slimmedCatProducts = array_map(function ($p) use ($storeAddons, $itemsAddonsMap) {
                             if (is_array($p)) {
-                                unset($p['module'], $p['storage'], $p['translations'], $p['ecommerce_item_details']);
+                                unset(
+                                    $p['module'],
+                                    $p['storage'],
+                                    $p['translations'],
+                                    $p['ecommerce_item_details'],
+                                    $p['video_thumbnail_url'],
+                                    $p['video_preview_url'],
+                                    $p['video_source_type'],
+                                    $p['video_preview_type'],
+                                    $p['video_embed_url'],
+                                    $p['video_preview_available'],
+                                    $p['video_unavailable_reason'],
+                                    $p['video_size'],
+                                    $p['video_preview_modal_type'],
+                                    $p['video_preview_modal_url'],
+                                    $p['has_video_preview'],
+                                    $p['has_video_source'],
+                                    $p['video'],
+                                    $p['video_link'],
+                                    $p['video_full_url'],
+                                    $p['tax_data'],
+                                    $p['tax_ids'],
+                                    $p['nutritions_name'],
+                                    $p['allergies_name'],
+                                    $p['generic_name'],
+                                    $p['manufacturer'],
+                                    $p['brand_id'],
+                                    $p['brand_name'],
+                                    $p['common_condition_id'],
+                                    $p['is_basic'],
+                                    $p['is_prescription_required'],
+                                    $p['is_takeaway_only'],
+                                    $p['verified_seller'],
+                                    $p['created_at'],
+                                    $p['updated_at']
+                                );
                                 $aIds = $itemsAddonsMap[$p['id']] ?? [];
                                 $p['add_ons'] = [];
                                 foreach ($aIds as $aId) {

@@ -99,6 +99,67 @@ const pruneStoreDetails = (raw) => {
   return clean;
 };
 
+const pruneCatalog = (catalog) => {
+  if (!catalog || typeof catalog !== "object") return null;
+  const strip = (p) => {
+    if (!p || typeof p !== "object") return p;
+    const {
+      module,
+      storage,
+      translations,
+      ecommerce_item_details,
+      video_thumbnail_url,
+      video_preview_url,
+      video_source_type,
+      video_preview_type,
+      video_embed_url,
+      video_preview_available,
+      video_unavailable_reason,
+      video_size,
+      video_preview_modal_type,
+      video_preview_modal_url,
+      has_video_preview,
+      has_video_source,
+      video,
+      video_link,
+      video_full_url,
+      tax_data,
+      tax_ids,
+      nutritions_name,
+      allergies_name,
+      generic_name,
+      manufacturer,
+      brand_id,
+      brand_name,
+      common_condition_id,
+      is_basic,
+      is_prescription_required,
+      is_takeaway_only,
+      verified_seller,
+      created_at,
+      updated_at,
+      cat_group,
+      store_category,
+      store_category_name,
+      ...clean
+    } = p;
+    return clean;
+  };
+
+  return {
+    ...catalog,
+    products: Array.isArray(catalog.products) ? catalog.products.map(strip) : [],
+    category_wise_items: catalog.category_wise_items
+      ? Object.fromEntries(
+          Object.entries(catalog.category_wise_items).map(([k, v]) => [
+            k,
+            Array.isArray(v) ? v.map(strip) : [],
+          ])
+        )
+      : {},
+  };
+};
+
 export const getStaticPaths = async () => {
   return {
     paths: [
@@ -144,7 +205,7 @@ export const getStaticProps = async (context) => {
       fetch(`${baseUrl}${store_details_api}/2`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
       fetch(`${baseUrl}${banners}?featured=all`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
       fetch(`${baseUrl}/api/v1/categories`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
-      fetch(`${baseUrl}/api/v1/store-categories/items?store_id=2&offset=1&limit=30&type=all&v=full_catalog`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
+      fetch(`${baseUrl}/api/v1/store-categories/items?store_id=2&offset=1&limit=20&type=all&v=full_catalog`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
     ]);
 
     clearTimeout(timeout);
@@ -173,7 +234,7 @@ export const getStaticProps = async (context) => {
         storeDetails: pruneStoreDetails(storeDetails),
         initialBanners: initialBanners || null,
         initialCategories: Array.isArray(initialCategories) ? initialCategories : null,
-        initialCatalog: initialCatalog || null,
+        initialCatalog: pruneCatalog(initialCatalog),
         distance: null,
       },
       revalidate: 300,
