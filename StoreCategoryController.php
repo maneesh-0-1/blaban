@@ -106,7 +106,7 @@ class StoreCategoryController extends Controller
 
             // 5-minute cache keyed by store, module, type, offset, limit, locale, zone, and search/sort
             $zoneKey = is_array($zones) ? implode('-', $zones) : (string) $zones;
-            $cacheVersion = (int) Cache::get('catalog_cache_version', 4);
+            $cacheVersion = (int) Cache::get('catalog_cache_version', 5);
             $cacheKey = "cat_items_v{$cacheVersion}_s{$storeId}_m{$moduleId}_t{$type}_o{$offset}_l{$limit}_loc{$locale}_z{$zoneKey}_srt{$sortBy}_q" . md5((string) $searchKey);
 
             $responseData = Cache::remember($cacheKey, 300, function () use (
@@ -274,6 +274,11 @@ class StoreCategoryController extends Controller
 
                         // Slim products: attach pre-loaded addons and strip bulky unused objects to reduce payload
                         $slimmedCatProducts = array_map(function ($p) use ($storeAddons, $itemsAddonsMap) {
+                            if (is_object($p) && method_exists($p, 'toArray')) {
+                                $p = $p->toArray();
+                            } elseif (is_object($p)) {
+                                $p = (array) $p;
+                            }
                             if (is_array($p)) {
                                 unset(
                                     $p['module'],
