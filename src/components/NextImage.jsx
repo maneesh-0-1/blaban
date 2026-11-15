@@ -29,6 +29,8 @@ const NextImage = ({
   objectFit = "cover",
   borderRadius,
   aspectRatio,
+  priority = false,
+  loading,
   ...props
 }) => {
   const [currentSrc, setCurrentSrc] = useState(sanitizeSrc(src, altSrc, alt));
@@ -47,7 +49,7 @@ const NextImage = ({
   const style = {
     objectFit,
     borderRadius,
-    aspectRatio,
+    ...(aspectRatio ? { aspectRatio } : {}),
     ...props.style,
   };
 
@@ -57,8 +59,8 @@ const NextImage = ({
       width={width}
       height={height}
       alt={alt}
-      loading="eager"
-      priority={true}
+      loading={priority ? undefined : (loading || "lazy")}
+      priority={priority}
       decoding="async"
       {...props}
       style={style}

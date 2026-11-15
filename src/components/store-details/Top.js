@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import Head from "next/head";
 import { Box, Skeleton, useTheme, alpha } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -171,7 +172,15 @@ const Top = ({
     return null;
   }
 
+  const firstBannerSrc = banners[0]?.image_full_url || banners[0]?.image;
+
   return (
+    <>
+      {firstBannerSrc && (
+        <Head>
+          <link rel="preload" as="image" href={firstBannerSrc} fetchpriority="high" />
+        </Head>
+      )}
     <Box
       sx={{
         width: "100%",
@@ -219,6 +228,8 @@ const Top = ({
             src={banners[0]?.image_full_url || banners[0]?.image}
             alt={banners[0]?.title || "Banner"}
             loading="eager"
+            fetchPriority="high"
+            decoding="async"
             sx={{
               width: "100%",
               height: "100%",
@@ -246,7 +257,9 @@ const Top = ({
                   component="img"
                   src={imgSrc}
                   alt={item?.title || `Banner ${index + 1}`}
-                  loading="eager"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "low"}
+                  decoding="async"
                   sx={{
                     width: "100%",
                     height: "100%",
@@ -260,6 +273,7 @@ const Top = ({
         </Slider>
       )}
     </Box>
+    </>
   );
 };
 

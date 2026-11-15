@@ -267,7 +267,7 @@ const CategoryShowcase = ({
               </Typography>
             </Stack>
 
-            {sortCategories(categories, false).map((cat) => {
+            {sortCategories(categories, false).map((cat, index) => {
               const active =
                 !viewAllProducts && String(selectedId) === String(cat?.id);
               const imageUrl =
@@ -341,7 +341,10 @@ const CategoryShowcase = ({
                       <img
                         src={imageUrl}
                         alt={cat?.name || "Category"}
-                        loading="eager"
+                        width="74"
+                        height="74"
+                        loading={index < 8 ? "eager" : "lazy"}
+                        decoding="async"
                         onError={(e) => {
                           e.target.style.display = "none";
                           if (e.target.nextSibling) {

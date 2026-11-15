@@ -1130,12 +1130,14 @@ const MiddleSection = (props) => {
                             px: 0.5,
                           }}
                         >
-                          {searchFilteredProducts.map((item) => (
+                          {searchFilteredProducts.map((item, itemIdx) => (
                             <NewProductCard
                               key={item?.id}
                               item={item}
                               variant="vertical"
                               isStore
+                              priority={itemIdx < 6}
+                              loading={itemIdx < 6 ? "eager" : "lazy"}
                               cardWidth="100%"
                             />
                           ))}
@@ -1175,12 +1177,14 @@ const MiddleSection = (props) => {
                             px: 0.5,
                           }}
                         >
-                          {allStoreProducts.map((item) => (
+                          {allStoreProducts.map((item, itemIdx) => (
                             <NewProductCard
                               key={item?.id}
                               item={item}
                               variant="vertical"
                               isStore
+                              priority={itemIdx < 6}
+                              loading={itemIdx < 6 ? "eager" : "lazy"}
                               cardWidth="100%"
                             />
                           ))}
@@ -1227,7 +1231,7 @@ const MiddleSection = (props) => {
                                   component="img"
                                   src={bannerImage}
                                   alt={section.title}
-                                  loading="eager"
+                                  loading={idx === 0 ? "eager" : "lazy"}
                                   decoding="async"
                                   sx={{
                                     width: "100%",
@@ -1270,7 +1274,7 @@ const MiddleSection = (props) => {
                                   "&::-webkit-scrollbar": { display: "none" },
                                 }}
                               >
-                                {(section.items.slice(0, 8)).map((item) => (
+                                {(section.items.slice(0, 8)).map((item, itemIdx) => (
                                   <Box
                                     key={`${section.key}-${item?.id}`}
                                     sx={{
@@ -1282,6 +1286,8 @@ const MiddleSection = (props) => {
                                       item={item}
                                       variant="vertical"
                                       isStore
+                                      priority={idx === 0 && itemIdx < 6}
+                                      loading={idx === 0 && itemIdx < 6 ? "eager" : "lazy"}
                                       cardWidth={{ xs: "155px", sm: "175px", md: "205px" }}
                                     />
                                   </Box>
@@ -1302,12 +1308,14 @@ const MiddleSection = (props) => {
                                   px: 0.5,
                                 }}
                               >
-                                {section.items.map((item) => (
+                                {section.items.map((item, itemIdx) => (
                                   <NewProductCard
                                     key={`${section.key}-${item?.id}`}
                                     item={item}
                                     variant="vertical"
                                     isStore
+                                    priority={idx === 0 && itemIdx < 6}
+                                    loading={idx === 0 && itemIdx < 6 ? "eager" : "lazy"}
                                     cardWidth="100%"
                                   />
                                 ))}

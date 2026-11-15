@@ -1367,6 +1367,8 @@ const NewProductCard = ({
   isStore,
   isPharmacy = false,
   isRental = false,
+  priority = false,
+  loading = "lazy",
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -1909,6 +1911,8 @@ const NewProductCard = ({
               width="270"
               height="136"
               objectFit="cover"
+              priority={priority}
+              loading={priority ? undefined : (loading || "lazy")}
             />
             <RentalImageOverlay
               discountText={discountText}
@@ -1951,6 +1955,8 @@ const NewProductCard = ({
               width="190"
               height="190"
               objectFit="cover"
+              priority={priority}
+              loading={priority ? undefined : (loading || "lazy")}
             />
             <Box
               className="img-gradient-overlay"
@@ -2042,6 +2048,8 @@ const NewProductCard = ({
               width="126"
               height="126"
               objectFit="cover"
+              priority={priority}
+              loading={priority ? undefined : (loading || "lazy")}
             />
             <Box
               className="img-gradient-overlay"
@@ -2096,6 +2104,8 @@ const NewProductCard = ({
               width="190"
               height="190"
               objectFit="cover"
+              priority={priority}
+              loading={priority ? undefined : (loading || "lazy")}
             />
             <Box
               className="img-gradient-overlay"
@@ -2190,6 +2200,8 @@ const NewProductCard = ({
               width="126"
               height="126"
               objectFit="cover"
+              priority={priority}
+              loading={priority ? undefined : (loading || "lazy")}
             />
             <Box
               className="img-gradient-overlay"
