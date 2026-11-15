@@ -1,5 +1,6 @@
 ﻿import MainApi from "../../../MainApi";
 import { useQuery } from "react-query";
+import { useSelector } from "react-redux";
 import { all_cart_list } from "../../../ApiRoutes";
 import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponses";
 import { getToken } from "helper-functions/getToken";
@@ -30,14 +31,21 @@ export default function useGetAllCartList(
   enabled = true
 ) {
   const token = getToken();
-  // Include store_id AND token so re-login triggers a fresh fetch for the
-  // store-details sidebar cart (token change = new key = new request).
+  const hasCart = useSelector((state) =>
+    Boolean(
+      token ||
+      (Array.isArray(state.cart?.cartList) && state.cart.cartList.length > 0) ||
+      (Array.isArray(state.cart?.cartGroups) && state.cart.cartGroups.length > 0) ||
+      (Array.isArray(state.cart?.storeCartList) && state.cart.storeCartList.length > 0)
+    )
+  );
+
   return useQuery(
     ["cart-itemss", store_id ?? null, token ?? null, guestId ?? null],
     () => getData(guestId, store_id),
     {
       onSuccess: cartListSuccessHandler,
-      enabled: Boolean(enabled && store_id && (token || guestId)),
+      enabled: Boolean(enabled && store_id && hasCart),
       refetchOnWindowFocus: false,
       onError: onSingleErrorResponse,
     }

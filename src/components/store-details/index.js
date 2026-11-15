@@ -28,7 +28,7 @@ import CustomContainer from "../container";
 import Top from "./Top";
 import MiddleSection from "./middle-section";
 import { useRouter } from "next/router";
-import useGetStoreBanners from "../../api-manage/hooks/react-query/store/useGetStoreBanners";
+// duplicate store banners hook removed
 import useGetModule from "../../api-manage/hooks/react-query/useGetModule";
 import { useDispatch } from "react-redux";
 import { setSelectedModule } from "redux/slices/utils";
@@ -290,11 +290,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
     moduleType: router.query.module_type,
     storeZoneId: storeZoneId ? [storeZoneId] : [],
   };
-  const {
-    data: bannersData,
-    refetch,
-    isLoading,
-  } = useGetStoreBanners(storeDetails?.id);
+  // Promotional banners fetched directly once in Top.js via useGetBanners
   const { data: moduleDataFromApi, refetch: refetchModule } = useGetModule();
   const guestId =
     typeof window !== "undefined"
@@ -477,9 +473,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
       logo={logo}
       isSmall={isSmall}
       storeShare={storeShare}
-      bannersData={bannersData}
-      isLoading={isLoading}
-      setOpenReviewModal={setOpenReviewModal}
+            setOpenReviewModal={setOpenReviewModal}
       onCondensedHeaderChange={setCondensedHeaderVisible}
     />
   );

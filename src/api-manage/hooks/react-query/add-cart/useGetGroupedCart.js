@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "react-query";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import MainApi from "../../../MainApi";
 import { cart_get_all } from "../../../ApiRoutes";
 import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponses";
@@ -84,6 +84,16 @@ export default function useGetGroupedCart(options = {}) {
   const moduleId = getModuleId();
   const [canFetch, setCanFetch] = useState(false);
 
+  // Skip cart call if guest has empty cart (no token and 0 items)
+  const hasCart = useSelector((state) =>
+    Boolean(
+      token ||
+      (Array.isArray(state.cart?.cartList) && state.cart.cartList.length > 0) ||
+      (Array.isArray(state.cart?.cartGroups) && state.cart.cartGroups.length > 0) ||
+      (Array.isArray(state.cart?.storeCartList) && state.cart.storeCartList.length > 0)
+    )
+  );
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       if ("requestIdleCallback" in window) {
@@ -105,7 +115,7 @@ export default function useGetGroupedCart(options = {}) {
     // Skip until a module is selected — MainApi sends `moduleId` as a
     // header, and the backend scopes the cart to it. Without it the call
     // either 4xxs or returns the wrong module's cart.
-    enabled: Boolean(canFetch && (token || guestId) && moduleId && (options?.enabled ?? true)),
+    enabled: Boolean(canFetch && hasCart && moduleId && (options?.enabled ?? true)),
     refetchOnWindowFocus: false,
     retry: false,
     onError: (err) => {
