@@ -73,6 +73,30 @@ const nextConfig = {
         destination: '/api/edge-catalog/combined-data',
       },
       {
+        source: '/backend-api/api/v1/module',
+        destination: '/api/edge-public/module',
+      },
+      {
+        source: '/backend-api/api/v1/react-landing-page',
+        destination: '/api/edge-public/react-landing-page',
+      },
+      {
+        source: '/backend-api/api/v1/banners',
+        destination: '/api/edge-public/banners',
+      },
+      {
+        source: '/backend-api/api/v1/banners/:path*',
+        destination: '/api/edge-public/banners/:path*',
+      },
+      {
+        source: '/backend-api/api/v1/config',
+        destination: '/api/edge-public/config',
+      },
+      {
+        source: '/backend-api/api/v1/stores/details/:path*',
+        destination: '/api/edge-public/stores/details/:path*',
+      },
+      {
         source: '/backend-api/api/:path*',
         destination: `${(process.env.NEXT_PUBLIC_BASE_URL || 'https://admin.domains4gulf.com').replace(/\/+$/, '')}/api/:path*`,
       },

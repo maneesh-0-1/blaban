@@ -33,8 +33,13 @@ export default async function handler(req) {
     const moduleId = (rawModuleId && rawModuleId !== 'blaban' && !isNaN(Number(rawModuleId)) && Number(rawModuleId) > 0) ? String(rawModuleId) : '2';
     headers.set('moduleId', moduleId);
 
+    // Check if this request carries an auth token or guest cart (never cache authenticated/user requests)
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+    const guestHeader = req.headers.get('guest_id') || req.headers.get('guestId') || url.searchParams.get('guest_id');
+    const shouldBypassCache = Boolean(authHeader || guestHeader || req.method !== 'GET');
+
     const response = await fetch(backendUrl.toString(), {
-      method: 'GET',
+      method: req.method || 'GET',
       headers: headers,
     });
 
@@ -43,12 +48,23 @@ export default async function handler(req) {
         status: response.status,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
+          'Cache-Control': 'no-store, private',
         },
       });
     }
 
     const data = await response.text();
+
+    if (shouldBypassCache) {
+      return new Response(data, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, private, must-revalidate',
+          'X-Edge-Cache': 'BYPASS-AUTH-DATA',
+        },
+      });
+    }
 
     return new Response(data, {
       status: 200,
@@ -58,7 +74,7 @@ export default async function handler(req) {
         'CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'Vercel-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'Cache-Tag': `catalog,categories,lang-${lang}`,
-        'Vary': 'X-localization, Accept-Language, locale',
+        'Vary': 'zoneId, moduleId, X-localization, Accept-Language, locale',
         'X-Edge-Cache': 'HIT-VERCEL',
         'X-Language': lang,
       },
