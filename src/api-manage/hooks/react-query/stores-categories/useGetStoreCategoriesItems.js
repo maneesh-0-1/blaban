@@ -64,7 +64,7 @@ const buildUrl = (params) => {
   return `${store_categories_items_api}?${parts.join("&")}&v=full_catalog`;
 };
 
-const normalizeResponse = (data) => {
+export const normalizeResponse = (data) => {
   if (Array.isArray(data?.categories)) {
     data.categories = sortCategories(data.categories, false);
   }
@@ -144,7 +144,7 @@ const fetchPage = async (params) => {
   return normalized;
 };
 
-export default function useGetStoreCategoriesItems(pageParams) {
+export default function useGetStoreCategoriesItems(pageParams, options = {}) {
   const zoneid =
     typeof window !== "undefined" ? localStorage.getItem("zoneid") : null;
   const effectiveLimit = pageParams?.limit || 200;
@@ -191,6 +191,7 @@ export default function useGetStoreCategoriesItems(pageParams) {
         );
         return totalFetched < totalSize ? allPages.length + 1 : undefined;
       },
+      ...options,
     }
   );
 }

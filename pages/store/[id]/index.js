@@ -2,25 +2,26 @@ import React, { useEffect } from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import MainLayout from "../../../src/components/layout/MainLayout";
 import { useDispatch } from "react-redux";
-import Router from "next/router";
-import dynamic from "next/dynamic";
 import { setConfigData } from "redux/slices/configData";
-import { config_api, store_details_api } from "api-manage/ApiRoutes";
+import { banners, config_api, store_details_api } from "api-manage/ApiRoutes";
 import SEO from "../../../src/components/seo";
 import useScrollToTop from "api-manage/hooks/custom-hooks/useScrollToTop";
 import { checkMaintenanceMode } from "../../../src/utils/serverSidePropsHelper";
+import StoreDetails from "../../../src/components/store-details";
 
-const StoreDetails = dynamic(
-  () => import("../../../src/components/store-details"),
-  { ssr: false }
-);
-
-const StorePage = ({ configData, storeDetails, distance }) => {
+const StorePage = ({
+  configData,
+  storeDetails,
+  initialBanners,
+  initialCategories,
+  initialCatalog,
+  distance,
+}) => {
   const dispatch = useDispatch();
   useScrollToTop();
 
-  const metaTitle = `${storeDetails?.meta_title || storeDetails?.name} - ${
-    configData?.business_name
+  const metaTitle = `${storeDetails?.meta_title || storeDetails?.name || "B.Laban"} - ${
+    configData?.business_name || "Kuwait"
   }`;
   const metaImage =
     storeDetails?.meta_image_full_url || configData?.logo_full_url;
@@ -66,45 +67,19 @@ const StorePage = ({ configData, storeDetails, distance }) => {
         configData={configData}
       />
       <MainLayout configData={configData}>
-        <StoreDetails storeDetails={storeDetails} configData={configData} />
+        <StoreDetails
+          storeDetails={storeDetails}
+          configData={configData}
+          initialBanners={initialBanners}
+          initialCategories={initialCategories}
+          initialCatalog={initialCatalog}
+        />
       </MainLayout>
     </>
   );
 };
 
 export default StorePage;
-
-const ssrCache = new Map();
-const CONFIG_TTL_MS = 120 * 1000; // 2 minutes
-const STORE_TTL_MS = 60 * 1000;  // 1 minute
-
-const fetchWithCache = async (url, options, ttlMs) => {
-  const cacheKey = `${url}_${JSON.stringify(options?.headers || {})}`;
-  const now = Date.now();
-  const cached = ssrCache.get(cacheKey);
-
-  if (cached && now - cached.timestamp < ttlMs) {
-    return { ok: true, json: async () => cached.data, status: 200 };
-  }
-
-  try {
-    const res = await fetch(url, options);
-    if (res.ok) {
-      const data = await res.json();
-      ssrCache.set(cacheKey, { timestamp: now, data });
-      return { ok: true, json: async () => data, status: res.status };
-    }
-    if (cached) {
-      return { ok: true, json: async () => cached.data, status: 200 };
-    }
-    return { ok: false, status: res.status, json: async () => null };
-  } catch (err) {
-    if (cached) {
-      return { ok: true, json: async () => cached.data, status: 200 };
-    }
-    throw err;
-  }
-};
 
 const pruneStoreDetails = (raw) => {
   if (!raw || typeof raw !== "object") return null;
@@ -124,75 +99,62 @@ const pruneStoreDetails = (raw) => {
   return clean;
 };
 
-export const getServerSideProps = async (context) => {
-  const {
-    id: storeId,
-    module,
-    module_id: legacyModuleId,
-    lat,
-    lng,
-    distance,
-  } = context.query;
-  const { req, res } = context;
-  const language = req.cookies.languageSetting || "en";
+export const getStaticPaths = async () => {
+  return {
+    paths: [
+      { params: { id: "blaban" } },
+      { params: { id: "2" } },
+    ],
+    fallback: "blocking",
+  };
+};
+
+export const getStaticProps = async (context) => {
+  const { id: storeParam } = context.params || {};
+
+  if (storeParam && storeParam !== "blaban" && storeParam !== "2") {
+    return {
+      redirect: {
+        destination: "/store/blaban?module=blaban",
+        permanent: false,
+      },
+      revalidate: 300,
+    };
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://admin.domains4gulf.com";
+  const origin = process.env.NEXT_CLIENT_HOST_URL || "https://store.domains4gulf.com";
+  const language = "en";
+
+  const headersCommon = {
+    "X-software-id": "33571750",
+    "X-server": "server",
+    origin,
+    "X-localization": language,
+    zoneId: "[6,7,8,9,10]",
+    moduleId: "2",
+  };
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const origin = process.env.NEXT_CLIENT_HOST_URL || "";
-
-    const headersCommon = {
-      "X-software-id": 33571750,
-      "X-server": "server",
-      origin,
-      "X-localization": language,
-    };
-
-    if (storeId && storeId !== "blaban") {
-      return {
-        redirect: {
-          destination: "/store/blaban?module=blaban",
-          permanent: false,
-        },
-      };
-    }
-    const moduleId = module || legacyModuleId;
-
-    const [configRes, storeDetailsRes] = await Promise.all([
-      fetchWithCache(
-        `${baseUrl}${config_api}`,
-        {
-          method: "GET",
-          headers: { ...headersCommon, ...(lat ? { lat } : {}), ...(lng ? { lng } : {}) },
-          signal: controller.signal,
-        },
-        CONFIG_TTL_MS
-      ),
-      fetchWithCache(
-        `${baseUrl}${store_details_api}/${storeId}`,
-        {
-          method: "GET",
-          headers: { ...headersCommon, ...(moduleId ? { moduleId } : {}) },
-          signal: controller.signal,
-        },
-        STORE_TTL_MS
-      ),
+    const [configRes, storeDetailsRes, bannersRes, categoriesRes, catalogRes] = await Promise.all([
+      fetch(`${baseUrl}${config_api}`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
+      fetch(`${baseUrl}${store_details_api}/2`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
+      fetch(`${baseUrl}${banners}?featured=all`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
+      fetch(`${baseUrl}/api/v1/categories`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
+      fetch(`${baseUrl}/api/v1/store-categories/items?store_id=2&offset=1&limit=30&type=all&v=full_catalog`, { headers: headersCommon, signal: controller.signal }).catch(() => null),
     ]);
 
     clearTimeout(timeout);
 
-    if (storeDetailsRes.status === 404) {
-      return {
-        notFound: true,
-      };
-    }
-
-    // Parse independent responses in parallel with Promise.all
-    const [configData, storeDetails] = await Promise.all([
-      configRes.ok ? configRes.json() : Promise.resolve(null),
-      storeDetailsRes.ok ? storeDetailsRes.json() : Promise.resolve(null),
+    const [configData, storeDetails, initialBanners, initialCategories, initialCatalog] = await Promise.all([
+      configRes && configRes.ok ? configRes.json().catch(() => null) : Promise.resolve(null),
+      storeDetailsRes && storeDetailsRes.ok ? storeDetailsRes.json().catch(() => null) : Promise.resolve(null),
+      bannersRes && bannersRes.ok ? bannersRes.json().catch(() => null) : Promise.resolve(null),
+      categoriesRes && categoriesRes.ok ? categoriesRes.json().catch(() => null) : Promise.resolve(null),
+      catalogRes && catalogRes.ok ? catalogRes.json().catch(() => null) : Promise.resolve(null),
     ]);
 
     if (configData && checkMaintenanceMode(configData)) {
@@ -201,32 +163,34 @@ export const getServerSideProps = async (context) => {
           destination: "/maintainance",
           permanent: false,
         },
+        revalidate: 300,
       };
-    }
-
-    if (res) {
-      res.setHeader(
-        "Cache-Control",
-        "public, s-maxage=60, stale-while-revalidate=300"
-      );
     }
 
     return {
       props: {
         configData: configData || null,
         storeDetails: pruneStoreDetails(storeDetails),
-        distance: distance || null,
+        initialBanners: initialBanners || null,
+        initialCategories: Array.isArray(initialCategories) ? initialCategories : null,
+        initialCatalog: initialCatalog || null,
+        distance: null,
       },
+      revalidate: 300,
     };
   } catch (error) {
     clearTimeout(timeout);
-    console.error("SSR fetch failed:", error.message);
+    console.error("Static props fetch failed:", error.message);
     return {
       props: {
         configData: null,
         storeDetails: null,
-        distance: distance || null,
+        initialBanners: null,
+        initialCategories: null,
+        initialCatalog: null,
+        distance: null,
       },
+      revalidate: 60,
     };
   }
 };

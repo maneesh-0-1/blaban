@@ -88,7 +88,13 @@ const parseZoneIdsFromStorageValue = (rawZoneIds) => {
   }
 };
 
-const StoreDetails = ({ storeDetails, configData }) => {
+const StoreDetails = ({
+  storeDetails,
+  configData,
+  initialBanners,
+  initialCategories,
+  initialCatalog,
+}) => {
   useEffect(() => {
     const handleOpen = () => setCartDrawerOpen(true);
     if (typeof window !== "undefined") {
@@ -475,6 +481,7 @@ const StoreDetails = ({ storeDetails, configData }) => {
       storeShare={storeShare}
             setOpenReviewModal={setOpenReviewModal}
       onCondensedHeaderChange={setCondensedHeaderVisible}
+      initialBanners={initialBanners}
     />
   );
 
@@ -518,6 +525,8 @@ const StoreDetails = ({ storeDetails, configData }) => {
         storeShare={storeShare}
         setExpanded={setExpanded}
         condensedHeaderVisible={condensedHeaderVisible}
+        initialCategories={initialCategories}
+        initialCatalog={initialCatalog}
       />
       {configData?.prescription_order_status &&
         storeDetails?.prescription_order &&

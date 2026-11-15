@@ -14,7 +14,7 @@ const getBanners = async (feature) => {
   }
 };
 
-export default function useGetBanners(feature) {
+export default function useGetBanners(feature, options = {}) {
   return useQuery(
     ["banners", feature || "all", getModuleId()],
     () => getBanners(feature),
@@ -23,6 +23,7 @@ export default function useGetBanners(feature) {
       cacheTime: 60 * 1000,
       refetchOnWindowFocus: false,
       retry: false,
+      ...options,
     }
   );
 }

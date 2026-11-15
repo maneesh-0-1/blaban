@@ -21,7 +21,7 @@ import {
   CustomStackFullWidth,
 } from "styled-components/CustomStyles.style";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import useGetStoreCategoriesItems from "../../../api-manage/hooks/react-query/stores-categories/useGetStoreCategoriesItems";
+import useGetStoreCategoriesItems, { normalizeResponse } from "../../../api-manage/hooks/react-query/stores-categories/useGetStoreCategoriesItems";
 import ProductCard, { CardWrapper } from "../../cards/ProductCard";
 import NewProductCard from "../../cards/newCard/NewProductCard";
 import ProductCardSimmer from "components/Shimmer/ProductCardSimmer";
@@ -150,6 +150,8 @@ const MiddleSection = (props) => {
     storeShare,
     setExpanded,
     condensedHeaderVisible,
+    initialCategories,
+    initialCatalog,
   } = props;
   const theme = useTheme();
   const isSmallSize = useMediaQuery(theme.breakpoints.down("sm"));
@@ -507,6 +509,35 @@ const MiddleSection = (props) => {
       }
     }
   };
+  const isDefaultZoneAndModule = useMemo(() => {
+    if (typeof window === "undefined") return true;
+    const currentZone = localStorage.getItem("zoneid");
+    const currentMod = localStorage.getItem("module");
+    const isDefaultZone =
+      !currentZone ||
+      currentZone === "[6,7,8,9,10]" ||
+      currentZone === "6";
+    let isDefaultMod = true;
+    try {
+      if (currentMod) {
+        const parsed = JSON.parse(currentMod);
+        if (parsed?.id && String(parsed.id) !== "2") isDefaultMod = false;
+      }
+    } catch {}
+    return isDefaultZone && isDefaultMod;
+  }, []);
+
+  const queryOptions = useMemo(() => {
+    const opts = { onSuccess: handleSuccess };
+    if (initialCatalog && isDefaultZoneAndModule) {
+      opts.initialData = {
+        pages: [normalizeResponse(initialCatalog)],
+        pageParams: [1],
+      };
+    }
+    return opts;
+  }, [initialCatalog, isDefaultZoneAndModule]);
+
   const {
     data,
     refetch,
@@ -516,40 +547,10 @@ const MiddleSection = (props) => {
     hasNextPage,
     isLoading: isLoadingStoresCategories,
     isFetchingNextPage,
-  } = useGetStoreCategoriesItems(pageParams);
+  } = useGetStoreCategoriesItems(pageParams, queryOptions);
 
   // categoriesLoading kept for the CategoryTabs skeleton; mirrors the items
   // loading state since both come from the same request now.
-  // Auto-scroll to selected category if it was pending (e.g. after exiting search/all-products, or subsequent page fetch)
-  useEffect(() => {
-    if (pendingScrollCategoryRef.current && !isSearchActive && !viewAllProducts) {
-      const targetKey = pendingScrollCategoryRef.current;
-      const timer = setTimeout(() => {
-        if (performScrollToCategory(targetKey)) {
-          pendingScrollCategoryRef.current = null;
-        } else if (hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        } else {
-          requestAnimationFrame(() => {
-            if (performScrollToCategory(targetKey)) {
-              pendingScrollCategoryRef.current = null;
-            }
-          });
-        }
-      }, 60);
-      return () => clearTimeout(timer);
-    }
-  }, [
-    data,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isSearchActive,
-    viewAllProducts,
-    selectedCategoryTabId,
-    sections,
-  ]);
-
   const categoriesLoading = isLoading;
 
   // offset is part of the query key, so each page increment creates a NEW
@@ -560,8 +561,21 @@ const MiddleSection = (props) => {
   // Pull categories synchronously from all loaded pages for instant rendering
   const categoryList = useMemo(() => {
     const pages = data?.pages || [];
-    if (pages.length === 0) return [];
     const catMap = new Map();
+    if (Array.isArray(initialCategories)) {
+      initialCategories.forEach((c) => {
+        if (c?.id != null && !catMap.has(String(c.id))) {
+          catMap.set(String(c.id), c);
+        }
+      });
+    }
+    if (initialCatalog?.categories && Array.isArray(initialCatalog.categories)) {
+      initialCatalog.categories.forEach((c) => {
+        if (c?.id != null && !catMap.has(String(c.id))) {
+          catMap.set(String(c.id), c);
+        }
+      });
+    }
     pages.forEach((p) => {
       (p?.categories || []).forEach((c) => {
         if (c?.id != null && !catMap.has(String(c.id))) {
@@ -577,7 +591,7 @@ const MiddleSection = (props) => {
       }
     });
     return Array.from(catMap.values());
-  }, [data]);
+  }, [data, initialCategories, initialCatalog]);
 
   useEffect(() => {
     categoryListRef.current = categoryList;
@@ -671,6 +685,20 @@ const MiddleSection = (props) => {
       });
     }
 
+    if (initialCatalog?.category_wise_items && typeof initialCatalog.category_wise_items === "object") {
+      Object.entries(initialCatalog.category_wise_items).forEach(([catId, items]) => {
+        if (Array.isArray(items)) {
+          const key = String(catId);
+          if (!productsByCat[key]) productsByCat[key] = [];
+          items.forEach((item) => {
+            if (!productsByCat[key].some((x) => x?.id === item?.id)) {
+              productsByCat[key].push(item);
+            }
+          });
+        }
+      });
+    }
+
     allStoreProducts.forEach((p) => {
       const ids = new Set();
       let catIds = p?.category_ids;
@@ -718,6 +746,36 @@ const MiddleSection = (props) => {
 
     return specSec.length > 0 ? specSec : rawSec;
   }, [allStoreProducts, data?.pages, state.data?.category_wise_items, categoryList, configData?.base_urls?.category_image_url]);
+
+// Auto-scroll to selected category if it was pending (e.g. after exiting search/all-products, or subsequent page fetch)
+  useEffect(() => {
+    if (pendingScrollCategoryRef.current && !isSearchActive && !viewAllProducts) {
+      const targetKey = pendingScrollCategoryRef.current;
+      const timer = setTimeout(() => {
+        if (performScrollToCategory(targetKey)) {
+          pendingScrollCategoryRef.current = null;
+        } else if (hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        } else {
+          requestAnimationFrame(() => {
+            if (performScrollToCategory(targetKey)) {
+              pendingScrollCategoryRef.current = null;
+            }
+          });
+        }
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    data,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isSearchActive,
+    viewAllProducts,
+    selectedCategoryTabId,
+    sections,
+  ]);
 
   // React-Query automatically queries when pageParams/query keys change.
   useEffect(() => {

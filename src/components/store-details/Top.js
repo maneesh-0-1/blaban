@@ -77,23 +77,25 @@ const Top = ({
   bannersData: propBannersData,
   isLoading: propLoading,
   onCondensedHeaderChange,
+  initialBanners,
 }) => {
   const router = useRouter();
   const theme = useTheme();
 
   // Fetch all active banners configured in Admin Panel -> Promotion -> Banners
-  const { data: apiBanners, isLoading: bannersLoading } = useGetBanners();
+  const { data: apiBanners, isLoading: bannersLoading } = useGetBanners(undefined, initialBanners ? { initialData: initialBanners } : {});
 
   // Combine and deduplicate active banners
   const banners = useMemo(() => {
     const list = [];
-    if (Array.isArray(apiBanners?.banners)) {
-      apiBanners.banners.forEach((b) => {
+    const bannerSource = apiBanners || initialBanners;
+    if (Array.isArray(bannerSource?.banners)) {
+      bannerSource.banners.forEach((b) => {
         if (b?.image_full_url || b?.image) list.push(b);
       });
     }
-    if (Array.isArray(apiBanners?.campaigns)) {
-      apiBanners.campaigns.forEach((c) => {
+    if (Array.isArray(bannerSource?.campaigns)) {
+      bannerSource.campaigns.forEach((c) => {
         if (c?.image_full_url || c?.image) list.push({ ...c, isCampaign: true });
       });
     }
