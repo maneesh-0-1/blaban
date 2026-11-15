@@ -1,0 +1,71 @@
+@font-face {
+  font-family: uicons-regular-rounded;
+  src: url("/fonts/uicons-subset.woff2") format("woff2");
+  font-display: swap;
+}
+i[class^="fi-rr-"]:before, i[class*=" fi-rr-"]:before,
+span[class^="fi-rr-"]:before, span[class*=" fi-rr-"]:before {
+  font-family: uicons-regular-rounded !important;
+  font-style: normal;
+  font-weight: 400 !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.fi-rr-angle-double-small-right:before{content:"\f14e"}
+.fi-rr-angle-small-down:before{content:"\f153"}
+.fi-rr-angle-small-up:before{content:"\f156"}
+.fi-rr-arrow-small-left:before{content:"\f19d"}
+.fi-rr-arrow-small-right:before{content:"\f19e"}
+.fi-rr-arrow-small-up:before{content:"\f19f"}
+.fi-rr-arrow-up-right-from-square:before{content:"\f1b3"}
+.fi-rr-badge:before{content:"\f1f0"}
+.fi-rr-badge-percent:before{content:"\f1ee"}
+.fi-rr-biking-mountain:before{content:"\f246"}
+.fi-rr-box-open:before{content:"\f2b3"}
+.fi-rr-brightness:before{content:"\f2eb"}
+.fi-rr-calendar:before{content:"\f339"}
+.fi-rr-circle-user:before{content:"\f423"}
+.fi-rr-circle-xmark:before{content:"\f429"}
+.fi-rr-clock:before{content:"\f45a"}
+.fi-rr-comment-alt-middle:before{content:"\f49e"}
+.fi-rr-cross:before{content:"\f4f7"}
+.fi-rr-cross-circle:before{content:"\f4f4"}
+.fi-rr-cross-small:before{content:"\f4f6"}
+.fi-rr-crown:before{content:"\f4f9"}
+.fi-rr-duplicate:before{content:"\f5b1"}
+.fi-rr-eye:before{content:"\f5f8"}
+.fi-rr-file-prescription:before{content:"\f66c"}
+.fi-rr-heart:before{content:"\f7a0"}
+.fi-rr-home:before{content:"\f7b8"}
+.fi-rr-language:before{content:"\f868"}
+.fi-rr-list-check:before{content:"\f8c0"}
+.fi-rr-map-marker:before{content:"\f8f8"}
+.fi-rr-map-marker-home:before{content:"\f8f2"}
+.fi-rr-marker:before{content:"\f8fd"}
+.fi-rr-messages:before{content:"\f939"}
+.fi-rr-minus-small:before{content:"\f94d"}
+.fi-rr-moon-stars:before{content:"\f971"}
+.fi-rr-pencil:before{content:"\fa29"}
+.fi-rr-plus-small:before{content:"\faab"}
+.fi-rr-receipt:before{content:"\fb16"}
+.fi-rr-refresh:before{content:"\fb34"}
+.fi-rr-restaurant:before{content:"\fb4b"}
+.fi-rr-rotate-right:before{content:"\fb6a"}
+.fi-rr-search:before{content:"\fbba"}
+.fi-rr-settings:before{content:"\fbd2"}
+.fi-rr-settings-sliders:before{content:"\fbd1"}
+.fi-rr-share:before{content:"\fbd5"}
+.fi-rr-shield-trust:before{content:"\fbe5"}
+.fi-rr-shop:before{content:"\fbf5"}
+.fi-rr-shopping-bag:before{content:"\fbf7"}
+.fi-rr-shopping-cart:before{content:"\fbfc"}
+.fi-rr-shopping-cart-add:before{content:"\fbf9"}
+.fi-rr-star:before{content:"\fce9"}
+.fi-rr-ticket:before{content:"\fd9d"}
+.fi-rr-trash:before{content:"\fe17"}
+.fi-rr-user:before{content:"\fea0"}
+.fi-rr-utensils:before{content:"\fea8"}
+.fi-rr-wallet:before{content:"\fedc"}

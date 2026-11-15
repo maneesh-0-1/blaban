@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import CustomSideDrawer from "../../../side-drawer/CustomSideDrawer";
 import {
   CustomPaperBigCard,
@@ -11,7 +12,7 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import MapComponent from "../../../Map/location-view/MapComponent";
+const MapComponent = dynamic(() => import("../../../Map/location-view/MapComponent"), { ssr: false });
 import { Box, Stack, styled } from "@mui/system";
 import { useTheme } from "@emotion/react";
 import LocationOnIcon from "@mui/icons-material/LocationOn";

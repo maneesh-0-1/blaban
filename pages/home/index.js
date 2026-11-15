@@ -1,9 +1,13 @@
 import CssBaseline from "@mui/material/CssBaseline";
 import Router, { useRouter } from "next/router";
 import React, { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useDispatch, useSelector } from "react-redux";
 import { setConfigData } from "redux/slices/configData";
-import AiChatBotLauncher from "../../src/components/ai-chatbot/AiChatBotLauncher";
+const AiChatBotLauncher = dynamic(
+  () => import("../../src/components/ai-chatbot/AiChatBotLauncher"),
+  { ssr: false }
+);
 import MainLayout from "../../src/components/layout/MainLayout";
 import ModuleWiseLayout from "../../src/components/module-wise-layout";
 import ZoneGuard from "../../src/components/route-guard/ZoneGuard";

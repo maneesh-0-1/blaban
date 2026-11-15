@@ -33,8 +33,12 @@ import { getModuleId } from "helper-functions/getModuleId";
 import { handleProductRedirect } from "helper-functions/handleProductRedirect";
 
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
-import FoodDetailModal from "components/food-details/foodDetail-modal/FoodDetailModal";
-import ModuleModal from "components/cards/ModuleModal";
+import dynamic from "next/dynamic";
+const FoodDetailModal = dynamic(
+  () => import("components/food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
+const ModuleModal = dynamic(() => import("components/cards/ModuleModal"), { ssr: false });
 import { useRouter } from "next/router";
 import { addWishList, removeWishListItem } from "redux/slices/wishList";
 import toast from "react-hot-toast";

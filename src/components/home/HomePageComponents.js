@@ -1,10 +1,11 @@
+import dynamic from "next/dynamic";
 import { NoSsr, styled, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { baseUrl } from "api-manage/MainApi";
 import useGetLastOrderWithoutReview from "api-manage/hooks/react-query/review/useGetLastOrderWithoutReview";
 import useReviewReminderCancel from "api-manage/hooks/react-query/review/useReviewReminderCancel";
 import { useWishListGet } from "api-manage/hooks/react-query/wish-list/useWishListGet";
-import CashBackPopup from "components/cash-back-popup/CashBackPopup";
+const CashBackPopup = dynamic(() => import("components/cash-back-popup/CashBackPopup"), { ssr: false });
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { getToken } from "helper-functions/getToken";
 import { ModuleTypes } from "helper-functions/moduleTypes";
@@ -22,13 +23,18 @@ import { setWishList } from "redux/slices/wishList";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
 import PushNotificationLayout from "../PushNotificationLayout";
 import CustomModal from "../modal";
-import LastOrderReview from "./LastOrderReview";
 import SearchWithTitle from "./SearchWithTitle";
-import Grocery from "./module-wise-components/Grocery";
-import Shop from "./module-wise-components/ecommerce";
-import FoodModule from "./module-wise-components/food";
-import Parcel from "./module-wise-components/parcel/Index";
-import Pharmacy from "./module-wise-components/pharmacy/Pharmacy";
+
+const LastOrderReview = dynamic(() => import("./LastOrderReview"), { ssr: false });
+const Grocery = dynamic(() => import("./module-wise-components/Grocery"));
+const Shop = dynamic(() => import("./module-wise-components/ecommerce"));
+const FoodModule = dynamic(() => import("./module-wise-components/food"));
+const Parcel = dynamic(() => import("./module-wise-components/parcel/Index"));
+const Pharmacy = dynamic(() => import("./module-wise-components/pharmacy/Pharmacy"));
+const Rental = dynamic(() => import("components/home/module-wise-components/rental/Rental"));
+const RideShareModuleLandingPage = dynamic(() => import("./module-wise-components/rideShare"));
+const IncompleteOrderModal = dynamic(() => import("components/home/IncompleteOrderModal"), { ssr: false });
+const PaymentMethod = dynamic(() => import("components/checkout/PaymentMethod"), { ssr: false });
 
 import { onErrorResponse } from "api-manage/api-error-response/ErrorResponses";
 import { GoogleApi } from "api-manage/hooks/react-query/googleApi";
@@ -37,10 +43,7 @@ import { useUpdatePaymentMethod } from "api-manage/hooks/react-query/payment-met
 import { useGetWishList } from "api-manage/hooks/react-query/rental-wishlist/useGetWishlist";
 import { useGetFailedPayment } from "api-manage/hooks/react-query/useGetFailedPayment";
 import { useUpdatePaymentByWallet } from "api-manage/hooks/react-query/useUpdatePaymentByWallet";
-import PaymentMethod from "components/checkout/PaymentMethod";
 import ScrollUpButton from "components/common/ScrollUpButton";
-import IncompleteOrderModal from "components/home/IncompleteOrderModal";
-import Rental from "components/home/module-wise-components/rental/Rental";
 import TaxiSearchPanel from "components/home/module-wise-components/rental/components/global/search/TaxiSearchPanel";
 import { useQuery } from "react-query";
 import {
@@ -49,7 +52,6 @@ import {
 } from "utils/CustomFunctions";
 import TopBanner from "./top-banner";
 import ModuleSearchBanner from "./module-wise-components/shared/ModuleSearchBanner";
-import RideShareModuleLandingPage from "./module-wise-components/rideShare";
 
 export const HomeComponentsWrapper = styled(Box)(({ theme }) => ({
   width: "100%",

@@ -1,6 +1,7 @@
 import React, {useEffect} from "react";
+import dynamic from "next/dynamic";
 import { Stack } from "@mui/system";
-import MapComponent from "components/Map/location-view/MapComponent";
+const MapComponent = dynamic(() => import("components/Map/location-view/MapComponent"), { ssr: false });
 import { IconButton } from "@mui/material";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { handleStoreRedirect } from "helper-functions/handleStoreRedirect";
 
 import { Grid, Skeleton, styled, useMediaQuery, useTheme } from "@mui/material";
@@ -18,7 +19,10 @@ import {
   SliderCustom,
 } from "styled-components/CustomStyles.style";
 import CustomImageContainer from "../../CustomImageContainer";
-import FoodDetailModal from "../../food-details/foodDetail-modal/FoodDetailModal";
+const FoodDetailModal = dynamic(
+  () => import("../../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
 import NextImage from "components/NextImage";
 import { handleProductRedirect } from "helper-functions/handleProductRedirect";
 

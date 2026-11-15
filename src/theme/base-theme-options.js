@@ -282,7 +282,7 @@ export const baseThemeOptions = {
   },
 
   typography: {
-    fontFamily: '"DM Sans","Rubik","sans-serif"',
+    fontFamily: 'var(--font-dm-sans), "DM Sans", var(--font-rubik), "Rubik", sans-serif',
     button: { fontWeight: 600 },
 
     body1: {

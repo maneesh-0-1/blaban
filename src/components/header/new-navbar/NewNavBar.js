@@ -20,16 +20,22 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import TaxiView from "components/home/module-wise-components/rental/components/home/TaxiView";
+const TaxiView = dynamic(
+  () => import("components/home/module-wise-components/rental/components/home/TaxiView"),
+  { ssr: false }
+);
 import CustomContainer from "../../container";
 import LogoSide from "../../logo/LogoSide";
-import WishListCardView from "../../wishlist";
+// unused wishlist import removed
 import ManageSearch from "../second-navbar/ManageSearch";
 import ModuleWiseNav from "../second-navbar/ModuleWiseNav";
 import MobileNavBar from "./MobileNavBar";
 import NavBarIcon from "../second-navbar/NavBarIcon";
-import AccountPopover from "../second-navbar/account-popover";
-import AddressReselect from "../top-navbar/address-reselect/AddressReselect";
+const AccountPopover = dynamic(() => import("../second-navbar/account-popover"), { ssr: false });
+const AddressReselect = dynamic(
+  () => import("../top-navbar/address-reselect/AddressReselect"),
+  { ssr: false }
+);
 
 import { getCartListModuleWise } from "helper-functions/getCartListModuleWise";
 import { getModule } from "helper-functions/getLanguage";
@@ -44,7 +50,10 @@ import {
 import { handleProductValueWithOutDiscount } from "utils/CustomFunctions";
 
 import useGetBookingList from "api-manage/hooks/react-query/useGetBookingList";
-import ForgotPassword from "components/auth/ForgotPassword/ForgotPassword";
+const ForgotPassword = dynamic(
+  () => import("components/auth/ForgotPassword/ForgotPassword"),
+  { ssr: false }
+);
 import CustomModal from "components/modal";
 import useGetGroupedCart from "../../../api-manage/hooks/react-query/add-cart/useGetGroupedCart";
 import useGetGuest from "../../../api-manage/hooks/react-query/guest/useGetGuest";

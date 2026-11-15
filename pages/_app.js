@@ -1,5 +1,5 @@
 import "../src/styles/globals.css";
-import "@flaticon/flaticon-uicons/css/regular/rounded.css";
+import "../src/styles/uicons-subset.css";
 
 import "../src/styles/nprogress.css";
 import { CacheProvider } from "@emotion/react";
@@ -25,6 +25,21 @@ import useScrollToTop from "../src/api-manage/hooks/custom-hooks/useScrollToTop"
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import Script from "next/script";
+import { DM_Sans, Rubik } from "next/font/google";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const rubik = Rubik({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-rubik",
+  display: "swap",
+});
 
 const ModuleChecker = dynamic(() => import("../src/components/module-select/ModuleChecker"), { ssr: false });
 const ProSubscriptionExpiredModal = dynamic(() => import("../src/components/pro-plan/ProSubscriptionExpiredModal"), { ssr: false });
@@ -100,10 +115,12 @@ function MyApp(props) {
                   >
                     <RTL direction={value?.settings?.direction}>
                       <CssBaseline />
-                      <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} />
-                      <ModuleChecker />
-                      <ProSubscriptionExpiredModal />
-                      {getLayout(<Component {...pageProps} />)}
+                      <div className={`${dmSans.variable} ${rubik.variable} ${dmSans.className}`}>
+                        <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} />
+                        <ModuleChecker />
+                        <ProSubscriptionExpiredModal />
+                        {getLayout(<Component {...pageProps} />)}
+                      </div>
                     </RTL>
                   </ThemeProvider>
                 )}

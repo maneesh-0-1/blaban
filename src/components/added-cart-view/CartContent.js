@@ -19,7 +19,11 @@ import {
   setIncrementToCartItem,
   setRemoveItemFromCart,
 } from "redux/slices/cart";
-import FoodDetailModal from "../food-details/foodDetail-modal/FoodDetailModal";
+import dynamic from "next/dynamic";
+const FoodDetailModal = dynamic(
+  () => import("../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
 import VariationContent from "./VariationContent";
 import { toast } from "react-hot-toast";
 import { t } from "i18next";

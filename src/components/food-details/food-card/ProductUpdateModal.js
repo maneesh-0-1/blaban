@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import FoodDetailModal from "../foodDetail-modal/FoodDetailModal";
+const FoodDetailModal = dynamic(
+  () => import("../foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
 import { RTL } from "../RTL/RTL";
 
 const ProductUpdateModal = ({

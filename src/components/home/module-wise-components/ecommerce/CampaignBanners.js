@@ -13,7 +13,11 @@ import { ModuleTypes } from "../../../../helper-functions/moduleTypes";
 import { setBanners } from "../../../../redux/slices/storedData";
 import { CustomStackFullWidth } from "../../../../styled-components/CustomStyles.style";
 import CustomImageContainer from "../../../CustomImageContainer";
-import FoodDetailModal from "../../../food-details/foodDetail-modal/FoodDetailModal";
+import dynamic from "next/dynamic";
+const FoodDetailModal = dynamic(
+  () => import("../../../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
 import { getImageUrl } from "utils/CustomFunctions";
 import { handleProductRedirect } from "helper-functions/handleProductRedirect";
 

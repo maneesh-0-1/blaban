@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import CustomModal from "../../modal";
 import { IconButton, Paper, Stack, Typography, useTheme } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { CustomStackFullWidth } from "../../../styled-components/CustomStyles.style";
-import MapComponent from "./MapComponent";
+const MapComponent = dynamic(() => import("./MapComponent"), { ssr: false });
 import { Box } from "@mui/system";
 import CustomImageContainer from "components/CustomImageContainer";
 import DirectionsIcon from "@mui/icons-material/Directions";

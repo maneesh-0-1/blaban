@@ -1,10 +1,4 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import {
-  getMessaging,
-  getToken,
-  onMessage,
-  isSupported,
-} from "firebase/messaging";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -26,6 +20,8 @@ export const auth = getAuth(firebaseApp);
 // Correctly export a promise that resolves to messaging instance (or null)
 export const getMessagingObject = async () => {
   try {
+    if (typeof window === "undefined") return null;
+    const { getMessaging, isSupported } = await import("firebase/messaging");
     const isSupportedBrowser = await isSupported();
     if (isSupportedBrowser) {
       return getMessaging(firebaseApp);
@@ -40,9 +36,11 @@ export const getMessagingObject = async () => {
 // fetchToken function
 export const fetchToken = async (setTokenFound, setFcmToken) => {
   try {
+    if (typeof window === "undefined") return;
     const messaging = await getMessagingObject();
     if (!messaging) return;
 
+    const { getToken } = await import("firebase/messaging");
     const currentToken = await getToken(messaging, {
       vapidKey: "BLoYbYGafvOAwuSpGQcQirPdjHB6lqQPe3rjLIL07JkvvPJYndb09WpG8ZhmnYoSX18i5sjY6ODxbSabPyNu_2o",
     });
@@ -63,6 +61,8 @@ export const fetchToken = async (setTokenFound, setFcmToken) => {
 export const onMessageListener = async () =>
   new Promise(async (resolve, reject) => {
     try {
+      if (typeof window === "undefined") return;
+      const { onMessage } = await import("firebase/messaging");
       const messaging = await getMessagingObject();
       if (!messaging) return;
 

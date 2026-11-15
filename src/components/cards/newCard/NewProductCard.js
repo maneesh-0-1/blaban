@@ -54,10 +54,16 @@ import {
   out_of_limits,
   out_of_stock,
 } from "utils/toasterMessages";
-import CartClearModal from "../../product-details/product-details-section/CartClearModal";
+const CartClearModal = dynamic(
+  () => import("../../product-details/product-details-section/CartClearModal"),
+  { ssr: false }
+);
 import CustomModal from "../../modal";
-import GetLocationAlert from "../../GetLocationAlert";
-import CustomDialogConfirm from "../../custom-dialog/confirm/CustomDialogConfirm";
+const GetLocationAlert = dynamic(() => import("../../GetLocationAlert"), { ssr: false });
+const CustomDialogConfirm = dynamic(
+  () => import("../../custom-dialog/confirm/CustomDialogConfirm"),
+  { ssr: false }
+);
 import { getCartListModuleWise } from "helper-functions/getCartListModuleWise";
 import {
   ACTION,
@@ -74,10 +80,11 @@ import ProductOrganicSvg from "../assets/ProductOrganicSvg";
 import ProductNonVegSvg from "../assets/ProductNonVegSvg";
 import StoreVerifiedSVG from "../assets/StoreVerifiedSVG";
 
-const FoodDetailModal = dynamic(() =>
-  import("../../food-details/foodDetail-modal/FoodDetailModal")
+const FoodDetailModal = dynamic(
+  () => import("../../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
 );
-const ModuleModal = dynamic(() => import("../ModuleModal"));
+const ModuleModal = dynamic(() => import("../ModuleModal"), { ssr: false });
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 

@@ -32,7 +32,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
-import Slider from "react-slick";
+const Slider = dynamic(() => import("react-slick"), { ssr: false });
 import "slick-carousel/slick/slick.css";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/router";
@@ -74,7 +74,10 @@ import {
 import { getItemDataForAddToCart } from "../product-details/product-details-section/helperFunction";
 import VariationContent from "../added-cart-view/VariationContent";
 import CartIcon from "../added-cart-view/assets/CartIcon";
-import CustomDialogConfirm from "../custom-dialog/confirm/CustomDialogConfirm";
+const CustomDialogConfirm = dynamic(
+  () => import("../custom-dialog/confirm/CustomDialogConfirm"),
+  { ssr: false }
+);
 import { PrimaryButton } from "../Map/map.style";
 import { getToken } from "../../helper-functions/getToken";
 const ProPlanBanner = dynamic(() => import("../pro-plan/ProPlanBanner"), { ssr: false });
@@ -86,19 +89,22 @@ import NewProductCard from "components/cards/newCard/NewProductCard";
 import prescription from "../store-details/assets/Frame.png";
 import CartTotalPrice from "components/added-cart-view/CartTotalPrice";
 
-const ProPlanSubscriptionModal = dynamic(() =>
-  import("../pro-plan/ProPlanSubscriptionModal")
+const ProPlanSubscriptionModal = dynamic(
+  () => import("../pro-plan/ProPlanSubscriptionModal"),
+  { ssr: false }
 );
-const ProPlanPaymentModal = dynamic(() =>
-  import("../pro-plan/ProPlanPaymentModal")
+const ProPlanPaymentModal = dynamic(
+  () => import("../pro-plan/ProPlanPaymentModal"),
+  { ssr: false }
 );
 
-const FoodDetailModal = dynamic(() =>
-  import("../food-details/foodDetail-modal/FoodDetailModal")
+const FoodDetailModal = dynamic(
+  () => import("../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
 );
-const ModuleModal = dynamic(() => import("../cards/ModuleModal"));
+const ModuleModal = dynamic(() => import("../cards/ModuleModal"), { ssr: false });
 const AuthModal = dynamic(() => import("../auth/AuthModal"), { ssr: false });
-const GuestCheckoutModal = dynamic(() => import("../cards/GuestCheckoutModal"));
+const GuestCheckoutModal = dynamic(() => import("../cards/GuestCheckoutModal"), { ssr: false });
 
 const SidebarSurface = styled(Box)(({ theme }) => ({
   position: "sticky",

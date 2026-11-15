@@ -16,8 +16,12 @@ import StoreWishCard from "./StoreWishCard";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import RentalWishListCard from "components/home/module-wise-components/rental/components/global/RentalWishlistCard";
 import ProviderWishCard from "components/home/module-wise-components/rental/components/global/ProviderWishCard";
-import FoodDetailModal from "../food-details/foodDetail-modal/FoodDetailModal";
-import ModuleModal from "../cards/ModuleModal";
+import dynamic from "next/dynamic";
+const FoodDetailModal = dynamic(
+  () => import("../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
+const ModuleModal = dynamic(() => import("../cards/ModuleModal"), { ssr: false });
 import { addWishList, removeWishListItem } from "redux/slices/wishList";
 import { not_logged_in_message } from "utils/toasterMessages";
 import { useAddToWishlist } from "api-manage/hooks/react-query/wish-list/useAddWishList";

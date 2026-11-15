@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslation } from "react-i18next";
 import { Box, Stack, Typography, useTheme } from "@mui/material";
 import ErrorIcon from "@mui/icons-material/Error";
-import GoogleMapComponent from "components/Map/GoogleMapComponent";
+const GoogleMapComponent = dynamic(() => import("components/Map/GoogleMapComponent"), { ssr: false });
 import { useSelector } from "react-redux";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
 import useGetGeoCode from "api-manage/hooks/react-query/google-api/useGetGeoCode";

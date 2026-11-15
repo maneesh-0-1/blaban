@@ -37,7 +37,11 @@ import {
 } from "styled-components/CustomStyles.style";
 import { textWithEllipsis } from "styled-components/TextWithEllipsis";
 import CustomImageContainer from "../CustomImageContainer";
-import FoodDetailModal from "../food-details/foodDetail-modal/FoodDetailModal";
+import dynamic from "next/dynamic";
+const FoodDetailModal = dynamic(
+  () => import("../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
 import {
   ACTION,
   initialState,
@@ -65,14 +69,19 @@ import useCartItemUpdate from "../../api-manage/hooks/react-query/add-cart/useCa
 import useDeleteCartItem from "../../api-manage/hooks/react-query/add-cart/useDeleteCartItem";
 import { addWishList, removeWishListItem } from "../../redux/slices/wishList";
 import AmountWithDiscountedAmount from "../AmountWithDiscountedAmount";
-import CustomDialogConfirm from "../custom-dialog/confirm/CustomDialogConfirm";
+const CustomDialogConfirm = dynamic(
+  () => import("../custom-dialog/confirm/CustomDialogConfirm"),
+  { ssr: false }
+);
 import CustomMultipleRatings from "../CustomMultipleRatings";
-import dynamic from "next/dynamic";
 const GetLocationAlert = dynamic(() => import("../GetLocationAlert"), { ssr: false });
 import { HeartWrapper } from "../home/stores-with-filter/cards-grid/StoresInfoCard";
 import CustomLinearProgressbar from "../linear-progressbar";
 import CustomModal from "../modal";
-import CartClearModal from "../product-details/product-details-section/CartClearModal";
+const CartClearModal = dynamic(
+  () => import("../product-details/product-details-section/CartClearModal"),
+  { ssr: false }
+);
 import {
   getItemDataForAddToCart,
   getPriceAfterQuantityChange,

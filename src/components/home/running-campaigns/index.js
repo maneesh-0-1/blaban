@@ -12,7 +12,11 @@ import { getModuleId } from "helper-functions/getModuleId";
 import { ModuleTypes } from "helper-functions/moduleTypes";
 import { setCampaignItem } from "redux/slices/cart";
 import { setRunningCampaigns } from "redux/slices/storedData";
-import FoodDetailModal from "../../food-details/foodDetail-modal/FoodDetailModal";
+import dynamic from "next/dynamic";
+const FoodDetailModal = dynamic(
+  () => import("../../food-details/foodDetail-modal/FoodDetailModal"),
+  { ssr: false }
+);
 import H2 from "../../typographies/H2";
 import { HomeComponentsWrapper } from "../HomePageComponents";
 import SliderShimmer from "../SliderShimmer";

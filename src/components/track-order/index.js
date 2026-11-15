@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import PropTypes from "prop-types";
 import { useRouter } from "next/router";
 import useGetTrackOrderData from "../../api-manage/hooks/react-query/order/useGetTrackOrderData";
@@ -28,7 +29,7 @@ import CustomFormatedTime from "../date/CustomFormatedTime";
 import { useTranslation } from "react-i18next";
 import DeliverymanInfo from "./DeliverymanInfo";
 import DeliverymanShimmer from "./DeliverymanShimmer";
-import MapComponent from "../Map/location-view/MapComponent";
+const MapComponent = dynamic(() => import("../Map/location-view/MapComponent"), { ssr: false });
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import { CustomStepperStyled, StepBox } from "./trackOrder.style";

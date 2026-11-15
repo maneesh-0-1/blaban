@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "firebase/messaging";
 import { fetchToken, onMessageListener } from "../firebase";
 import { toast } from "react-hot-toast";
 import {

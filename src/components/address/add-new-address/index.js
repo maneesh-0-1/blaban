@@ -1,4 +1,5 @@
 import React, { useEffect, useReducer, useState } from "react";
+import dynamic from "next/dynamic";
 import { Box, Stack } from "@mui/system";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -27,7 +28,7 @@ import useGetAutocompletePlace from "../../../api-manage/hooks/react-query/googl
 import useGetGeoCode from "../../../api-manage/hooks/react-query/google-api/useGetGeoCode";
 import useGetZoneId from "../../../api-manage/hooks/react-query/google-api/useGetZone";
 import useGetPlaceDetails from "../../../api-manage/hooks/react-query/google-api/useGetPlaceDetails";
-import GoogleMapComponent from "../../Map/GoogleMapComponent";
+const GoogleMapComponent = dynamic(() => import("../../Map/GoogleMapComponent"), { ssr: false });
 import AddressForm from "./AddressForm";
 import CustomImageContainer from "../../CustomImageContainer";
 import home from "../../checkout/assets/image 1256.png";
